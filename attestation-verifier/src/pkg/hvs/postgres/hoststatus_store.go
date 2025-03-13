@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"

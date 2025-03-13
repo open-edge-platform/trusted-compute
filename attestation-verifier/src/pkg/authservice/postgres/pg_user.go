@@ -8,8 +8,8 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/types"
 	ct "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type PostgresUserStore struct {
@@ -69,7 +69,7 @@ func (r *PostgresUserStore) Delete(u types.User) error {
 	defaultLog.Trace("user Delete")
 	defer defaultLog.Trace("user Delete done")
 	if err := r.db.Model(&u).Association("Roles").Clear().Error; err != nil {
-		return errors.Wrap(err, "user delete: failed to clear user-role mapping")
+		return errors.Wrap(errors.New(err()), "user delete: failed to clear user-role mapping")
 	}
 	if err := r.db.Delete(&u).Error; err != nil {
 		return errors.Wrap(err, "user delete: failed to clear user-role mapping")
@@ -114,24 +114,26 @@ func (r *PostgresUserStore) GetPermissions(u types.User, rs *types.RoleSearch) (
 	}
 
 	var res = []Result{}
-	query := `
-	SELECT DISTINCT r.service as service, r.context as context, p.rule as rule
-	FROM users u 
-	INNER JOIN user_roles ur ON u.id = ur.user_id 
-	INNER JOIN roles r ON ur.role_id = r.id 
-	INNER JOIN role_permissions rp ON r.id = rp.role_id 
-	INNER JOIN permissions p ON rp.permission_id = p.id`
 
-	// TODO Fix: only id or username is supported now. We really should use the gorm way of constructing the
-	// SQL
+	query := r.db.Table("users u").
+		Select("DISTINCT r.service as service, r.context as context, p.rule as rule").
+		Joins("INNER JOIN user_roles ur ON u.id = ur.user_id").
+		Joins("INNER JOIN roles r ON ur.role_id = r.id").
+		Joins("INNER JOIN role_permissions rp ON r.id = rp.role_id").
+		Joins("INNER JOIN permissions p ON rp.permission_id = p.id")
+
 	if u.Name != "" {
-		query = query + ` WHERE u.name='` + u.Name + "'"
+		query = query.Where("u.name = ?", u.Name)
 	} else if u.ID != "" {
-		query = query + ` WHERE u.id='` + u.ID + "'"
+		query = query.Where("u.id = ?", u.ID)
 	}
-	query = query + ` ORDER BY service, context`
 
-	r.db.Raw(query).Scan(&res)
+	query = query.Order("service, context")
+
+	// Execute the query
+	if err := query.Scan(&res).Error; err != nil {
+		return nil, err
+	}
 
 	if len(res) == 0 {
 		return nil, nil
@@ -158,7 +160,7 @@ func (r *PostgresUserStore) AddRoles(u types.User, roles types.Roles, mustAddAll
 	defer defaultLog.Trace("user AddRoles done")
 
 	if err := r.db.Model(&u).Association("Roles").Append(roles).Error; err != nil {
-		return errors.Wrap(err, "user add roles: failed")
+		return errors.Wrap(errors.New(err()), "user add roles: failed")
 	}
 	return nil
 }
@@ -192,7 +194,7 @@ func (r *PostgresUserStore) DeleteRole(u types.User, roleID string, svcFltr []st
 	if err != nil {
 		return errors.Wrapf(err, "user delete roles: could not find role id %s in database", roleID)
 	}
-	if err = r.db.Model(&u).Association("Roles").Delete(role).Error; err != nil {
+	if err = r.db.Model(&u).Association("Roles").Delete(role); err != nil {
 		return errors.Wrap(err, "user delete role: failed")
 	}
 	return nil

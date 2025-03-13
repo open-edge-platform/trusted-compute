@@ -5,11 +5,12 @@
 package controllers
 
 import (
+	"github.com/pkg/errors"
 	"fmt"
 	"net/http"
 
 	clog "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 var log = clog.GetDefaultLogger()
@@ -23,7 +24,8 @@ func (ehf errorHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err := ehf(w, r); err != nil {
 		log.WithError(err).Error("HTTP Error")
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Handle record not found error...
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}

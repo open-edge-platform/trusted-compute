@@ -6,6 +6,10 @@ package postgres
 
 import (
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/domain"
@@ -13,12 +17,10 @@ import (
 	commConfig "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/config"
 	commLog "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log"
 	commLogMsg "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log/message"
-	"io/ioutil"
-	"strings"
-	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var defaultLog = commLog.GetDefaultLogger()
@@ -119,28 +121,35 @@ func New(cfg *Config) (*PostgresDatabase, error) {
 	var db *gorm.DB
 	var dbErr error
 	numAttempts := cfg.ConnRetryAttempts
+	dsn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Dbname, cfg.Password, cfg.SslMode, sslCertParams)
+
 	if numAttempts < 0 || numAttempts > 100 {
 		numAttempts = constants.DefaultDbConnRetryAttempts
 	}
+
 	for i := 0; i < numAttempts; i = i + 1 {
 		retryTime := time.Duration(cfg.ConnRetryTime)
-		db, dbErr = gorm.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s cfg.SslMode=%s%s",
-			cfg.Host, cfg.Port, cfg.User, cfg.Dbname, cfg.Password, cfg.SslMode, sslCertParams))
+
+		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to DB, retrying attempt %d/%d", i, numAttempts)
 		} else {
 			break
 		}
+
 		if retryTime < 0 || retryTime > 100 {
 			retryTime = constants.DefaultDbConnRetryTime
 		}
 		time.Sleep(retryTime * time.Second)
 	}
+
 	if dbErr != nil {
 		defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to db after %d attempts\n", numAttempts)
 		secLog.Warningf("%s: Failed to connect to db after %d attempts", commLogMsg.BadConnection, numAttempts)
 		return nil, errors.Wrapf(dbErr, "Failed to connect to db after %d attempts", numAttempts)
 	}
+
 	store.Db = db
 	return &store, nil
 }
@@ -149,25 +158,28 @@ func (pd *PostgresDatabase) ExecuteSql(sql *string) error {
 	defaultLog.Trace("ExecuteSql", sql)
 	defer defaultLog.Trace("ExecuteSql done")
 
-	err := pd.Db.Exec(*sql).Error
-	if err != nil {
+	// Start a new transaction
+	tx := pd.Db.Begin()
+
+	// Ensure the transaction is rolled back in case of an error
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			secLog.Fatalf("Transaction failed: %v", r)
+		}
+	}()
+
+	// Now we execute the raw SQL command within the transaction
+	if err := tx.Exec(*sql).Error; err != nil {
+		tx.Rollback()
 		return errors.Wrap(err, "pgdb: failed to execute sql")
 	}
-	return nil
-}
 
-func (pd *PostgresDatabase) ExecuteSqlFile(file string) error {
-	defaultLog.Trace("ExecuteSqlFile", file)
-	defer defaultLog.Trace("ExecuteSqlFile done")
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		log.Fatalf("Failed to commit transaction: %v", err)
+	}
 
-	c, err := ioutil.ReadFile(file)
-	if err != nil {
-		return errors.Wrapf(err, "could not read sql file - %s", file)
-	}
-	sql := string(c)
-	if err := pd.ExecuteSql(&sql); err != nil {
-		return errors.Wrapf(err, "could not execute contents of sql file %s", file)
-	}
 	return nil
 }
 
@@ -193,10 +205,13 @@ func (pd *PostgresDatabase) PermissionStore() domain.PermissionStore {
 
 func (pd *PostgresDatabase) Close() {
 	if pd.Db != nil {
-		err := pd.Db.Close()
+		sqlDB, err := pd.Db.DB()
 		if err != nil {
 			defaultLog.WithError(err).Error("Error closing DB connection")
 		}
+
+		defaultLog.Info("Closing DB connection")
+		sqlDB.Close()
 	}
 }
 
@@ -217,21 +232,27 @@ func Open(host string, port int, dbname, user, password, sslMode, sslCert string
 	var db *gorm.DB
 	var dbErr error
 	const numAttempts = 4
+	dsn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s%s",
+		host, port, user, dbname, password, sslMode, sslCertParams)
+
 	for i := 0; i < numAttempts; i = i + 1 {
 		const retryTime = 1
-		db, dbErr = gorm.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s%s",
-			host, port, user, dbname, password, sslMode, sslCertParams))
+
+		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("Failed to connect to DB, retrying attempt %d/%d", i+1, numAttempts)
 		} else {
 			break
 		}
+
 		time.Sleep(retryTime * time.Second)
 	}
+
 	if dbErr != nil {
 		defaultLog.WithError(dbErr).Infof("Failed to connect to db after %d attempts\n", numAttempts)
 		secLog.Warningf("%s: Failed to connect to db after %d attempts", commLogMsg.BadConnection, numAttempts)
 		return nil, errors.Wrapf(dbErr, "Failed to connect to db after %d attempts", numAttempts)
 	}
+
 	return &PostgresDatabase{Db: db}, nil
 }

@@ -6,7 +6,6 @@ package postgres
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -16,11 +15,12 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	commLog "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log"
 	commLogMsg "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log/message"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 
 	// Import driver for GORM
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var defaultLog = commLog.GetDefaultLogger()
@@ -83,29 +83,39 @@ func New(cfg *Config) (*DataStore, error) {
 	var db *gorm.DB
 	var dbErr error
 	numAttempts := cfg.ConnRetryAttempts
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Dbname, cfg.Password, cfg.SslMode, sslCertParams)
+
 	if numAttempts <= 0 || numAttempts > 100 {
 		numAttempts = constants.DefaultDbConnRetryAttempts
 	}
+
 	for i := 0; i < numAttempts; i = i + 1 {
 		retryTime := time.Duration(cfg.ConnRetryTime)
-		db, dbErr = gorm.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s cfg.SslMode=%s%s",
-			cfg.Host, cfg.Port, cfg.User, cfg.Dbname, cfg.Password, cfg.SslMode, sslCertParams))
+		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy{
+				SingularTable: true,
+			},
+		})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to DB, retrying attempt %d/%d", i, numAttempts)
 		} else {
 			break
 		}
+
 		if retryTime < 0 || retryTime > 100 {
 			retryTime = constants.DefaultDbConnRetryTime
 		}
 		time.Sleep(retryTime * time.Second)
 	}
+
 	if dbErr != nil {
 		defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to db after %d attempts\n", numAttempts)
 		secLog.Warningf("%s: Failed to connect to db after %d attempts", commLogMsg.BadConnection, numAttempts)
 		return nil, errors.Wrapf(dbErr, "Failed to connect to db after %d attempts", numAttempts)
 	}
-	db.SingularTable(true)
+
 	store.Db = db
 	return &store, nil
 }
@@ -114,26 +124,9 @@ func (ds *DataStore) ExecuteSql(sql *string) error {
 	defaultLog.Trace("postgres/postgres:ExecuteSql() Entering")
 	defer defaultLog.Trace("postgres/postgres:ExecuteSql() Leaving")
 
-	defaultLog.Debugf("ExecuteSql: %s", *sql)
 	err := ds.Db.Exec(*sql).Error
 	if err != nil {
 		return errors.Wrap(err, "pgdb: failed to execute sql")
-	}
-	return nil
-}
-
-func (ds *DataStore) ExecuteSqlFile(file string) error {
-	defaultLog.Trace("postgres/postgres:ExecuteSqlFile() Entering")
-	defer defaultLog.Trace("postgres/postgres:ExecuteSqlFile() Leaving")
-
-	defaultLog.Debugf("ExecuteSqlFile: %s", file)
-	c, err := ioutil.ReadFile(file)
-	if err != nil {
-		return errors.Wrapf(err, "could not read sql file - %s", file)
-	}
-	sql := string(c)
-	if err := ds.ExecuteSql(&sql); err != nil {
-		return errors.Wrapf(err, "could not execute contents of sql file %s", file)
 	}
 	return nil
 }
@@ -152,9 +145,12 @@ func (ds *DataStore) Close() {
 	defer defaultLog.Trace("postgres/postgres:Close() Leaving")
 
 	if ds.Db != nil {
-		err := ds.Db.Close()
+		sqlDB, err := ds.Db.DB()
 		if err != nil {
-			defaultLog.WithError(err).Errorf("Error closing DB connection")
+			defaultLog.WithError(err).Error("Error closing DB connection")
 		}
+
+		defaultLog.Info("Closing DB connection")
+		sqlDB.Close()
 	}
 }

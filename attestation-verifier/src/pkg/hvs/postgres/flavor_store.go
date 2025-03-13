@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type FlavorStore struct {
@@ -225,12 +225,12 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	subQuery := tx
 	// add bios query to sub query
 	if biosQuery != nil {
-		biosSubQuery := biosQuery.SubQuery()
+		biosSubQuery := biosQuery
 		subQuery = subQuery.Where("f.id IN ?", biosSubQuery)
 	}
 	// add OS query string to sub query
 	if osQuery != nil {
-		osSubQuery := osQuery.SubQuery()
+		osSubQuery := osQuery
 		if biosQuery != nil {
 			subQuery = subQuery.Or("f.id IN ?", osSubQuery)
 		} else {
@@ -239,7 +239,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	}
 	// add software query to sub query
 	if softwareQuery != nil {
-		softwareSubQuery := softwareQuery.SubQuery()
+		softwareSubQuery := softwareQuery
 		if biosQuery != nil || osQuery != nil {
 			subQuery = subQuery.Or("f.id IN ?", softwareSubQuery)
 		} else {
@@ -248,7 +248,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	}
 	// add asset tag query to sub query
 	if aTagQuery != nil {
-		aTagSubQuery := aTagQuery.SubQuery()
+		aTagSubQuery := aTagQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil {
 			subQuery = subQuery.Or("f.id IN ?", aTagSubQuery)
 		} else {
@@ -257,7 +257,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	}
 	// add host-unique query to sub query
 	if hostUniqueQuery != nil {
-		hostUniqueSubQuery := hostUniqueQuery.SubQuery()
+		hostUniqueSubQuery := hostUniqueQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil {
 			subQuery = subQuery.Or("f.id IN ?", hostUniqueSubQuery)
 		} else {
@@ -267,7 +267,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 
 	// add ima query to sub query
 	if imaQuery != nil {
-		imaSubQuery := imaQuery.SubQuery()
+		imaSubQuery := imaQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil || hostUniqueQuery != nil {
 			subQuery = subQuery.Or("f.id IN ?", imaSubQuery)
 		} else {
@@ -279,7 +279,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	if subQuery != nil && (biosQuery != nil || aTagQuery != nil || softwareQuery != nil || hostUniqueQuery != nil || osQuery != nil || imaQuery != nil) {
 		tx = subQuery
 	} else if fgId != uuid.Nil {
-		fgSubQuery := buildFlavorPartQueryStringWithFlavorgroup(fgId.String(), tx).SubQuery()
+		fgSubQuery := buildFlavorPartQueryStringWithFlavorgroup(fgId.String(), tx)
 		tx = tx.Where("f.id IN ?", fgSubQuery)
 	}
 	return tx

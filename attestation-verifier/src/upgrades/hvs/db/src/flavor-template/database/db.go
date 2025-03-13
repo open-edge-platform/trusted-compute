@@ -8,18 +8,19 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
 
 	"github.com/google/uuid"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/postgres"
 	hvsconfig "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/config"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/upgrades/hvs/db/src/flavor-template/model"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 var Db *postgres.DataStore
 
-//DownloadOldFlavors downloads flavor from postgres DB
+// DownloadOldFlavors downloads flavor from postgres DB
 func DownloadOldFlavors(cfg *hvsconfig.DBConfig, db *gorm.DB) ([]model.SignedFlavors, error) {
 
 	fmt.Println("Downloading old flavors from database")
@@ -60,7 +61,7 @@ func DownloadOldFlavors(cfg *hvsconfig.DBConfig, db *gorm.DB) ([]model.SignedFla
 	return signedFlavors, nil
 }
 
-//UpdateFlavor updates flavor table with converted flavor and signature
+// UpdateFlavor updates flavor table with converted flavor and signature
 func UpdateFlavor(cfg *hvsconfig.DBConfig, db *gorm.DB, id uuid.UUID, flavor hvs.Flavor, signature string) error {
 
 	updateStmt := `update "flavor" set "content"=$1, "signature"=$2 where "id"=$3`
@@ -75,7 +76,7 @@ func UpdateFlavor(cfg *hvsconfig.DBConfig, db *gorm.DB, id uuid.UUID, flavor hvs
 	return nil
 }
 
-//GetDatabaseConnection returns a postgres.DataStore instance if establishing connection to Postgres DB is successful
+// GetDatabaseConnection returns a postgres.DataStore instance if establishing connection to Postgres DB is successful
 func GetDatabaseConnection(cfg *hvsconfig.DBConfig) (*postgres.DataStore, error) {
 	db, dbErr := postgres.InitDatabase(cfg)
 	if dbErr != nil {
