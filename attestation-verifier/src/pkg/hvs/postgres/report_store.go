@@ -8,17 +8,18 @@ package postgres
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
+
 	"github.com/google/uuid"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type ReportStore struct {
@@ -354,7 +355,7 @@ func buildReportSearchQuery(tx *gorm.DB, hostHardwareID, hostID uuid.UUID, hostN
 		txSubQuery := tx.Table("audit_log_entry auj").Select("data -> 'Columns' -> 1 ->> 'Value' AS host_id, max(auj.created) AS max_date ")
 		txSubQuery = buildReportSearchQueryWithCriteria(txSubQuery, hostHardwareID, hostID, entity, hostName, hostState, fromDate, toDate)
 		txSubQuery = txSubQuery.Group("host_id")
-		subQuery := txSubQuery.SubQuery()
+		subQuery := txSubQuery
 		tx = tx.Table("audit_log_entry au").Select("au.*").Joins("INNER JOIN ? a ON a.host_id = au.data -> 'Columns' -> 1 ->> 'Value' AND a.max_date = au.created", subQuery)
 	} else {
 		entity := "au"

@@ -16,7 +16,7 @@ import (
 	ct "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
 	"github.com/pkg/errors"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	commLogMsg "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log/message"
 )
@@ -87,7 +87,8 @@ func ErrorHandler(eh middleware.EndpointHandler) http.HandlerFunc {
 			}
 		}()
 		if err := eh(w, r); err != nil {
-			if gorm.IsRecordNotFoundError(err) {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Handle record not found error...
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}

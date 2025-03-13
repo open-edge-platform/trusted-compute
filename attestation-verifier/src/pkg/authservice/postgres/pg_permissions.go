@@ -7,8 +7,8 @@ package postgres
 import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/types"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type PostgresPermissionStore struct {

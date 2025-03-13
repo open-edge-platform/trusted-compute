@@ -271,6 +271,21 @@ func TestOpenFileSafe(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:   "Attempt to circumvent protections with null character",
+			args: args{
+				filePath: "validfile.txt\000malicious.txt",
+				fileFlag: os.O_RDWR,
+				filePerm: 0644,
+			}
+			setup: func() {
+				os.Create("validfile.txt")
+			},
+			cleanup: func() {
+                                os.Remove("validfile.txt")
+                        },
+			wantErr: true, // Expect an error because the file path is invalid
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

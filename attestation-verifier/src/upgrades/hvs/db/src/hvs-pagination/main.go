@@ -6,10 +6,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/config"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/postgres"
-	"os"
 )
 
 func main() {
@@ -33,8 +34,8 @@ func main() {
 
 	// Executing query for tables
 	tablesToAlter := [...]string{"host", "host_status", "report", "flavor", "flavor_group", "esxi_cluster", "tpm_endorsement", "audit_log_entry"}
-	for _, t := range tablesToAlter {
-		sqlCmd := "alter table " + t + " add column rowid serial unique"
+	for _, tableName := range tablesToAlter {
+		sqlCmd := fmt.Sprintf("alter table %s add column rowid serial unique", tableName)
 		err = dataStore.ExecuteSql(&sqlCmd)
 		if err != nil {
 			fmt.Println("Error in executing query " + sqlCmd + err.Error())
