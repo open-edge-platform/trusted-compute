@@ -1,0 +1,47 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cleanup-host.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cleanup-host.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "cleanup-host.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.securityContext.cleanupHostInit | nindent 8 }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      containers:
+        - name: cleanup-host
+          image: debian:bullseye-slim
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              echo deleting &&
+              rm -rf /tmp/verifier
+          volumeMounts:
+          - name: host-volume-verifier
+            mountPath: /tmp/verifier
+          - name: host-volume-trustagent
+            mountPath: /tmp/trustagent
+          securityContext:
+            {{- toYaml .Values.securityContext.cleanupHost | nindent 12 }}
+      volumes:
+      - name: host-volume-verifier
+        hostPath:
+          path: /opt/verifier
+          type: ""
+      - name: host-volume-trustagent
+        hostPath:
+          path: /opt/trustagent
+          type: ""

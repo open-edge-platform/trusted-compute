@@ -1,0 +1,14 @@
+# Default values for cleanup-secrets.
+
+nameOverride: "" # The name for CLEANUP-SECRETS chart (Default: .Chart.Name)
+
+securityContext:
+  cleanupSecretsInit: # The fsGroup id for init containers for Cleanup secret job
+    fsGroup: 500
+  cleanupSecrets: # The security content for Cleanup secret job
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
