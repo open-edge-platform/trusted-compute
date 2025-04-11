@@ -28,6 +28,7 @@ type Config struct {
 	NodeAgentCertPath               string
 	CMSCertPath                     string
 	OrchestratorCertPath            string
+	FlavorUpdateFilePath            string
 	AttestationManagerServerAddress string
 	AttestationManagerServerPort    string
 	TCHOSTNAME                      string
@@ -41,6 +42,7 @@ func LoadConfig() (*Config, error) {
 		NodeAgentCertPath:    "/mnt/access_token",
 		CMSCertPath:          "/mnt/cms-ca-cert.pem",
 		OrchestratorCertPath: "/mnt/orch-ca.crt",
+		FlavorUpdateFilePath: "/temp/attestation_mgr/flavor_update",
 	}
 
 	// Map environment variables to config fields

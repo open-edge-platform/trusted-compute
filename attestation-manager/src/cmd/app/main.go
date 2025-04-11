@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	attestationstatusnmgr_sb "github.com/open-edge-platform/infra-managers/attestationstatus/pkg/api/attestmgr/v1"
@@ -72,39 +73,52 @@ func main() {
 		logging.Error("Error fetching flavor IDs:", err)
 	}
 
-	// Deleting Flavor IDs if existed
-	for _, flavorID := range flavorIDs {
-		logging.Info("Step 3: Deleting Existing flavor:", flavorID)
-		success, response := api.DeleteFlavor(cfg, flavorID, attestToken)
-		if success {
-			logging.Info("Successfully deleted existing flavor:", flavorID)
+	addFlavorTemplateOperation := func() (bool, interface{}) {
+		flavorUpdateFilePath := cfg.FlavorUpdateFilePath // Path to the host file inside the container
+		logging.Info("Host file path for flavor update check:", flavorUpdateFilePath)
+		if _, err := os.Stat(flavorUpdateFilePath); err == nil {
+			logging.Info("Flavors exists, skipping AddFlavorTemplate operation")
+			return true, "Flavors exists, AddFlavorTemplate operation skipped"
+		} else if os.IsNotExist(err) {
+			logging.Info("Host file path for flavor update check does not exist, proceeding with exisiting flavor deletion")
+			// Deleting Flavor IDs if existed
+			for _, flavorID := range flavorIDs {
+				logging.Info("Step 3: Deleting Existing flavor:", flavorID)
+				success, response := api.DeleteFlavor(cfg, flavorID, attestToken)
+				if success {
+					logging.Info("Successfully deleted existing flavor:", flavorID)
+				} else {
+					logging.Error("Failed to delete flavor:", flavorID, "Response:", response)
+				}
+			}
+			// Proceed with adding flavor template after deletion
+			success, response := api.AddFlavorTemplate(cfg, attestToken, hostName)
+			if success {
+				logging.Info("Writing flavor status to  host file as AddFlavorTemplate succeeded")
+				err := os.WriteFile(flavorUpdateFilePath, []byte("Flavor Templated added to Verifier\n"), 0644)
+				if err != nil {
+					logging.Error("Failed to write flavor status to host file:", err)
+					return false, err
+				}
+				logging.Info("File successfully written to host path:", flavorUpdateFilePath)
+				return success, response
+			} else {
+				logging.Error("Failed to add flavor template:", response)
+				return false, response
+			}
 		} else {
-			logging.Error("Failed to delete flavor:", flavorID, "Response:", response)
+			logging.Error("Error checking flavor file:", err)
+			return false, err
 		}
 	}
 
-	logging.Info("Checking flavors deleted successfully")
-
-	// Fetching the Bearer token
-	success, tokenResponse = retryOperation(getAttestTokenOperation, retryCount, retryInterval)
-	attestToken, ok = tokenResponse.(string)
-	if !success || !ok {
-		logging.Error("Unable to fetch the token after retries!!!")
-		return
-	} else {
-		logging.Info("Token retrieved successfully!")
-	}
-
-	addFlavorTemplateOperation := func() (bool, interface{}) {
-		return api.AddFlavorTemplate(cfg, attestToken, hostName)
-	}
 	success, flavorResponse := retryOperation(addFlavorTemplateOperation, retryCount, retryInterval)
 
 	if !success {
-		logging.Error("Failed to add flavor -", flavorResponse)
+		logging.Error("Failed to add Flavor to verifier:", flavorResponse)
 		return
 	} else {
-		logging.Info("step 4: Flavor added successfully ", flavorResponse)
+		logging.Info("Step 4: Add Flavor template to verifier result:", flavorResponse)
 	}
 
 	// Infinite loop for attestation verification
@@ -150,7 +164,7 @@ func main() {
 			continue
 		}
 		parseSuccess, secureBootStatus, hardwareGuid, attestStatus := api.ParseTrustReport(attestReport)
-		logging.Debug("Parse success status:", parseSuccess, "SecureBoot of Node :", secureBootStatus, "Hardware Details:", hardwareGuid, "Attestation Status:", attestStatus)
+		logging.Debug("Parse success status:", parseSuccess, "SecureBoot of Node:", secureBootStatus, "Hardware Details:", hardwareGuid, "Attestation Status:", attestStatus)
 		logging.Info("Parse success status:", parseSuccess)
 		if !secureBootStatus {
 			logging.Info("SecureBoot Disabled, Informing Attestation Manager Server")
