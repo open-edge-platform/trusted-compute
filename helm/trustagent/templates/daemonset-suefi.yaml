@@ -22,14 +22,6 @@ metadata:
               value: {{.Values.dependentServices.hvs }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.hvs }}
-          volumeMounts:
-            {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-            {{- if $file }}
-            - name: init-scanfiles-{{ $index }}
-              mountPath: /host{{ $file }}
-              readOnly: true
-            {{- end }}
-            {{- end }}
         {{- if .Values.versionUpgrade }}
         - name: {{ include "factory.name" . }}-backup
           image: busybox:1.32
@@ -217,14 +209,6 @@ metadata:
         {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
         {{- if $file }}
         - name: scanfiles-{{ $index }}
-          hostPath:
-            path: {{ $file }}
-            type: FileOrCreate
-        {{- end }}
-        {{- end }}
-        {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-        {{- if $file }}
-        - name: init-scanfiles-{{ $index }}
           hostPath:
             path: {{ $file }}
             type: File

@@ -14,30 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateFlavorTemplateConditionQuery(t *testing.T) {
-	tests := []struct {
-		query   string
-		wantErr bool
-	}{
-		{"//flavor/*[text()='example']", false},
-		{"//host_info/os_name//*[text()='RedHatEnterprise']", false},
-		{"//host_info/hardware_features/TPM/meta/tpm_version//*[text()='2.0']", false},
-		{"//invalid/query[text()='example']", true}, // Invalid query
-		{"flavor/*[text()='example']", true},        // Missing leading //
-		{"//flavor/*[text()=example]", true},        // Missing quotes
-		{"//flavor/*[text()='']", true},             // Empty text
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.query, func(t *testing.T) {
-			err := ValidateFlavorTemplateConditionQuery(tt.query)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateFlavorTemplateConditionQuery(%q) error = %v, wantErr %v", tt.query, err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestValidateEnvList(t *testing.T) {
 	a := assert.New(t)
 
@@ -233,17 +209,20 @@ func TestBlankString(t *testing.T) {
 	assert := assert.New(t)
 	testXML := ""
 	fmt.Printf("Test XML: %s\n", testXML)
-	err := ValidateXMLString(testXML)
-	assert.Error(err, "Validation Failure: This is not good XML")
+	isValidXML := ValidateXMLString(testXML)
+	assert.Error(isValidXML, "Validation Failure: This is not good XML")
+
 }
 
 func TestNewPlainString(t *testing.T) {
 	assert := assert.New(t)
 	testXML := "This is definitely not XML"
 	fmt.Printf("Test XML: %s\n", testXML)
-	err := ValidateXMLString(testXML)
-	assert.Error(err, "Validation Failure: This is not good XML")
+	isValidXML := ValidateXMLString(testXML)
+	assert.Error(isValidXML, "Validation Failure: This is not good XML")
+
 }
+
 func TestValidXML(t *testing.T) {
 	assert := assert.New(t)
 	testXML := `

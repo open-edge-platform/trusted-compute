@@ -13,7 +13,7 @@ tw_helm_chart:
     This is the helm chart for the trusted workload component.
     It contains the configuration for the component validation tests.
   name: trusted-workload
-  version: 1.2.0
+  version: 1.0.0
   chart_link: oci://registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/charts/trusted-workload
 
 sample_workload:

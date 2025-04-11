@@ -28,9 +28,9 @@ func GetAttestToken(cfg *constants.Config) (bool, string) {
 		logging.Error("Error creating HTTP client with CA:", err)
 		return false, ""
 	}
-
 	logging.Trace("client:", client)
-
+	logging.Trace("username for token generation:", username)
+	logging.Trace("password for token generation:", password)
 	type Payload struct {
 		Username string `json:"username"`
 		Password string `json:"password"`

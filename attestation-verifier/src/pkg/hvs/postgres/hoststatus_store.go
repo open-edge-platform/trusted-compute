@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -409,7 +409,7 @@ func buildLatestHostStatusSearchQuery(tx *gorm.DB, hsFilter *models.HostStatusFi
 
 	// Host Connection Status
 	if hsFilter.HostStatus != "" {
-		tx = tx.Where("status @> ?", fmt.Sprintf(`{"host_state": "%s"}`, strings.ToUpper(hsFilter.HostStatus)))
+		tx = tx.Where(`status @> '{"host_state": "` + strings.ToUpper(hsFilter.HostStatus) + `"}'`)
 	}
 
 	if hsFilter.AfterId > 0 {

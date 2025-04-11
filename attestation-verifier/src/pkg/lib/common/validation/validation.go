@@ -8,13 +8,12 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-
-	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 )
 
 const (
@@ -47,18 +46,7 @@ var (
 	passwordReg         = regexp.MustCompile("(?:([a-zA-Z0-9_\\\\.\\\\, @!#$%^+=>?:{}()\\[\\]\\\"|;~`'*-/]+))")
 	connectionStringReg = regexp.MustCompile("^(((vmware)|(microsoft)|(intel))\\:)?(https|nats)\\:\\/\\/.+[\\:\\d+]?(\\/sdk)?((;h=.+;u=.+;p=.+)|(;u=.+;p=.+))?$")
 	jwtReg              = regexp.MustCompile("^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*")
-	flavorTempCondQuery = regexp.MustCompile(`^//[a-zA-Z0-9_/-]+/\*\[text\(\)='[a-zA-Z0-9_.]+'\]$`)
 )
-
-// ValidateJSONQuery validates an array of jsonquery statements using regex.
-// used for validating flavor template conditional query syntax as defined in flavortemplate,
-// e.g. //flavor/*[text()='example']
-func ValidateFlavorTemplateConditionQuery(query string) error {
-	if !flavorTempCondQuery.MatchString(query) {
-		return errors.New("Invalid Flavor Template Condition")
-	}
-	return nil
-}
 
 // ValidateEnvList can check if all environment variables in input slice exist
 // If things missing, return a slice contains all missing variables and an error.

@@ -107,6 +107,8 @@ spec:
             - name: ca-certificates
               mountPath: "/mnt/orch-ca.crt"
               readOnly: true
+            - name: host-volume
+              mountPath: /temp/attestation_mgr/flavor_update
       volumes:
         - name: attestation-manager-token
           hostPath:
@@ -114,6 +116,10 @@ spec:
         - name: ca-certificates
           hostPath:
             path: /etc/intel_edge_node/orch-ca-cert/orch-ca.crt
+        - name: host-volume
+          hostPath:
+            path: /tmp/attestation_manager/flavor_update
+            type: DirectoryOrCreate
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

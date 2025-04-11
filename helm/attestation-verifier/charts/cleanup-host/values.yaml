@@ -1,0 +1,14 @@
+# Default values for cleanup-host.
+
+nameOverride: "" # The name for CLEANUP-HOST chart (Default: .Chart.Name)
+
+securityContext:
+  cleanupHostInit: # The fsGroup id for init containers for Cleanup host
+    fsGroup: 500
+  cleanupHost: # The security content for Cleanup host
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false

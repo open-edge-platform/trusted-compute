@@ -508,14 +508,9 @@ func (ftc *FlavorTemplateController) ValidateFlavorTemplateCreateRequest(FlvrTem
 	}
 
 	for _, condition := range FlvrTemp.Condition {
-		// Validate and sanitize the condition before using it
-		if err := validation.ValidateFlavorTemplateConditionQuery(condition); err != nil {
-			return "Invalid syntax in condition statement", errors.Wrapf(err, "controllers/flavortemplate_controller:ValidateFlavorTemplateCreateRequest() Invalid syntax in condition : %s", condition)
-		}
-
 		_, err := jsonquery.Query(tempDoc, condition)
 		if err != nil {
-			return "Unable to retrieve query condition statement", errors.Wrapf(err, "controllers/flavortemplate_controller:ValidateFlavorTemplateCreateRequest() Invalid syntax in condition : %s", condition)
+			return "Invalid syntax in condition statement", errors.Wrapf(err, "controllers/flavortemplate_controller:ValidateFlavorTemplateCreateRequest() Invalid syntax in condition : %s", condition)
 		}
 	}
 
@@ -559,7 +554,7 @@ func readJSON(jsonFilePath string) (string, error) {
 	return string(byteValue), nil
 }
 
-// populateFlavorTemplateFilterCriteria This method is used to populate the flavor template filter criteria
+//populateFlavorTemplateFilterCriteria This method is used to populate the flavor template filter criteria
 func populateFlavorTemplateFilterCriteria(params url.Values) (*models.FlavorTemplateFilterCriteria, error) {
 	defaultLog.Trace("controllers/flavortemplate_controller:populateFlavorTemplateFilterCriteria() Entering")
 	defer defaultLog.Trace("controllers/flavortemplate_controller:populateFlavorTemplateFilterCriteria() Leaving")

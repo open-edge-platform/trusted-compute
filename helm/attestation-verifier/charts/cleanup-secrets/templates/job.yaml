@@ -1,0 +1,33 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cleanup-secrets.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cleanup-secrets.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "cleanup-secrets.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.securityContext.cleanupSecretsInit | nindent 8 }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      containers:
+        - name: cleanup-secrets
+          image: bitnami/kubectl:1.23
+          imagePullPolicy: Always
+          securityContext:
+            {{- toYaml .Values.securityContext.cleanupSecrets | nindent 12 }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              echo starting &&
+              kubectl delete secrets -n {{ .Release.Namespace }} --field-selector=type=Opaque && kubectl delete cm --all -n {{ .Release.Namespace }}

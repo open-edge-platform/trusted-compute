@@ -6,13 +6,12 @@ package middleware
 
 import (
 	"bytes"
+	"github.com/gorilla/mux"
 	"io"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type LogWriterMiddleware struct {
@@ -60,10 +59,7 @@ func (w *logResponseWriter) WriteHeader(code int) {
 }
 
 func (w *logResponseWriter) Write(body []byte) (int, error) {
-	// Sanitize the user-provided value to prevent XSS
-	sanitizedBody := bytes.ReplaceAll(body, []byte("<"), []byte("&lt;"))
-	sanitizedBody = bytes.ReplaceAll(sanitizedBody, []byte(">"), []byte("&gt;"))
-	size, err := w.ResponseWriter.Write(sanitizedBody)
+	size, err := w.ResponseWriter.Write(body)
 	w.size += size
 	return size, err
 }

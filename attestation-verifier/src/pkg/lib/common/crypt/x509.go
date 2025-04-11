@@ -457,7 +457,6 @@ func SavePemCert(cert []byte, certFilePath string) (err error) {
 			log.WithError(derr).Error("Error closing file")
 		}
 	}()
-
 	err = os.Chmod(certFilePath, 0600)
 	if err != nil {
 		return fmt.Errorf("could not change file permissions: %s", certFilePath)

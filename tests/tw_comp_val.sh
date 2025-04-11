@@ -93,14 +93,18 @@ check_cluster_status() {
     echo "INFO: Checking and labeling nodes"
     local node_name=$(kubectl get nodes -o name | head -n 1 | cut -d'/' -f2)
     if ! kubectl get nodes --show-labels | grep -q "node-role.kubernetes.io/worker=true"; then
-        echo "ERROR: Node labeled with node-role.kubernetes.io/worker=true"; exit 1;
+        kubectl label node "$node_name" node-role.kubernetes.io/worker=true || { echo "ERROR: Failed to label nodes"; exit 1;}
+        echo "INFO: Node labeled with node-role.kubernetes.io/worker=true"
     else
         echo "INFO: Nodes already labeled correctly"
     fi
 
     echo "INFO: Checking and untainting nodes"
     if kubectl get nodes -o json | jq -e '.items[].spec.taints == null' > /dev/null; then
-        echo "INFO: Nodes are untainted correctly"
+        echo "INFO: Nodes are already untainted"
+    elif kubectl get nodes -o json | jq -e '.items[].spec.taints[] | select(.key == "node-role.kubernetes.io/control-plane" and .effect == "NoSchedule")' > /dev/null; then
+        kubectl taint nodes "$node_name" node-role.kubernetes.io/control-plane:NoSchedule- || { echo "ERROR: Failed to untaint nodes"; exit 1; }
+        echo "INFO: Nodes successfully untainted"
     else
         echo "ERROR: Unexpected taints found on nodes"; exit 1;
     fi

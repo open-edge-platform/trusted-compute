@@ -28,6 +28,15 @@ dependencies:
   - name: global-admin-generator
     repository: file://./charts/global-admin-generator/
     version: 0.0.8
+  - name: cleanup-host
+    repository: file://./charts/cleanup-host/
+    version: 0.0.8
+  - name: cleanup-secrets
+    repository: file://./charts/cleanup-secrets/
+    version: 0.0.8
+  - name: cleanup-jobs
+    repository: file://./charts/cleanup-jobs/
+    version: 0.0.8
 description: A Helm chart for Deploying Attestation Verifier
 name: attestation-verifier
 type: application
