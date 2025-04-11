@@ -25,6 +25,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   ima_policy: |
-    {{- .Values.config.imaPolicy | nindent 4 }}
+    {{ .Values.config.imaPolicy | nindent 4 | trim}}
   ima_allowlist: |
     {{- .Values.config.imaAllowlist | nindent 4 }}

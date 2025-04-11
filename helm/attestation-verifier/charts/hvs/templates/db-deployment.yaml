@@ -1,6 +1,6 @@
 {{- include "factory.headers" . }}
 ---
-{{- include "factory.deploymentDbCommonSpec" . }}
+{{ include "factory.deploymentDbCommonSpec" . }}
     spec:
       securityContext:
         {{- toYaml .Values.securityContext.hvsdbInit | nindent 8 }}

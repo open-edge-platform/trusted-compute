@@ -1,6 +1,6 @@
 {{- include "factory.headers" . }}
 ---
-{{- include "factory.deploymentCommonSpec" . }}
+{{ include "factory.deploymentCommonSpec" . }}
     spec:
       {{- if .Values.global }}
       {{- if .Values.global.image.imagePullSecret }}
