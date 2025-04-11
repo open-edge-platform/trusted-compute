@@ -1,6 +1,6 @@
 {{- include "factory.headers" . }}
 ---
-{{- include "factory.pvcDbCommonSpec" . }}
+{{ include "factory.pvcDbCommonSpec" . }}
   storageClassName: manual
   accessModes:
 {{ toYaml .Values.storage.hostPath.accessModes | indent 4 }}

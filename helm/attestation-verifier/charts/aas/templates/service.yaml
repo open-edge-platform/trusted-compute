@@ -1,6 +1,6 @@
 {{- include "factory.headers" . }}
 ---
-{{- include "factory.serviceCommonSpec" . }}
+{{ include "factory.serviceCommonSpec" . }}
   {{- if .Values.global }}
     {{- if .Values.global.ingress.enable }}
   type: ClusterIP

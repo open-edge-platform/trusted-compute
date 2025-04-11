@@ -25,12 +25,10 @@ clean:
 	@# Help: Runs clean stage in all subprojects
 	rm -rf helm-unittest-output.xml
 	rm -rf lint_report.txt
+	bash ./helm_lint.sh clean
 
 lint: yaml-lint helm-lint
 	@# Help: Runs lint stage in all subprojects
-	@echo "---MAKEFILE LINT---"
-	@echo "Linting all subprojects"
-	@echo "---END MAKEFILE LINT---"
 
 yaml-lint:
 	@# Help: Runs lint stage in all subprojects
@@ -94,10 +92,7 @@ helm-build-%:
 helm-lint:
 	@# Help: Runs helm lint stage for all specified targets
 	@echo "---MAKEFILE HELM LINT---"
-	for target in $(HELM_TARGETS); do \
-		echo "Linting $$target"; \
-		helm lint $$target --with-subcharts --strict; \
-	done
+	bash ./helm_lint.sh
 	@echo "---END MAKEFILE HELM LINT---"
 
 helm-push-%:

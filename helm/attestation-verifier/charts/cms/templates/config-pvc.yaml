@@ -1,6 +1,6 @@
 {{- include "factory.headers" . }}
 ---
-{{- include "factory.pvcConfigCommonSpec" . }}
+{{ include "factory.pvcConfigCommonSpec" . }}
   storageClassName: manual
   accessModes:
     - {{ .Values.storage.hostPath.accessModes }}
