@@ -83,6 +83,11 @@ config:
     # /opt/kata/share/kata-qemu/qemu/pvh.bin
     # /opt/kata/share/kata-qemu/qemu/kvmvapic.bin
 
+imaAllowlistFolders:
+    - /opt/verifier/cms
+    - /opt/verifier/authservice
+    - /opt/verifier/hvs
+
 aas:
 # Please update the url section if aas is exposed via ingress
   url:
