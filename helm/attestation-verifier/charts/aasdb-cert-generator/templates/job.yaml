@@ -32,7 +32,7 @@ spec:
             - >
               echo Creating Database SSL Cert &&
               cd /tmp/certs/ &&
-              echo '{ "hosts": [{{- if .Values.global }}"{{- if .Values.global.controlPlaneHostname }}"{{ .Values.global.controlPlaneHostname }} "{{- end }}" "{{- else }}"{{ .Values.controlPlaneHostname }}"{{- end }}],"CN": "Attestation Verifier Self Sign Cert","key": {"algo": "rsa", "size": 4096}}' > ca-csr.json &&
+              echo '{ "hosts": [{{- if .Values.global }}"{{- if .Values.global.controlPlaneHostname }}{{ .Values.global.controlPlaneHostname }}{{- end }}"{{- else }}"{{ .Values.controlPlaneHostname }}"{{- end }}],"CN": "Attestation Verifier Self Sign Cert","key": {"algo": "rsa", "size": 4096}}' > ca-csr.json &&
               cfssl gencert -initca ca-csr.json | cfssljson -bare ca - &&
               echo '{"CN":"AAS DB TLS Certificate","hosts":["aasdb.{{ .Release.Namespace }}.svc.cluster.local  "],"key":{"algo":"rsa","size":4096}}' | cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -profile=server -hostname="aasdb.{{ .Release.Namespace }}.svc.cluster.local" - | cfssljson -bare aasdb-server
           volumeMounts:
