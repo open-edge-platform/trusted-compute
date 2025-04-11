@@ -1,0 +1,41 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "factory.name" . }}-backup-volumes
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "factory.labelsChart" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-4"
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "factory.labelsChart" . | nindent 8 }}
+    spec:
+      {{- if .Values.global }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- else }}
+      {{- if .Values.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.imagePullSecret }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        {{- include "factory.backupService" . | nindent 8 }}
+          securityContext:
+          {{- toYaml .Values.securityContext.cms | nindent 12 }}
+      containers:
+        {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
+          securityContext:
+          {{- toYaml .Values.securityContext.cms | nindent 12 }}
+      volumes:
+          {{- include "factory.volumesBasePV" . | nindent 8 }}

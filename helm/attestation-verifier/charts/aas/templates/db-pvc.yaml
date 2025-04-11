@@ -1,0 +1,9 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.pvcDbCommonSpec" . }}
+  storageClassName: manual
+  accessModes:
+{{ toYaml .Values.storage.hostPath.accessModes | indent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.hostPath.dbSize }}

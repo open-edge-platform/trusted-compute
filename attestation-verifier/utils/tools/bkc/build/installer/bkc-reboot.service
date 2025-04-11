@@ -1,0 +1,10 @@
+[Unit]
+Description=bkc-tool reboot
+
+[Service]
+Type=idle
+WorkingDirectory=/opt/bkc-tool
+ExecStart=/opt/bkc-tool/bin/reboot.sh
+
+[Install]
+WantedBy=multi-user.target

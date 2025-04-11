@@ -1,0 +1,39 @@
+version: "3.6"
+services:
+   aas-pg-db:
+      image: postgres:latest
+      command: postgres -c 'max_connections=400' -c 'shared_buffers=400MB'
+      volumes:
+         - aas-pgdata-volume:/var/lib/postgresql/data
+      environment:
+         POSTGRES_DB: ${AAS_DB_NAME:-aas}
+         POSTGRES_USER: ${AAS_DB_USERNAME:-runner}
+         POSTGRES_PASSWORD: ${AAS_DB_PASSWORD:-test}
+
+   authservice:
+      image: isecl/authservice:latest
+      hostname: authservice
+      depends_on:
+         - "aas-pg-db"
+      ports:
+         - 8444:8444
+
+      environment:
+         AAS_DB_HOSTNAME: aas-pg-db
+         AAS_DB_NAME: ${AAS_DB_NAME:-aas}
+         AAS_DB_PORT: 5432
+         AAS_DB_USERNAME: ${AAS_DB_USERNAME:-runner}
+         AAS_DB_PASSWORD: ${AAS_DB_PASSWORD:-test}
+         AAS_ADMIN_USERNAME: ${AAS_ADMIN_USERNAME:-admin}
+         AAS_ADMIN_PASSWORD: ${AAS_ADMIN_PASSWORD:-password}
+         AAS_REG_HOST_USERNAME: ${AAS_REG_HOST_USERNAME:- reg-host-user}
+         AAS_REG_HOST_PASSWORD: ${AAS_REG_HOST_PASSWORD:- password}
+
+      volumes:
+         - aas-config-volume:/etc/authservice
+         - aas-log-volume:/var/log/authservice
+
+volumes:
+   aas-config-volume:
+   aas-pgdata-volume:
+   aas-log-volume:

@@ -1,0 +1,494 @@
+[
+    {
+        "flavor": {
+            "meta": {
+                "id": "b12eadd7-02da-4c9b-aed2-2252afa0260d",
+                "description": {
+                    "bios_name": "American Megatrends Inc.",
+                    "bios_version": "4.1.8",
+                    "cbnt_enabled": true,
+                    "flavor_part": "PLATFORM",
+                    "flavor_template_ids": [
+                        "4c5a3aaf-1d04-48a0-8adf-2dd03725ffec",
+                        "6d5dfcff-f04d-4785-bd9d-3c09b930d69e",
+                        "a4eab22a-fad5-431a-8fd5-739c74dd5d74"
+                    ],
+                    "label": "INTEL_AmericanMegatrendsInc._4.1.8_CBNT_BTGP5_TPM_TXT_UEFI_SecureBootEnabled_2021-03-08T06:09:13.421458-05:00",
+                    "source": "ta-server-1",
+                    "suefi_enabled": true,
+                    "tboot_installed": false,
+                    "tpm_version": "2.0",
+                    "uefi_enabled": true,
+                    "vendor": "UNKNOWN"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "bios": {
+                "bios_name": "American Megatrends Inc.",
+                "bios_version": "4.1.8"
+            },
+            "hardware": {
+                "processor_info": "57 06 05 00 FF FB EB BF",
+                "processor_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+                "feature": {
+                    "TXT": {
+                        "supported": "false",
+                        "enabled": "true"
+                    },
+                    "TPM": {
+                        "supported": "false",
+                        "enabled": "true",
+                        "meta": {
+                            "tpm_version": "2.0",
+                            "pcr_banks": [
+                                "SHA1",
+                                "SHA256"
+                            ]
+                        }
+                    },
+                    "CBNT": {
+                        "supported": "false",
+                        "enabled": "true",
+                        "meta": {
+                            "profile": "BTGP5",
+                            "msr": "mk ris kfm"
+                        }
+                    },
+                    "UEFI": {
+                        "supported": "false",
+                        "enabled": "true",
+                        "meta": {
+                            "secure_boot_enabled": true
+                        }
+                    },
+                    "PFR": {
+                        "supported": "false",
+                        "enabled": "false"
+                    },
+                    "BMC": {
+                        "supported": "false",
+                        "enabled": "false"
+                    }
+                }
+            },
+            "pcrs": [
+                {
+                    "pcr": {
+                        "index": 5,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "2b03086e7ab62819bd0667e159267e7ffc7779e6f9a26e3c728925f6cd0b4cb4",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 6,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 0,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "8cec4f1551e804acff30311da2b4aee5714ce4555edc91d89d89d19075a0f7e3",
+                    "pcr_matches": true,
+                    "eventlog_equals": {
+                        "events": [
+                            {
+                                "type_id": "0x3",
+                                "type_name": "EV_NO_ACTION",
+                                "tags": [
+                                    "StartupLocality3"
+                                ],
+                                "measurement": "0000000000000000000000000000000000000000000000000000000000000000"
+                            },
+                            {
+                                "type_id": "0x7",
+                                "type_name": "EV_S_CRTM_CONTENTS",
+                                "tags": [
+                                    "Boot Guard Measured S-CRTM"
+                                ],
+                                "measurement": "34ac515111752d95811958211048187979db060f3ed063d7af625069928a8ae3"
+                            },
+                            {
+                                "type_id": "0x8",
+                                "type_name": "EV_S_CRTM_VERSION",
+                                "measurement": "d4720b4009438213b803568017f903093f6bea8ab47d283db32b6eabedbbf155"
+                            },
+                            {
+                                "type_id": "0x8",
+                                "type_name": "EV_S_CRTM_VERSION",
+                                "measurement": "d4720b4009438213b803568017f903093f6bea8ab47d283db32b6eabedbbf155"
+                            },
+                            {
+                                "type_id": "0x1",
+                                "type_name": "EV_POST_CODE",
+                                "measurement": "a1d99cc7703573c93ac2ecae76c3c59797eeb0a4dc2389a2e8ad76f230a78599"
+                            },
+                            {
+                                "type_id": "0x1",
+                                "type_name": "EV_POST_CODE",
+                                "measurement": "a1d99cc7703573c93ac2ecae76c3c59797eeb0a4dc2389a2e8ad76f230a78599"
+                            },
+                            {
+                                "type_id": "0x4",
+                                "type_name": "EV_SEPARATOR",
+                                "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                            },
+                            {
+                                "type_id": "0x4",
+                                "type_name": "EV_SEPARATOR",
+                                "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "pcr": {
+                        "index": 7,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "5b7d5a04180902384ade458922c7714a58b256eea8c4acd025f728921a3e4e4c",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 1,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "2f849a663991cf3918d8473a01d1e3cc40261048403777b2cb812e25cc276e96",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 2,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "3faee78cb74d88b62139cb12354a1cd3b9e330896f9526b07cc899208e9f6142",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 3,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 4,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "99c4c60e6e0c23138e974e07e11b1a1d5a39ea0bf8a034248a12140b11257e5d",
+                    "pcr_matches": true
+                }
+            ]
+        },
+        "signature": "egKVemSq+WgNoseNxZjsa26vnkBR5NDIpb9oK+jpEUt2C3Ssf9N5Q++zA5BrSi43XDM4HnEqahvYC78EEpupactSAaIiDOyynTn6HZmEP76b9hO+Ntfgww1Zj1fVvJUYQ6F5SbHYcJhPkNUjLXUJaP38rHiYVnCwvj5UNHDtOcxdm2vVK20fhwt66JzvQ84y8w0tIC20GGW4uWl+XO3FRRFRUn7NI9uTct2UMKClGsPu9Vw6tIUocciqneBfjeOOd3gyobr2mcL0iBzx0aowaYNkphqtAG4PfInbr6q4Xlj5nFR/PuVZ6JQ2OXsU1QlF75Hs8kYXvBxbjTeD087jQbiq8axN8kZWIYLAtC4uyFkSm90dTf+mzV7OxnWA2wIbB0KXA0vu2cwKuhx7RPYV0nDzVY2lGwGZUuFH1N7mdeGZbXmWIteeeqVOLnMGVEv1ADVpm1VheSET4/ppk6JkF87A+XgvrgU6TG43Zroum+HFrXVJLPdws9f4uhTpxS6+"
+    },
+    {
+        "flavor": {
+            "meta": {
+                "id": "49705d53-a75e-414e-998e-049cbb2a0ee6",
+                "description": {
+                    "flavor_part": "OS",
+                    "flavor_template_ids": [
+                        "4c5a3aaf-1d04-48a0-8adf-2dd03725ffec",
+                        "6d5dfcff-f04d-4785-bd9d-3c09b930d69e",
+                        "a4eab22a-fad5-431a-8fd5-739c74dd5d74"
+                    ],
+                    "label": "INTEL_RedHatEnterprise_8.2_Docker_19.03.5_2021-03-08T06:09:13.430708-05:00",
+                    "os_name": "RedHatEnterprise",
+                    "os_version": "8.2",
+                    "source": "ta-server-1",
+                    "tboot_installed": false,
+                    "tpm_version": "2.0",
+                    "uefi_enabled": true,
+                    "vendor": "UNKNOWN",
+                    "vmm_name": "Docker",
+                    "vmm_version": "19.03.5"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "bios": {
+                "bios_name": "American Megatrends Inc.",
+                "bios_version": "4.1.8"
+            },
+            "pcrs": [
+                {
+                    "pcr": {
+                        "index": 7,
+                        "bank": "SHA256"
+                    },
+                    "measurement": "5b7d5a04180902384ade458922c7714a58b256eea8c4acd025f728921a3e4e4c",
+                    "pcr_matches": true,
+                    "eventlog_includes": [
+                        {
+                            "type_id": "0x80000001",
+                            "type_name": "EV_EFI_VARIABLE_DRIVER_CONFIG",
+                            "tags": [
+                                "db"
+                            ],
+                            "measurement": "a12e2dff1d2056c8201e22108f4de20b3dab979aed37498be55cd2fa1290c8f1"
+                        },
+                        {
+                            "type_id": "0x800000e0",
+                            "type_name": "EV_EFI_VARIABLE_AUTHORITY",
+                            "tags": [
+                                "db"
+                            ],
+                            "measurement": "4d4a8e2c74133bbdc01a16eaf2dbb5d575afeb36f5d8dfcf609ae043909e2ee9"
+                        }
+                    ]
+                }
+            ]
+        },
+        "signature": "iCRqxyv+VqYyKfHpPbWVbPGrN1glGqI6QV18CYylmH4MG5+nuasu6b97wtKNgiABkt2mnILulVHDxFRG5gPlLbqYrFqVnk8z5WShfj2oUvY4lSK0JIhMNEOHT/GfH0Fzgxm1zaQQfaT4jil82AdLEzoeRd1T4ZrV+roGI2pdcwtW6WIA4R7gA6A+1VV4uHJdJGmyBbPcLwoaaHuQ//3K4Jiy2MgA95cHYqDchVOCbL4acFtmxub8DNOyRxAymentA3/eCkaxgR37xq+PL99uyuxWPHyNO+Ge7jftmBI/m8bv8VSwwIzv67vKWoGM7mfB2NAX9s7NG18mivkT4LPpJb0zgEmJ7fCN/zR1V+qf9FtPX4NTHAsz7xpgPSqHLL1YpbHOGAKa5mprKedl06LAzsx4eUSO1LNLxJOi6R7z3bFNg0aFNqVkofp3avy5mm2Zqnx54qVhuxDFqXyrCpuT5RVLV83Ol5+S1AYjWyeH6GAcJv6aiYlkDUy5vOUjev6x"
+    },
+    {
+        "flavor": {
+            "meta": {
+                "id": "9a314548-5b36-479f-8158-463593e87193",
+                "description": {
+                    "bios_name": "American Megatrends Inc.",
+                    "bios_version": "4.1.8",
+                    "flavor_part": "HOST_UNIQUE",
+                    "flavor_template_ids": [
+                        "4c5a3aaf-1d04-48a0-8adf-2dd03725ffec",
+                        "6d5dfcff-f04d-4785-bd9d-3c09b930d69e",
+                        "a4eab22a-fad5-431a-8fd5-739c74dd5d74"
+                    ],
+                    "hardware_uuid": "8dbf926c-04d2-03e2-b211-d21d00db521a",
+                    "label": "INTEL_8dbf926c-04d2-03e2-b211-d21d00db521a_2021-03-08T06:09:13.437954-05:00",
+                    "os_name": "RedHatEnterprise",
+                    "os_version": "8.2",
+                    "source": "ta-server-1",
+                    "tboot_installed": false,
+                    "tpm_version": "2.0"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "bios": {
+                "bios_name": "American Megatrends Inc.",
+                "bios_version": "4.1.8"
+            }
+        },
+        "signature": "hGSSn12iV182QBD4AQZwHlQRjZi6upS4QeT1pOXUxxcY9StkBL4nLuGjNR3KNn/2ErQfareQcKwBGnYvZJM+GHDaGtAvQ7YvVyAxBUUZshs2RA7S3+kSJZnHhc1w/GwhOyh9iXDRcTspLsKVbuw/vFNnm3IMbRDPGf1fhff5OyTeESW5euYzpLIdTfeKVHWiXodxXBjzGrNPWftFUoge4+3C370xmLpbkgbRe3YiBlI6Y3C0fYQtOsc4vH/ATgTjFywkIOgmqcn1YeKzfOcSGD7qnuEKPvO6hX7wFjqBwFq8lBHcEK3MeMJ8UZ8eJ2Q40ymwBvts89dqhJ1sBaQQAW2HbOAJGETsPLBd2AC14B5+q+MWKNG99GIWvmRL3VAjTLDh+w72UyMfagnKkSmG3bD6XcOxxg2SmbC/19+J8S0WhMGbSX7cE6ndPlBSD2xmbwdF5AuU8s0qUcNIhrt6Sby5f38yBhhBncRbIbW0RL9GDuBx+cwMEb4vynbRSjjC"
+    },
+    {
+        "flavor": {
+            "meta": {
+                "schema": {
+                    "uri": "lib:wml:measurements:1.0"
+                },
+                "id": "7f0683c1-a038-4ed4-8b29-286410f2e753",
+                "description": {
+                    "digest_algorithm": "SHA384",
+                    "flavor_part": "SOFTWARE",
+                    "label": "ISecL_Default_Application_Flavor_v3.3_TPM2.0"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "software": {
+                "measurements": {
+                    "opt-tbootxm-bin": {
+                        "type": "directoryMeasurementType",
+                        "value": "b0d5cba0bb12d69d8dd3e92bdad09d093a34dd4ea30aea63fb31b9c26d9cbf0e84016fa9a80843b473e1493a427aa63a",
+                        "Path": "/opt/tbootxm/bin",
+                        "Include": ".*"
+                    },
+                    "opt-tbootxm-bin-configure_host.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "1be6ce8c3a4c3f5592fffc905d62dcfb0ed3bf1cb2ae3ed7376d88cd4dd268f22a69404e2486e948fd3ab52ea6fbb95c",
+                        "Path": "/opt/tbootxm/bin/configure_host.sh"
+                    },
+                    "opt-tbootxm-bin-functions.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "6502f614164b7528480deb18256b40cd2e4e9c7cbc32ebc4dcbd87c1ad9508885b628d83e56d22e106b1dcc8142690f6",
+                        "Path": "/opt/tbootxm/bin/functions.sh"
+                    },
+                    "opt-tbootxm-bin-generate_initrd.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "4708ed8233a81d6a17b2c4b74b955f27612d2cc04730ad8919618964209ce885cea9011e00236de56a2239a524044db4",
+                        "Path": "/opt/tbootxm/bin/generate_initrd.sh"
+                    },
+                    "opt-tbootxm-bin-measure": {
+                        "type": "fileMeasurementType",
+                        "value": "090dde1f7960e99644ad09776bc182c4f43127354b9f592c3e6c6169e595c7e00be020550bb2f2fb30e3c1a7dca2328c",
+                        "Path": "/opt/tbootxm/bin/measure"
+                    },
+                    "opt-tbootxm-bin-measure_host": {
+                        "type": "fileMeasurementType",
+                        "value": "63648dde7ef979e0ce32fbb4fc2087bf861ca0c9a2755d13e2135eaecf37e9e43e7523ac923d8073b0fe6159da6aba4a",
+                        "Path": "/opt/tbootxm/bin/measure_host"
+                    },
+                    "opt-tbootxm-bin-tboot-xm-uninstall.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "7450bc939548eafc4a3ba9734ad1f96e46e1f46a40e4d12ad5b5f6b5eb2baf1597ade91edb035d8b5c1ecc38bde7ee59",
+                        "Path": "/opt/tbootxm/bin/tboot-xm-uninstall.sh"
+                    },
+                    "opt-tbootxm-bin-tpmextend": {
+                        "type": "fileMeasurementType",
+                        "value": "b95c831b66c41204b117c97544d1af30828e3cf2ef7ba3ee0c970a20d4f08acfc7c0a530d3b3b883ddea7d5300087262",
+                        "Path": "/opt/tbootxm/bin/tpmextend"
+                    },
+                    "opt-tbootxm-dracut_files": {
+                        "type": "directoryMeasurementType",
+                        "value": "1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232",
+                        "Path": "/opt/tbootxm/dracut_files",
+                        "Include": ".*"
+                    },
+                    "opt-tbootxm-dracut_files-check": {
+                        "type": "fileMeasurementType",
+                        "value": "6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1",
+                        "Path": "/opt/tbootxm/dracut_files/check"
+                    },
+                    "opt-tbootxm-dracut_files-install": {
+                        "type": "fileMeasurementType",
+                        "value": "e2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a",
+                        "Path": "/opt/tbootxm/dracut_files/install"
+                    },
+                    "opt-tbootxm-dracut_files-module-setup.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb",
+                        "Path": "/opt/tbootxm/dracut_files/module-setup.sh"
+                    },
+                    "opt-tbootxm-initrd_hooks": {
+                        "type": "directoryMeasurementType",
+                        "value": "77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7",
+                        "Path": "/opt/tbootxm/initrd_hooks",
+                        "Include": ".*"
+                    },
+                    "opt-tbootxm-initrd_hooks-tcb": {
+                        "type": "fileMeasurementType",
+                        "value": "430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98",
+                        "Path": "/opt/tbootxm/initrd_hooks/tcb"
+                    },
+                    "opt-tbootxm-lib": {
+                        "type": "directoryMeasurementType",
+                        "value": "b03eb9d3b6fa0d338fd4ef803a277d523ab31db5c27186a283dd8d1fe0e7afca9bf26b31b1099833b0ba398dbe3c02fb",
+                        "Path": "/opt/tbootxm/lib",
+                        "Include": ".*"
+                    },
+                    "opt-tbootxm-lib-create_menuentry.pl": {
+                        "type": "fileMeasurementType",
+                        "value": "79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e",
+                        "Path": "/opt/tbootxm/lib/create_menuentry.pl"
+                    },
+                    "opt-tbootxm-lib-libwml.so": {
+                        "type": "fileMeasurementType",
+                        "value": "d5d16eac70b91773b3f541b873c464086cbd4c5600a93679bc0d4595ecf93fecf0d7bba8090064a7deb27902f02399a2",
+                        "Path": "/opt/tbootxm/lib/libwml.so"
+                    },
+                    "opt-tbootxm-lib-remove_menuentry.pl": {
+                        "type": "fileMeasurementType",
+                        "value": "baf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c",
+                        "Path": "/opt/tbootxm/lib/remove_menuentry.pl"
+                    },
+                    "opt-tbootxm-lib-update_menuentry.pl": {
+                        "type": "fileMeasurementType",
+                        "value": "cb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e",
+                        "Path": "/opt/tbootxm/lib/update_menuentry.pl"
+                    },
+                    "opt-tbootxm-mkinitrd_files": {
+                        "type": "directoryMeasurementType",
+                        "value": "6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247",
+                        "Path": "/opt/tbootxm/mkinitrd_files",
+                        "Include": ".*"
+                    },
+                    "opt-tbootxm-mkinitrd_files-setup-measure_host.sh": {
+                        "type": "fileMeasurementType",
+                        "value": "2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc",
+                        "Path": "/opt/tbootxm/mkinitrd_files/setup-measure_host.sh"
+                    },
+                    "opt-trustagent-bin": {
+                        "type": "directoryMeasurementType",
+                        "value": "a5f6af1a79a22db40cdbcdca8bf0b2e00aa6f01a8d04f216c291719149c4d59d9102a4ea806503b3bdb3c7e236f59fb4",
+                        "Path": "/opt/trustagent/bin",
+                        "Include": ".*"
+                    },
+                    "opt-trustagent-bin-tagent": {
+                        "type": "fileMeasurementType",
+                        "value": "0fe07e3f7c1198e3b9ea5248f2787432796b659d5519ea01c45cdf526a28af4d3ae156403caba1d9e0ad2293347a845a",
+                        "Path": "/opt/trustagent/bin/tagent"
+                    }
+                },
+                "cumulative_hash": "48d06977995ebb8826094eb0be119ded0dcf7469df1f28f9b362595b9efd8fe95782d89b46b75454b875820c9972cca1"
+            }
+        },
+        "signature": "BgrCjl9NhXLcle6AZPDWCoYQzbjRbCBE22PV83A52l44iSyt0JXfm2Gvz/bWqHmXgjIPGKSNzb5nfVaXd08CURPMy23u8Ct8HzikLirt1paMZa2j5HZk0ybGXHJOlKtnbXjdncPzKsRfnAMyl5p4hMQRKDfv+vL/PF4ndxMbZnRyF78y0aL5EwmgamzGIPalY5NFI2WNcHJdqNQA404yF0ZEoHBCbaKtIYXXS59Ygtl8WVfLftF4rjSUyURao7z8Zmz/uFWI4NtvJOge+jTr8G+UbBYjdqMLJOA6Be0UU2BJal1xwxvPghWn3t0hcUQIfD4zXlCuNhtdPKKmzwYRSwrxHsS5DYyW1Cmyqp93CG71wrn1I5I9vbkCrvlNgxMfTkVczNy1XTBCA4BjuYfecHz14eMSpPrSp6h47espiCSNhpGw70AZd9LvoousukX5fORAhH0DCLdhipchigU4OKfIK2FbLfXgOFjzO4hftG2DxhgxRxk1juuOSpfnydbJ"
+    },
+    {
+        "flavor": {
+            "meta": {
+                "schema": {
+                    "uri": "lib:wml:measurements:1.0"
+                },
+                "id": "bffa1025-3605-4336-9be1-a7044cb949d6",
+                "description": {
+                    "digest_algorithm": "SHA384",
+                    "flavor_part": "SOFTWARE",
+                    "label": "ISecL_Default_Workload_Flavor_v3.3"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "software": {
+                "cumulative_hash": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+            }
+        },
+        "signature": "D3yPhqyPjTd2xy//P259fnvy2TUTmxNJInfrzo7a+rFT7nKSFyLvtLPd0VInX8NTjHBGDS6LnFT4Vjm5cMqCyl+7Lzgf3Lz6mCcH41UBmlsuApidwdQobFVMuANrLV83q0NkQ70d3tAlG2+RYr2Mnp/R677F8vP8q5VWkdxlL9LnPF7QRvj2JvW76b9accZyqQ/d5De90CaMdKu014jNdkh+BhiYPmi0ODv6HtQGcO6gte7QTmofTJ0be7SutgiuITNsNmMeJUrG1iXKU8VaAlcQ7XZ8uDKX+JMnVY7ix2/3nGaDprLviGsLpfsoIWB6GwguTc0MtHO6m8Xaw7g2JZp1FkWoxGznyuCb9oEqI0KAWVQ255TDFuVYbcT58nRR7wvmyhy6LgcEzFeRxql+Ao4zSp4Bqm2D20i10DNsIa956hKpCKDVWz99KrQWtqmbjVK7ZNiR5LJLO65FRbx17D5n+QXOirzc70Vx8uE1SjPrru3/niI2TcVLZ+oFIWGZ"
+    },
+    {
+        "flavor": {
+            "meta": {
+                "id": "2b46a0b7-a6fe-446e-8e73-46235ad612ee",
+                "description": {
+                    "flavor_part": "ASSET_TAG",
+                    "source": "localhost.localdomain",
+                    "label": "INTEL_800012a7-669d-e811-906e-00163566263e_2021-04-29T00:07:56.005213+05:30",
+                    "tpm_version": "2.0",
+                    "hardware_uuid": "800012a7-669d-e811-906e-00163566263e",
+                    "tboot_installed": "true"
+                },
+                "vendor": "UNKNOWN"
+            },
+            "bios": {
+                "bios_name": "Intel Corporation",
+                "bios_version": "SE5C620.86B.00.01.0014.070920180847"
+            },
+            "external": {
+                "asset_tag": {
+                    "tag_certificate": {
+                        "encoded": "MIID+DCCAmCgAwIBAgIQNu8aiy0AxMobHk1b7f9FSjANBgkqhkiG9w0BAQwFADAeMRwwGgYDVQQDExNIVlMgVGFnIENlcnRpZmljYXRlMB4XDTIxMDQyODE4Mzc0MVoXDTIyMDQyODE4Mzc0MVowLzEtMCsGA1UEAxMkODAwMDEyYTctNjY5ZC1lODExLTkwNmUtMDAxNjM1NjYyNjNlMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEArgVZ82XECRZd6o0N6vhpADpW/tnwXJSo/H9MUc9xoYGhMsZlL3mBNVx7afVS3P5G7gnCULbBqUyY5md/ROohboj6gzql4FtmNKF9M1RQk55HOTCr+zglopdZJmetNOIfs2/E32jPXzY6RWlAGMZTowIWCjxEaOLCWmEfTeV1GcXQiV9DswuaLMb3nGweEp0oArIu73hAPXcxNXFtNHKeyiypl0mr6V1cMXnxFLcoQVN2h5Ok4CjsWmLKBji5S2kAUsKZvolRM+L234y8Ek/j2bIF8Y4tasAW+iqNgojv0xLvLaDc8fx7+TaUU8UTHCv170Rnqbsu6wK/aXUEVfzxcsTNVcxoyI++majzV0VKEjTdUSBrEzAt7FOkwqoJfVqBa13hiUTMeUhRdSESgt9j1WX43iqu0X4gHH7ShS96k7DEygkcy6Yj9aghuOBuHr8p+9fSaI87qRO5ZbWrFsLdVLSHaVRCT7SFkxRz2422LkYNsW08VtG0YwngqmT/vqXVAgMBAAGjITAfMB0GBVUEhhUBBBQwEhMFc3RhdGUTCVRhbWlsTmFkdTANBgkqhkiG9w0BAQwFAAOCAYEAJgEPQaMyD7NU+NTfHKppfBLGaGPJV6u3Dg/0GnC+6Du77K3wWL7QUGheKDl11vmpSExirF4slqmkZBN1/GdjtERBC9tCZ+1lSfXFxN92k39zypoi8SgYe93fNIP8j924AFEhYnsGqtNp4NX3dXgnxcv7R9cpb8bduX0BHjFM4LF7P2lf7qkpP51xtEdHxePicwtSWT2eZLiWqQBuRU/fYks+pY4k3XVEsaPL6bhQKTPbkUgdc2p1ri0qnmL7EMbgfr8xhOAQSLrEKVwDiA9wF09DtCMVLF9UIViPkgprvMVPkiDARIRVg+BjeynNMwM1iTi6P1kw5YB7IL9dg2Nf6nVT+sQ0PU0DQGlD7Q8Kr0lqwyPG6jSBEtkfYjXpWPzx30LGquswTvFgttq2aJFgZEFne5PMMukvMQyghRTGFbs6KGvLpSe72IMeXb8mibwFpvPT16qAQu42pSv4PP9fER9c3X6VxoGGCpMNxl01ELI8nDj6KYP6a+IuwYmUkogN",
+                        "issuer": "CN=HVS Tag Certificate",
+                        "serial_number": 1954084345555666250,
+                        "subject": "800012a7-669d-e811-906e-00163566263e",
+                        "not_before": "2021-04-28T18:37:41Z",
+                        "not_after": "2022-04-28T18:37:41Z",
+                        "attribute": [
+                            {
+                                "attr_type": {
+                                    "id": "2.5.4.789.1"
+                                },
+                                "attribute_values": [
+                                    {
+                                        "objects": {
+                                            "name": "state",
+                                            "value": "TamilNadu"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "fingerprint_sha384": "97c21b5719faf9de837eaf6ec60d35f0c27abf36a2e208e9f88c7bebbdcfc183edf80e726fa1a31df9b9db0d3c597d33"
+                    }
+                }
+            }
+        },
+        "signature": "HX61KyFsj960z4nlmu5mJh278sF5YDZX/DyxVNNFya8Qxy3VoFKVQzaPzb0IFgJNuJuNnoGBWdmBCQAc/vQHmbXwvlj5NEh8eDGnP5rxtX/NTX89efOO631xjFPRzL6cJOfTnhJ1jMwF10dpI+PLpJQ6K6SU5s16mB+3m3LjwrhSh9SJrHkdAzc4di2vETIg5ltXSrDquL8n+pxTpAn00entNBF600IAU5DRy5gwCDgQyjZQ3ENZU+GtjOTSlhyKMe9kzzl9PJPs0B5o8q1sYsYd58urIbYqqZ4J9q8kwh82EsTOUC79BD+42akhfDJjlGiwYeeAelPlhuo9OvQjeDqmMpxCKxUVx0vOCY7ymRX/eyXvWrEcOnzo/ePI/XUcaGZdKJjPhiiY8fw5djj47MJ1p5SPTIlmwmJmX7NFz9FcNajhKQqi6Anh8RntZbRQRN4icjU/zKFXJnaVdVOvcJIdgS2FHYzwGr2cc28LQ2oIQyNAZh1ufjEC+jjI5VAM"
+    }
+]

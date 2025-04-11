@@ -1,0 +1,14 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "factory.name" . }}-base
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+{{ toYaml  .Values.storage.hostPath.accessModes | indent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.hostPath.baseSize }}

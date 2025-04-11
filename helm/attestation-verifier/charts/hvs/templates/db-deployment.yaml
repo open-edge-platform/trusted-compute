@@ -1,0 +1,25 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.deploymentDbCommonSpec" . }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.securityContext.hvsdbInit | nindent 8 }}
+      initContainers:
+        {{- include "factory.initCommonSpecLinkDBVolumes" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.hvsdb | nindent 12 }}
+      containers:
+        - name: {{ include "factory.name" . }}db
+          {{ include "factory.imageDb" . | nindent 10 | trim }}
+          securityContext:
+            {{- toYaml .Values.securityContext.hvsdb | nindent 12 }}
+          args:
+            {{- include "factory.argsDb" . | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.service.hvsdb.containerPort }}
+          env:
+            {{- include "factory.envPostgres" . | nindent 12 }}
+          volumeMounts:
+            {{- include "factory.volumeMountsDb" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumesDb" . | nindent 8 }}

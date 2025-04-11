@@ -1,0 +1,1665 @@
+{
+  "host_manifest": {
+    "aik_certificate": "MIIDTjCCAbagAwIBAgIGAXLXOprpMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNVBAMTEG10d2lsc29uLXBjYS1haWswHhcNMjAwNjIxMTQxNDAxWhcNMzAwNjIxMTQxNDAxWjAAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmWNtAX/cz44QCZKWG/SmRBq6beoR0CmaQ9im542dZXMleyrZjfAK8tNFtG1r2UjA6fQyv1foAr99d9KCtL+qKzgulrQJ9XGMDYj5j8+BDnXVWmbJWxA8SJ+HWU6GUYI7awh6Xr0/8/o0tJn92tHIW7oQNOLuKr5Mofz20ckZ6BWnfM3SrUNMKqC/Udkuo0jcNbElX89vps7xidxqwLYCTgILWwhipIW38JZ0XwmafOhh1oPfjkw01nYfNMwIl9RtbJlmhS2o2/EHqk6fzxGPHklr12czckGbVj5Mm8cgLERXFV0DKEKJRT0A2gIsrAoQW+QwegmNlzkSsH4EPrNjZwIDAQABozMwMTAvBgNVHREBAf8EJTAjgSEAC/0kVmQPLv1/Ev39/VtlE/0d/SJV/QpO/TP9/W39ZBgwDQYJKoZIhvcNAQELBQADggGBAHMzIyqflG7CKYewnC7ee1Vz9ncLEVURkt8Gg2dhvQPER5a0U3GqAeRXe4sll0N/QLQE9eRiEyKS4ZB1a6KZrqj/L6I5tfFIhmm0vbCruYWpHDxYCS3o6cOWENpqmduHNyw81TtrcGuabn8rX1ANqRU5NeBKFkbsxP8XgceQYTbNTZJ32zH1nFJqxiNWzYiqH6f5LlPIVs5ROiFScHzJQAVZdLNW7BSANfRWgKqS/aoASZ/8yHf508/Q2fOxoB3pqU2D0anLzbxHK6uOyl2Fce1uR4yspPPlVQ/PRnaje7Ym1VBYQG+xBF8mhpDewenr057noslL4JysmTcoHUqHjx7K+Rm87dx3YLCIbAMWmNtrtTtDE9BAn42Kg1zqUkLM7Kw4JR7qoZ7zJGSC67U/xKAJ90/MJbVrU0xVXqXBxf0Ac3a+psnDN7JCY9btmNl3dB4z76ilkstXZ4u1CVY0LacMzvi/lvGSrwSbCpx42ZmaL2QVl7crMML7PWgM+i7sDg==",
+    "host_info": {
+      "errorCode": "0",
+      "os_name": "RedHatEnterprise",
+      "os_version": "8.1",
+      "bios_version": "SE5C620.86B.00.01.0015.110720180833",
+      "vmm_name": "Virsh",
+      "vmm_version": "4.5.0",
+      "processor_info": "54 06 05 00 FF FB EB BF",
+      "host_name": "computepurley",
+      "bios_name": "Intel Corporation",
+      "hardware_uuid": "00ECD3AB-9AF4-E711-906E-001560A04062",
+      "tpm_version": "2.0",
+      "pcr_banks": [
+        "SHA1",
+        "SHA256"
+      ],
+      "no_of_sockets": "2",
+      "tpm_enabled": "true",
+      "txt_enabled": "true",
+      "tboot_installed": "true",
+      "is_docker_env": "false",
+      "hardware_features": {
+        "TXT": {
+          "enabled": true
+        },
+        "TPM": {
+          "enabled": true,
+          "meta": {
+            "tpm_version": "2.0",
+            "pcr_banks": "SHA1_SHA256"
+          }
+        }
+      },
+      "installed_components": [
+        "tagent",
+        "wlagent"
+      ]
+    },
+    "pcr_manifest": {
+      "sha1pcrs": [
+       {
+          "index": "pcr_0",
+          "value": "d1f5a8283c75db86938aef334ba11ed4ff613a4e",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_1",
+          "value": "58c94d1d346ade551354b585a771d734d50cd187",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_2",
+          "value": "63311d0a7e2b22dd18554946a39776645c9d20ef",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_3",
+          "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_4",
+          "value": "45e5d65ceb021729f860b2bea40a8679e0a69dda",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_5",
+          "value": "e397ec446342c88fde23940025dc00d07089b015",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_6",
+          "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_7",
+          "value": "518bd167271fbb64589c61e43d8c0165861431d8",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_8",
+          "value": "b45858058ced5e553558c6ebee9b04c5fb678ce5",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_9",
+          "value": "b049d9f5b64eaa1ba64576c5c5ead28bae8200c5",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_10",
+          "value": "e4276735b646ac12f950848faa5dfc5fa3f2559d",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_11",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_12",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_13",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_14",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_15",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_16",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_17",
+          "value": "062a126250334cf1ca23091ac5db9075e0f0d129",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_18",
+          "value": "86da61107994a14c0d154fd87ca509f82377aa30",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_19",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_20",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_21",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_22",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        },
+       {
+          "index": "pcr_23",
+          "value": "0000000000000000000000000000000000000000",
+          "pcr_bank": "SHA1"
+        }
+      ],
+      "sha2pcrs": [
+        {
+          "index": "pcr_0",
+          "value": "d19f11e851d901297961e6a85e934c3baa27faeaa3f47d3288e90b480091d12d",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_1",
+          "value": "3fdda2b900db244d8192089bddddb272b2879efde2ae9a9e4bc590a52866e4e6",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_2",
+          "value": "352b1c6afdc287cc95a563d0f04ed43491fd94f1599f62b0b91b20194873f104",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_3",
+          "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_4",
+          "value": "8570fd50e3c21aa17ab3d777de5e24c6e5dcb94f198db1430e76c0f8d845a16c",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_5",
+          "value": "3f7117f945335ff6cee453ff88f2794fef44c6185124344c88e25265a1aa9c74",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_6",
+          "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_7",
+          "value": "65caf8dd1e0ea7a6347b635d2b379c93b9a1351edc2afc3ecda700e534eb3068",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_8",
+          "value": "df25ce52349e168ce827d76c154b697828db6a646662dcd79111a869ec5a805f",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_9",
+          "value": "6a6832ae313339d01a7a647f574078ac1467bb9f4b25269d55da88a0ca0c3e83",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_10",
+          "value": "ab7448ad07e8361397213888d596462ea576683a5089e89e7f0f89d6287c9769",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_11",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_12",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_13",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_14",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_15",
+          "value": "00c4c3865539de9ff587984c26e6997554cda229c1a65b303f40ac9d31ac4c03",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_16",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_17",
+          "value": "a24a7d102290f72d36a27bc97e5b5ce50dbde1ba1b37200385ac3c564f50f76a",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_18",
+          "value": "d9e55bd1c570a6408fb1368f3663ae92747241fc4d2a3622cef0efadae284d75",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_19",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_20",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_21",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_22",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        },
+        {
+          "index": "pcr_23",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pcr_bank": "SHA256"
+        }
+      ],
+      "pcr_event_log_map": {
+        "SHA1": [
+          {
+            "pcr_index": "pcr_17",
+            "event_log": [
+              {
+                "value": "69fba4144e24d63e9fa677b20dd781e84490f038",
+                "label": "HASH_START",
+                "info": {
+                  "ComponentName": "HASH_START",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "45b0e0ccabd8160d0d019d80c5622cc5415c71a1",
+                "label": "BIOSAC_REG_DATA",
+                "info": {
+                  "ComponentName": "BIOSAC_REG_DATA",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "3c585604e87f855973731fea83e21fab9392d2fc",
+                "label": "CPU_SCRTM_STAT",
+                "info": {
+                  "ComponentName": "CPU_SCRTM_STAT",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "9069ca78e7450a285173431b3e52c5c25299e473",
+                "label": "LCP_CONTROL_HASH",
+                "info": {
+                  "ComponentName": "LCP_CONTROL_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+                "label": "LCP_DETAILS_HASH",
+                "info": {
+                  "ComponentName": "LCP_DETAILS_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+                "label": "STM_HASH",
+                "info": {
+                  "ComponentName": "STM_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895",
+                "label": "OSSINITDATA_CAP_HASH",
+                "info": {
+                  "ComponentName": "OSSINITDATA_CAP_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "ff86d5446b2cc2e7e3319048715c00aabb7dcc4e",
+                "label": "MLE_HASH",
+                "info": {
+                  "ComponentName": "MLE_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6",
+                "label": "NV_INFO_HASH",
+                "info": {
+                  "ComponentName": "NV_INFO_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "ca96de412b4e8c062e570d3013d2fccb4b20250a",
+                "label": "tb_policy",
+                "info": {
+                  "ComponentName": "tb_policy",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "f3b26409294f95d0c60ea7c15ac260a2f3215e9d",
+                "label": "vmlinuz",
+                "info": {
+                  "ComponentName": "vmlinuz",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "bae3f1279689eec01a102fe478dc09a23fe3294f",
+                "label": "initrd",
+                "info": {
+                  "ComponentName": "initrd",
+                  "EventName": "OpenSource.EventName"
+                }
+              }
+            ],
+            "pcr_bank": "SHA1"
+          },
+          {
+            "pcr_index": "pcr_18",
+            "event_log": [
+              {
+                "value": "a395b723712b3711a89c2bb5295386c0db85fe44",
+                "label": "SINIT_PUBKEY_HASH",
+                "info": {
+                  "ComponentName": "SINIT_PUBKEY_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "3c585604e87f855973731fea83e21fab9392d2fc",
+                "label": "CPU_SCRTM_STAT",
+                "info": {
+                  "ComponentName": "CPU_SCRTM_STAT",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895",
+                "label": "OSSINITDATA_CAP_HASH",
+                "info": {
+                  "ComponentName": "OSSINITDATA_CAP_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "9069ca78e7450a285173431b3e52c5c25299e473",
+                "label": "LCP_CONTROL_HASH",
+                "info": {
+                  "ComponentName": "LCP_CONTROL_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+                "label": "LCP_AUTHORITIES_HASH",
+                "info": {
+                  "ComponentName": "LCP_AUTHORITIES_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6",
+                "label": "NV_INFO_HASH",
+                "info": {
+                  "ComponentName": "NV_INFO_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "ca96de412b4e8c062e570d3013d2fccb4b20250a",
+                "label": "tb_policy",
+                "info": {
+                  "ComponentName": "tb_policy",
+                  "EventName": "OpenSource.EventName"
+                }
+              }
+            ],
+            "pcr_bank": "SHA1"
+          }
+        ],
+        "SHA256": [
+          {
+            "pcr_index": "pcr_15",
+            "event_log": [
+              {
+                "value": "1d1affd0a6d562848387ee3c36a14a8158a847fb1f32ee54c67b95ea16d4d9c5",
+                "label": "ISecL_Default_Application_Flavor_v2.1_TPM2.0-66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+                "info": {
+                  "ComponentName": "ISecL_Default_Application_Flavor_v2.1_TPM2.0-66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "33d410bac92d68d8be8867b03b37e7e0de59c7f937bbbe191ff129e22d3c1cbf",
+                "label": "ISecL_Default_Workload_Flavor_v2.1-a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+                "info": {
+                  "ComponentName": "ISecL_Default_Workload_Flavor_v2.1-a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+                  "EventName": "OpenSource.EventName"
+                }
+              }
+            ],
+            "pcr_bank": "SHA256"
+          },
+          {
+            "pcr_index": "pcr_17",
+            "event_log": [
+              {
+                "value": "940a487b3a2b3a82858b18c20f55ad9c73522f43aab071f62350093bd7c2d6ba",
+                "label": "HASH_START",
+                "info": {
+                  "ComponentName": "HASH_START",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "7980d1a2034e18a33da6fde28ddd8a296c7147a3e4cea6dc32997f4fc40a97a5",
+                "label": "BIOSAC_REG_DATA",
+                "info": {
+                  "ComponentName": "BIOSAC_REG_DATA",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+                "label": "CPU_SCRTM_STAT",
+                "info": {
+                  "ComponentName": "CPU_SCRTM_STAT",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+                "label": "LCP_CONTROL_HASH",
+                "info": {
+                  "ComponentName": "LCP_CONTROL_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+                "label": "LCP_DETAILS_HASH",
+                "info": {
+                  "ComponentName": "LCP_DETAILS_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+                "label": "STM_HASH",
+                "info": {
+                  "ComponentName": "STM_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93",
+                "label": "OSSINITDATA_CAP_HASH",
+                "info": {
+                  "ComponentName": "OSSINITDATA_CAP_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "236043f5120fce826392d2170dc84f2491367cc8d8d403ab3b83ec24ea2ca186",
+                "label": "MLE_HASH",
+                "info": {
+                  "ComponentName": "MLE_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b",
+                "label": "NV_INFO_HASH",
+                "info": {
+                  "ComponentName": "NV_INFO_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "27808f64e6383982cd3bcc10cfcb3457c0b65f465f779d89b668839eaf263a67",
+                "label": "tb_policy",
+                "info": {
+                  "ComponentName": "tb_policy",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "7b533984a9a209e70c1770205df45c7ca671cf2f90e0a83737949324e3ec1778",
+                "label": "vmlinuz",
+                "info": {
+                  "ComponentName": "vmlinuz",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "903b84c244631fa3ff0fa18d305826a7be1e5dae8e58dc3dfe789d7457351f29",
+                "label": "initrd",
+                "info": {
+                  "ComponentName": "initrd",
+                  "EventName": "OpenSource.EventName"
+                }
+              }
+            ],
+            "pcr_bank": "SHA256"
+          },
+          {
+            "pcr_index": "pcr_18",
+            "event_log": [
+              {
+                "value": "da256395df4046319ef0af857d377a729e5bc0693429ac827002ffafe485b2e7",
+                "label": "SINIT_PUBKEY_HASH",
+                "info": {
+                  "ComponentName": "SINIT_PUBKEY_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+                "label": "CPU_SCRTM_STAT",
+                "info": {
+                  "ComponentName": "CPU_SCRTM_STAT",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93",
+                "label": "OSSINITDATA_CAP_HASH",
+                "info": {
+                  "ComponentName": "OSSINITDATA_CAP_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+                "label": "LCP_CONTROL_HASH",
+                "info": {
+                  "ComponentName": "LCP_CONTROL_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+                "label": "LCP_AUTHORITIES_HASH",
+                "info": {
+                  "ComponentName": "LCP_AUTHORITIES_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b",
+                "label": "NV_INFO_HASH",
+                "info": {
+                  "ComponentName": "NV_INFO_HASH",
+                  "EventName": "OpenSource.EventName"
+                }
+              },
+              {
+                "value": "27808f64e6383982cd3bcc10cfcb3457c0b65f465f779d89b668839eaf263a67",
+                "label": "tb_policy",
+                "info": {
+                  "ComponentName": "tb_policy",
+                  "EventName": "OpenSource.EventName"
+                }
+              }
+            ],
+            "pcr_bank": "SHA256"
+          }
+        ]
+      }
+    },
+    "binding_key_certificate": "MIIFITCCA4mgAwIBAgIJAMo7vj4sCUcIMA0GCSqGSIb3DQEBDAUAMBsxGTAXBgNVBAMTEG10d2lsc29uLXBjYS1haWswHhcNMjAwNjA3MTYxMTU4WhcNMzAwNjA1MTYxMTU4WjAlMSMwIQYDVQQDDBpDTj1CaW5kaW5nX0tleV9DZXJ0aWZpY2F0ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJOTmOnH1E+YrwPqk4iCPC0rwsqT5XcrmMbCjJCvCm9ypDNQa7UUu9kLuZTZGmVA4pUPtxYrZk6nOkNWPe9edPVwxzzcDodmOGQdJUnS58Wj0vJjtgpujCFsBw4OXZ+qOvQMDU/cir4+d50PzkyjtyyWpbGesNpEKQzHtugsaL0TGQSFceF+hnvphf9G1IFKszPYCBzqynUMEkXmh/2GnoHI9X2ubYs73dCGkA5AcwdNMylBXHXXM4D5MNE5ZrzCMDyuazAZ8Qi9H5h7KRnYatK6NUr5y/f2i/O2LVDIrdKoujfnvNgVsyV2abpk+KEfIpdbMW6yhubrauGzEIU4WPcCAwEAAaOCAdwwggHYMA4GA1UdDwEB/wQEAwIFIDCBnQYHVQSBBQMCKQSBkf9UQ0eAFwAiAAvjl3xEMWxkQHT6ovOp7TgmSsG8qnD4lubgzvxQ/oYI5QAEAP9VqgAAAAAAAwzYAAAABQAAAAEAAAcAKAAIMgAAIgALCtn+QuWKA/BWXE2bpm+bgky5sSFXOAcg1jeLrb2eMUcAIgALysIaaiKd+1j5uqEuUOr5WuI5whkLP5Pv5T83udairMwwggEUBghVBIEFAwIpAQSCAQYAFAALAQBCaIGRxpykmhgnmGQAdU32U0Jq0chGU8Dy5MFhUMAHE1IQs0txIhv37F/y7P+qwZwa7csIuxM1ggN79N1RczRcvwQI1RTAD6oppDsJM0FuxGu3FZJ0aHAUrMfl7+cgIhUM1nbRKP7vA6OrkRJ4t/lttnR4kfkoNyUox+br+s0L1ZqgOXsKMaNzhOr94YzSofxPy/wphFYjNHWFjfH+JG1XGOnbiw8EuigQmh71bSC/aTOa4DoAI/dhPJQ9iNG1+azFVy+tdRiNMZsipwJy3syV765XVCPk9wLZKKksXKmCz85YiMyAaciEybvfDlLb7EdHEjNnA1evhuBftsAU6PGJMA4GCFUEgQUDAikCBAIAADANBgkqhkiG9w0BAQwFAAOCAYEAD4K+/SW8tkzKlXgGI+BMcaaPk9NnEwY8urOuCwkuvtd0aVND+pjW6PDyrkmCdhQ70HGH+jv5hOnQTrHNWaoY+X7Rz+dr4rBwrZBwbweIvd5Va4DpT90XChZDEAHCftuwkO0SRZSkjzDEpclAMYXxSO2gBVSxq7IPPSt6tBWHNL1eXLmy/arTslIiofUMf0wUyFnUdDXb+8gc/hBeHpKsotX1wNecf2VfBk5Q1KIb0rrO+qp9UCWfNtZ8orpXSY5CBoirbe04JghdqsgnKXTYY5nMbc1hysAuHCeGOLjxUegoSIwxUjYiOCd0W0+9tDjEBzFMGjzCLsq6t4o1quPbAQsjjVXcOGJBc73sigZrKUl6fMDXtGKF/bCOdFSRKS7UsbayNP074wnO6QO2hsH85iPviWjx8Z4IuBjeq+wMfpd+m5lUXrOF1E4FZIxjhyIjyAJeMTah3T2VvZlY0bkIWA5O1HvlAQpUPmHme3OhHeDZImdHq1B+pLTfJLFDbzeW",
+    "tpm_enabled": true,
+    "txt_enabled": true,
+    "measurement_xmls": [
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Measurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Application_Flavor_v2.1_TPM2.0\" Uuid=\"66eca5f2-aaf2-4c57-8558-7af7f23f5ede\" DigestAlg=\"SHA384\"><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/bin\">b0d5cba0bb12d69d8dd3e92bdad09d093a34dd4ea30aea63fb31b9c26d9cbf0e84016fa9a80843b473e1493a427aa63a</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/dracut_files\">1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/initrd_hooks\">77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/lib\">b03eb9d3b6fa0d338fd4ef803a277d523ab31db5c27186a283dd8d1fe0e7afca9bf26b31b1099833b0ba398dbe3c02fb</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/mkinitrd_files\">6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247</Dir><File Path=\"/opt/tbootxm/bin/tpmextend\">b936d9ec4b8c7823efb01d946a7caa074bdfffdbd11dc20108ba771b8ef65d8efc72b559cd605b1ba0d70ef99e84ba55</File><File Path=\"/opt/tbootxm/bin/measure\">c72551ddfdfab6ec901b7ed8dc28a1b093793fd590d2f6c3b685426932013ca11a69aeb3c04a31278829f653a24deeb1</File><File Path=\"/opt/tbootxm/bin/configure_host.sh\">8675ca78238f0cf6e09d0d20290a7a2b9837e2a1c19a4a0a7a8c226820c33b6a6538c2f94bb4eb78867bd1a87a859a2c</File><File Path=\"/opt/tbootxm/bin/generate_initrd.sh\">4708ed8233a81d6a17b2c4b74b955f27612d2cc04730ad8919618964209ce885cea9011e00236de56a2239a524044db4</File><File Path=\"/opt/tbootxm/bin/measure_host\">7455104eb95b1ee1dfb5487d40c8e3a677f057da97e2170d66a52b555239a4b539ca8122ee25b33bb327373aac4e4b7a</File><File Path=\"/opt/tbootxm/bin/tboot-xm-uninstall.sh\">7450bc939548eafc4a3ba9734ad1f96e46e1f46a40e4d12ad5b5f6b5eb2baf1597ade91edb035d8b5c1ecc38bde7ee59</File><File Path=\"/opt/tbootxm/bin/functions.sh\">8526f8aedbe6c4bde3ba331b0ce18051433bdabaf8991a269aff7a5306838b13982f7d1ead941fb74806fc696fef3bf0</File><File Path=\"/opt/tbootxm/dracut_files/check\">6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1</File><File Path=\"/opt/tbootxm/dracut_files/install\">e2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a</File><File Path=\"/opt/tbootxm/dracut_files/module-setup.sh\">0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb</File><File Path=\"/opt/tbootxm/lib/libwml.so\">56a04d0f073f0eb2a4f851ebcba79f7080553c27fa8d1f7d4a767dc849015c9cc6c9abe937d0e90d73de27814f28e378</File><File Path=\"/opt/tbootxm/lib/create_menuentry.pl\">79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e</File><File Path=\"/opt/tbootxm/lib/update_menuentry.pl\">cb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e</File><File Path=\"/opt/tbootxm/lib/remove_menuentry.pl\">baf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c</File><File Path=\"/opt/tbootxm/initrd_hooks/tcb\">430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98</File><File Path=\"/opt/tbootxm/mkinitrd_files/setup-measure_host.sh\">2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc</File><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/trustagent/bin\">3519466d871c395ce1f5b073a4a3847b6b8f0b3e495337daa0474f967aeecd48f699df29a4d106288f3b0d1705ecef75</Dir><File Path=\"/opt/trustagent/bin/module_analysis.sh\">2327e72fa469bada099c5956f851817b0c8fa2d6c43089566cacd0f573bf62e7e8dd10a2c339205fb16c3956db6518a9</File><File Path=\"/opt/trustagent/bin/module_analysis_da.sh\">2a99c3e80e99d495a6b8cce8e7504af511201f05fcb40b766a41e6af52a54a34ea9fba985d2835aef929e636ad2a6f1d</File><File Path=\"/opt/trustagent/bin/module_analysis_da_tcg.sh\">0f47a757c86e91a3a175cd6ee597a67f84c6fec95936d7f2c9316b0944c27cb72f84e32c587adb456b94e64486d14242</File><CumulativeHash>7425a5806dc8a5aacd508e4d6866655bf475947cc8bb630a03ff42b898ee8a7d8fd3ca71c3e1dacdc0f375bcbaf11efc</CumulativeHash></Measurement>",
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Measurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Workload_Flavor_v2.1\" Uuid=\"a0c1c8d6-d335-41e3-8241-dcabbb05cf14\" DigestAlg=\"SHA384\"><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/workload-agent/bin\">e64e6d5afaad329d94d749e9b72c76e23fd3cb34655db10eadab4f858fb40b25ff08afa2aa6dbfbf081e11defdb58d5a</Dir><File Path=\"/opt/workload-agent/bin/wlagent\">b4714d8dc290c66195f683b5b0c27c364f014019d1172f59601ae30e4ed0975806c0050e9b0c9c04a0f5c643ab166520</File><CumulativeHash>c8a431125b9f3c8fbcc9fdb226a07e2cc108edc86202fd42ddceff070c244c5a73cb341abffd4b15c873bf4d5d3281c7</CumulativeHash></Measurement>"
+    ]
+  },
+  "policy_name": "Intel Host Trust Policy",
+  "results": [
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected_pcr": {
+          "index": "pcr_17",
+          "value": "a24a7d102290f72d36a27bc97e5b5ce50dbde1ba1b37200385ac3c564f50f76a",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected_pcr":{
+          "index": "pcr_17",
+          "value": "062a126250334cf1ca23091ac5db9075e0f0d129",
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected_pcr": {
+          "index": "pcr_18",
+          "value": "d9e55bd1c570a6408fb1368f3663ae92747241fc4d2a3622cef0efadae284d75",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected_pcr":{
+          "index": "pcr_18",
+          "value": "86da61107994a14c0d154fd87ca509f82377aa30",
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogEqualsExcluding",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected": {
+          "pcr_index": "pcr_18",
+          "event_log": [
+          {
+              "value": "a395b723712b3711a89c2bb5295386c0db85fe44",
+              "label": "SINIT_PUBKEY_HASH",
+              "info": {
+                "ComponentName": "SINIT_PUBKEY_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "3c585604e87f855973731fea83e21fab9392d2fc",
+              "label": "CPU_SCRTM_STAT",
+              "info": {
+                "ComponentName": "CPU_SCRTM_STAT",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895",
+              "label": "OSSINITDATA_CAP_HASH",
+              "info": {
+                "ComponentName": "OSSINITDATA_CAP_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+              "label": "LCP_AUTHORITIES_HASH",
+              "info": {
+                "ComponentName": "LCP_AUTHORITIES_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6",
+              "label": "NV_INFO_HASH",
+              "info": {
+                "ComponentName": "NV_INFO_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "ca96de412b4e8c062e570d3013d2fccb4b20250a",
+              "label": "tb_policy",
+              "info": {
+                "ComponentName": "tb_policy",
+                "EventName": "OpenSource.EventName"
+              }
+            }
+          ],
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.AikCertificateTrusted",
+        "markers": [
+          "PLATFORM"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+        "markers": [
+          "PLATFORM"
+        ]
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogEqualsExcluding",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected": {
+          "pcr_index": "pcr_18",
+          "event_log": [
+           {
+              "value": "da256395df4046319ef0af857d377a729e5bc0693429ac827002ffafe485b2e7",
+              "label": "SINIT_PUBKEY_HASH",
+              "info": {
+                "ComponentName": "SINIT_PUBKEY_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+              "label": "CPU_SCRTM_STAT",
+              "info": {
+                "ComponentName": "CPU_SCRTM_STAT",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93",
+              "label": "OSSINITDATA_CAP_HASH",
+              "info": {
+                "ComponentName": "OSSINITDATA_CAP_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+              "label": "LCP_AUTHORITIES_HASH",
+              "info": {
+                "ComponentName": "LCP_AUTHORITIES_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b",
+              "label": "NV_INFO_HASH",
+              "info": {
+                "ComponentName": "NV_INFO_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "27808f64e6383982cd3bcc10cfcb3457c0b65f465f779d89b668839eaf263a67",
+              "label": "tb_policy",
+              "info": {
+                "ComponentName": "tb_policy",
+                "EventName": "OpenSource.EventName"
+              }
+            }
+          ],
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogEqualsExcluding",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected": {
+          "pcr_index": "pcr_17",
+          "event_log": [
+          {
+              "value": "69fba4144e24d63e9fa677b20dd781e84490f038",
+              "label": "HASH_START",
+              "info": {
+                "ComponentName": "HASH_START",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "45b0e0ccabd8160d0d019d80c5622cc5415c71a1",
+              "label": "BIOSAC_REG_DATA",
+              "info": {
+                "ComponentName": "BIOSAC_REG_DATA",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "3c585604e87f855973731fea83e21fab9392d2fc",
+              "label": "CPU_SCRTM_STAT",
+              "info": {
+                "ComponentName": "CPU_SCRTM_STAT",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+              "label": "LCP_DETAILS_HASH",
+              "info": {
+                "ComponentName": "LCP_DETAILS_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+              "label": "STM_HASH",
+              "info": {
+                "ComponentName": "STM_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895",
+              "label": "OSSINITDATA_CAP_HASH",
+              "info": {
+                "ComponentName": "OSSINITDATA_CAP_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "ff86d5446b2cc2e7e3319048715c00aabb7dcc4e",
+              "label": "MLE_HASH",
+              "info": {
+                "ComponentName": "MLE_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6",
+              "label": "NV_INFO_HASH",
+              "info": {
+                "ComponentName": "NV_INFO_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+          {
+              "value": "ca96de412b4e8c062e570d3013d2fccb4b20250a",
+              "label": "tb_policy",
+              "info": {
+                "ComponentName": "tb_policy",
+                "EventName": "OpenSource.EventName"
+              }
+            }
+          ],
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogEqualsExcluding",
+        "markers": [
+          "PLATFORM"
+        ],
+        "expected": {
+          "pcr_index": "pcr_17",
+          "event_log": [
+           {
+              "value": "940a487b3a2b3a82858b18c20f55ad9c73522f43aab071f62350093bd7c2d6ba",
+              "label": "HASH_START",
+              "info": {
+                "ComponentName": "HASH_START",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "7980d1a2034e18a33da6fde28ddd8a296c7147a3e4cea6dc32997f4fc40a97a5",
+              "label": "BIOSAC_REG_DATA",
+              "info": {
+                "ComponentName": "BIOSAC_REG_DATA",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+              "label": "CPU_SCRTM_STAT",
+              "info": {
+                "ComponentName": "CPU_SCRTM_STAT",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+              "label": "LCP_DETAILS_HASH",
+              "info": {
+                "ComponentName": "LCP_DETAILS_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+              "label": "STM_HASH",
+              "info": {
+                "ComponentName": "STM_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93",
+              "label": "OSSINITDATA_CAP_HASH",
+              "info": {
+                "ComponentName": "OSSINITDATA_CAP_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "236043f5120fce826392d2170dc84f2491367cc8d8d403ab3b83ec24ea2ca186",
+              "label": "MLE_HASH",
+              "info": {
+                "ComponentName": "MLE_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b",
+              "label": "NV_INFO_HASH",
+              "info": {
+                "ComponentName": "NV_INFO_HASH",
+                "EventName": "OpenSource.EventName"
+              }
+            },
+           {
+              "value": "27808f64e6383982cd3bcc10cfcb3457c0b65f465f779d89b668839eaf263a67",
+              "label": "tb_policy",
+              "info": {
+                "ComponentName": "tb_policy",
+                "EventName": "OpenSource.EventName"
+              }
+            }
+          ],
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+        "expected_pcr":{
+          "index": "pcr_0",
+          "value": "d1f5a8283c75db86938aef334ba11ed4ff613a4e",
+          "pcr_bank": "SHA1"
+        },
+        "markers": [
+          "PLATFORM"
+        ]
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+        "expected_pcr": {
+          "index": "pcr_0",
+          "value": "d19f11e851d901297961e6a85e934c3baa27faeaa3f47d3288e90b480091d12d",
+          "pcr_bank": "SHA256"
+        },
+        "markers": [
+          "PLATFORM"
+        ]
+      },
+      "flavor_id": "1108e0f4-96ee-4839-9bf7-a5a25457797f",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+        "markers": [
+          "HOST_UNIQUE"
+        ]
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected": [
+          {
+            "value": "9069ca78e7450a285173431b3e52c5c25299e473",
+            "label": "LCP_CONTROL_HASH",
+            "info": {
+              "ComponentName": "LCP_CONTROL_HASH",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA1",
+        "pcr_index": "pcr_18"
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected_pcr": {
+          "index": "pcr_17",
+          "value": "a24a7d102290f72d36a27bc97e5b5ce50dbde1ba1b37200385ac3c564f50f76a",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected_pcr":{
+          "index": "pcr_17",
+          "value": "062a126250334cf1ca23091ac5db9075e0f0d129",
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected": [
+          {
+            "value": "903b84c244631fa3ff0fa18d305826a7be1e5dae8e58dc3dfe789d7457351f29",
+            "label": "initrd",
+            "info": {
+              "ComponentName": "initrd",
+              "EventName": "OpenSource.EventName"
+            }
+          },
+          {
+            "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+            "label": "LCP_CONTROL_HASH",
+            "info": {
+              "ComponentName": "LCP_CONTROL_HASH",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA256",
+        "pcr_index": "pcr_17"
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected_pcr": {
+          "index": "pcr_18",
+          "value": "d9e55bd1c570a6408fb1368f3663ae92747241fc4d2a3622cef0efadae284d75",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected_pcr":{
+          "index": "pcr_18",
+          "value": "86da61107994a14c0d154fd87ca509f82377aa30",
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.AikCertificateTrusted",
+        "markers": [
+          "HOST_UNIQUE"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected": [
+          {
+            "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+            "label": "LCP_CONTROL_HASH",
+            "info": {
+              "ComponentName": "LCP_CONTROL_HASH",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA256",
+        "pcr_index": "pcr_18"
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "HOST_UNIQUE"
+        ],
+        "expected": [
+          {
+            "value": "9069ca78e7450a285173431b3e52c5c25299e473",
+            "label": "LCP_CONTROL_HASH",
+            "info": {
+              "ComponentName": "LCP_CONTROL_HASH",
+              "EventName": "OpenSource.EventName"
+            }
+          },
+          {
+            "value": "bae3f1279689eec01a102fe478dc09a23fe3294f",
+            "label": "initrd",
+            "info": {
+              "ComponentName": "initrd",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA1",
+        "pcr_index": "pcr_17"
+      },
+      "flavor_id": "45f2bcf8-e8a5-4a31-b5a9-5e1a34e49013",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.AikCertificateTrusted",
+        "markers": [
+          "OS"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "OS"
+        ],
+        "expected": [
+          {
+            "value": "f3b26409294f95d0c60ea7c15ac260a2f3215e9d",
+            "label": "vmlinuz",
+            "info": {
+              "ComponentName": "vmlinuz",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA1",
+        "pcr_index": "pcr_17"
+      },
+      "flavor_id": "f5f0c198-0b25-4717-a217-b478f5570bb6",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "OS"
+        ],
+        "expected_pcr": {
+          "index": "pcr_17",
+          "value": "a24a7d102290f72d36a27bc97e5b5ce50dbde1ba1b37200385ac3c564f50f76a",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "f5f0c198-0b25-4717-a217-b478f5570bb6",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+        "markers": [
+          "OS"
+        ],
+        "expected_pcr":{
+          "index": "pcr_17",
+          "value": "062a126250334cf1ca23091ac5db9075e0f0d129",
+          "pcr_bank": "SHA1"
+        }
+      },
+      "flavor_id": "f5f0c198-0b25-4717-a217-b478f5570bb6",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+        "markers": [
+          "OS"
+        ],
+        "expected": [
+          {
+            "value": "7b533984a9a209e70c1770205df45c7ca671cf2f90e0a83737949324e3ec1778",
+            "label": "vmlinuz",
+            "info": {
+              "ComponentName": "vmlinuz",
+              "EventName": "OpenSource.EventName"
+            }
+          }
+        ],
+        "pcr_bank": "SHA256",
+        "pcr_index": "pcr_17"
+      },
+      "flavor_id": "f5f0c198-0b25-4717-a217-b478f5570bb6",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+        "markers": [
+          "OS"
+        ]
+      },
+      "flavor_id": "f5f0c198-0b25-4717-a217-b478f5570bb6",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.flavor.business.policy.rule.RequiredFlavorTypeExists",
+        "markers": [
+          "PLATFORM"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.flavor.business.policy.rule.RequiredFlavorTypeExists",
+        "markers": [
+          "OS"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.flavor.business.policy.rule.RequiredFlavorTypeExists",
+        "markers": [
+          "HOST_UNIQUE"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementsDigestEquals",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementLogIntegrity",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+        "flavor_name": "ISecL_Default_Application_Flavor_v2.1_TPM2.0",
+        "expected_value": "7425a5806dc8a5aacd508e4d6866655bf475947cc8bb630a03ff42b898ee8a7d8fd3ca71c3e1dacdc0f375bcbaf11efc"
+      },
+      "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementLogEquals",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+        "flavor_name": "ISecL_Default_Application_Flavor_v2.1_TPM2.0",
+        "expected_measurements": [
+          {
+            "type": "directoryMeasurementType",
+            "value": "b0d5cba0bb12d69d8dd3e92bdad09d093a34dd4ea30aea63fb31b9c26d9cbf0e84016fa9a80843b473e1493a427aa63a",
+            "Path": "/opt/tbootxm/bin",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "directoryMeasurementType",
+            "value": "1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232",
+            "Path": "/opt/tbootxm/dracut_files",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "directoryMeasurementType",
+            "value": "77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7",
+            "Path": "/opt/tbootxm/initrd_hooks",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "directoryMeasurementType",
+            "value": "b03eb9d3b6fa0d338fd4ef803a277d523ab31db5c27186a283dd8d1fe0e7afca9bf26b31b1099833b0ba398dbe3c02fb",
+            "Path": "/opt/tbootxm/lib",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "directoryMeasurementType",
+            "value": "6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247",
+            "Path": "/opt/tbootxm/mkinitrd_files",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "b936d9ec4b8c7823efb01d946a7caa074bdfffdbd11dc20108ba771b8ef65d8efc72b559cd605b1ba0d70ef99e84ba55",
+            "Path": "/opt/tbootxm/bin/tpmextend"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "c72551ddfdfab6ec901b7ed8dc28a1b093793fd590d2f6c3b685426932013ca11a69aeb3c04a31278829f653a24deeb1",
+            "Path": "/opt/tbootxm/bin/measure"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "8675ca78238f0cf6e09d0d20290a7a2b9837e2a1c19a4a0a7a8c226820c33b6a6538c2f94bb4eb78867bd1a87a859a2c",
+            "Path": "/opt/tbootxm/bin/configure_host.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "4708ed8233a81d6a17b2c4b74b955f27612d2cc04730ad8919618964209ce885cea9011e00236de56a2239a524044db4",
+            "Path": "/opt/tbootxm/bin/generate_initrd.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "7455104eb95b1ee1dfb5487d40c8e3a677f057da97e2170d66a52b555239a4b539ca8122ee25b33bb327373aac4e4b7a",
+            "Path": "/opt/tbootxm/bin/measure_host"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "7450bc939548eafc4a3ba9734ad1f96e46e1f46a40e4d12ad5b5f6b5eb2baf1597ade91edb035d8b5c1ecc38bde7ee59",
+            "Path": "/opt/tbootxm/bin/tboot-xm-uninstall.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "8526f8aedbe6c4bde3ba331b0ce18051433bdabaf8991a269aff7a5306838b13982f7d1ead941fb74806fc696fef3bf0",
+            "Path": "/opt/tbootxm/bin/functions.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1",
+            "Path": "/opt/tbootxm/dracut_files/check"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "e2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a",
+            "Path": "/opt/tbootxm/dracut_files/install"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb",
+            "Path": "/opt/tbootxm/dracut_files/module-setup.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "56a04d0f073f0eb2a4f851ebcba79f7080553c27fa8d1f7d4a767dc849015c9cc6c9abe937d0e90d73de27814f28e378",
+            "Path": "/opt/tbootxm/lib/libwml.so"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e",
+            "Path": "/opt/tbootxm/lib/create_menuentry.pl"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "cb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e",
+            "Path": "/opt/tbootxm/lib/update_menuentry.pl"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "baf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c",
+            "Path": "/opt/tbootxm/lib/remove_menuentry.pl"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98",
+            "Path": "/opt/tbootxm/initrd_hooks/tcb"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc",
+            "Path": "/opt/tbootxm/mkinitrd_files/setup-measure_host.sh"
+          },
+          {
+            "type": "directoryMeasurementType",
+            "value": "3519466d871c395ce1f5b073a4a3847b6b8f0b3e495337daa0474f967aeecd48f699df29a4d106288f3b0d1705ecef75",
+            "Path": "/opt/trustagent/bin",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "2327e72fa469bada099c5956f851817b0c8fa2d6c43089566cacd0f573bf62e7e8dd10a2c339205fb16c3956db6518a9",
+            "Path": "/opt/trustagent/bin/module_analysis.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "2a99c3e80e99d495a6b8cce8e7504af511201f05fcb40b766a41e6af52a54a34ea9fba985d2835aef929e636ad2a6f1d",
+            "Path": "/opt/trustagent/bin/module_analysis_da.sh"
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "0f47a757c86e91a3a175cd6ee597a67f84c6fec95936d7f2c9316b0944c27cb72f84e32c587adb456b94e64486d14242",
+            "Path": "/opt/trustagent/bin/module_analysis_da_tcg.sh"
+          }
+        ]
+      },
+      "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.Pcr15EventLogIntegrity",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+        "expected_pcr": {
+          "index": "pcr_15",
+          "value": "00c4c3865539de9ff587984c26e6997554cda229c1a65b303f40ac9d31ac4c03",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "66eca5f2-aaf2-4c57-8558-7af7f23f5ede",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.flavor.business.policy.rule.RequiredFlavorTypeExists",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementLogIntegrity",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+        "flavor_name": "ISecL_Default_Workload_Flavor_v2.1",
+        "expected_value": "c8a431125b9f3c8fbcc9fdb226a07e2cc108edc86202fd42ddceff070c244c5a73cb341abffd4b15c873bf4d5d3281c7"
+      },
+      "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementsDigestEquals",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.Pcr15EventLogIntegrity",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+        "expected_pcr": {
+          "index": "pcr_15",
+          "value": "00c4c3865539de9ff587984c26e6997554cda229c1a65b303f40ac9d31ac4c03",
+          "pcr_bank": "SHA256"
+        }
+      },
+      "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.XmlMeasurementLogEquals",
+        "markers": [
+          "SOFTWARE"
+        ],
+        "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+        "flavor_name": "ISecL_Default_Workload_Flavor_v2.1",
+        "expected_measurements": [
+          {
+            "type": "directoryMeasurementType",
+            "value": "e64e6d5afaad329d94d749e9b72c76e23fd3cb34655db10eadab4f858fb40b25ff08afa2aa6dbfbf081e11defdb58d5a",
+            "Path": "/opt/workload-agent/bin",
+            "Include": ".*",
+            "Exclude": ""
+          },
+          {
+            "type": "fileMeasurementType",
+            "value": "b4714d8dc290c66195f683b5b0c27c364f014019d1172f59601ae30e4ed0975806c0050e9b0c9c04a0f5c643ab166520",
+            "Path": "/opt/workload-agent/bin/wlagent"
+          }
+        ]
+      },
+      "flavor_id": "a0c1c8d6-d335-41e3-8241-dcabbb05cf14",
+      "trusted": true
+    },
+    {
+      "rule": {
+        "rule_name": "com.intel.mtwilson.flavor.business.policy.rule.RequiredFlavorTypeExists",
+        "markers": [
+          "SOFTWARE"
+        ]
+      },
+      "trusted": true
+    }
+  ],
+  "trusted": true
+}

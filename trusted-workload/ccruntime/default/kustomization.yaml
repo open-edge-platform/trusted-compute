@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+nameSuffix: -sample
+
+resources:
+- ../base
+
+images:
+- name: quay.io/kata-containers/kata-deploy
+  newTag: 3.13.0
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/config/runtimeClasses
+      value:
+      - name: "kata-qemu"
+        snapshotter: ""
+        pulltype: ""
+    - op: add
+      path: /spec/config/debug
+      value: false
+    - op: add
+      path: /spec/config/environmentVariables
+      value:
+        # It means that we're relying on the cluster to already have
+        # containerd v1.7+ running.  If you know for sure that's not
+        # the case, please, set this variable to `true`
+        - name: "INSTALL_OFFICIAL_CONTAINERD"
+          value: "false"
+        # If set, the Kata Containers agent https_proxy will be set to the
+        # specified value allowing then the pod sandbox to correctly pull
+        # images in such environment. 
+        # - name: "AGENT_HTTPS_PROXY"
+        #   value: "https://proxy.example.com:3129"
+        # If set, the Kata Containers agent no_proxy will be set to the
+        # specified value allowing then the pod sandbox to correctly pull
+        # images in such environment.
+        # - name: "AGENT_NO_PROXY"
+        #   value: "*.test.example.com,.example.org,127.0.0.0/8"
+  target:
+    kind: CcRuntime

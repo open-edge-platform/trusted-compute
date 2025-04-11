@@ -1,0 +1,406 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+suite: cc-operator-deployment
+templates:
+    - cc-operator-deployment.yaml
+
+tests:
+  - it: should create a Namespace for confidential-containers-system
+    documentIndex: 0
+    asserts:
+        - isKind:
+            of: Namespace
+        - isAPIVersion:
+            of: v1
+        - equal:
+            path: metadata.name
+            value: confidential-containers-system
+        - equal:
+            path: metadata.labels.control-plane
+            value: controller-manager
+
+  - it: should create a CustomResourceDefinition for ccruntimes.confidentialcontainers.org
+    documentIndex: 1
+    asserts:
+        - isKind:
+            of: CustomResourceDefinition
+        - isAPIVersion:
+            of: apiextensions.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: ccruntimes.confidentialcontainers.org
+        - equal:
+            path: metadata.annotations["controller-gen.kubebuilder.io/version"]
+            value: v0.16.1
+        - equal:
+            path: spec.group
+            value: confidentialcontainers.org
+        - equal:
+            path: spec.names.kind
+            value: CcRuntime
+        - equal:
+            path: spec.names.listKind
+            value: CcRuntimeList
+        - equal:
+            path: spec.names.plural
+            value: ccruntimes
+        - equal:
+            path: spec.names.shortNames[0]
+            value: ccr
+        - equal:
+            path: spec.names.singular
+            value: ccruntime
+        - equal:
+            path: spec.scope
+            value: Cluster
+
+  - it: should create a ServiceAccount for cc-operator-controller-manager
+    documentIndex: 2
+    asserts:
+        - isKind:
+            of: ServiceAccount
+        - isAPIVersion:
+            of: v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-controller-manager
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+
+  - it: should create a Role for cc-operator-leader-election-role
+    documentIndex: 3
+    asserts:
+        - isKind:
+            of: Role
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-leader-election-role
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+        - contains:
+            path: rules
+            content:
+                apiGroups: [""]
+                resources: ["configmaps"]
+                verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["coordination.k8s.io"]
+                resources: ["leases"]
+                verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: [""]
+                resources: ["events"]
+                verbs: ["create", "patch"]
+
+  - it: should create a ClusterRole for cc-operator-manager-role
+    documentIndex: 4
+    asserts:
+        - isKind:
+            of: ClusterRole
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-manager-role
+        - contains:
+            path: rules
+            content:
+                apiGroups: [""]
+                resources: ["namespaces"]
+                verbs: ["get", "update"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["apps"]
+                resources: ["daemonsets"]
+                verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["confidentialcontainers.org"]
+                resources: ["ccruntimes"]
+                verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["confidentialcontainers.org"]
+                resources: ["ccruntimes/finalizers"]
+                verbs: ["update"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["confidentialcontainers.org"]
+                resources: ["ccruntimes/status"]
+                verbs: ["get", "patch", "update"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: [""]
+                resources: ["nodes"]
+                verbs: ["get", "list", "patch", "update", "watch"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["node.k8s.io"]
+                resources: ["runtimeclasses"]
+                verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - it: should create a ClusterRole for cc-operator-metrics-auth-role
+    documentIndex: 5
+    asserts:
+        - isKind:
+            of: ClusterRole
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-metrics-auth-role
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["authentication.k8s.io"]
+                resources: ["tokenreviews"]
+                verbs: ["create"]
+        - contains:
+            path: rules
+            content:
+                apiGroups: ["authorization.k8s.io"]
+                resources: ["subjectaccessreviews"]
+                verbs: ["create"]
+  - it: should create a ClusterRole for cc-operator-metrics-reader
+    documentIndex: 6
+    asserts:
+        - isKind:
+            of: ClusterRole
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-metrics-reader
+        - contains:
+            path: rules
+            content:
+                nonResourceURLs: ["/metrics"]
+                verbs: ["get"]
+
+  - it: should create a RoleBinding for cc-operator-leader-election-rolebinding
+    documentIndex: 7
+    asserts:
+        - isKind:
+            of: RoleBinding
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-leader-election-rolebinding
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+        - equal:
+            path: roleRef.apiGroup
+            value: rbac.authorization.k8s.io
+        - equal:
+            path: roleRef.kind
+            value: Role
+        - equal:
+            path: roleRef.name
+            value: cc-operator-leader-election-role
+        - contains:
+            path: subjects
+            content:
+                kind: ServiceAccount
+                name: cc-operator-controller-manager
+                namespace: confidential-containers-system
+
+  - it: should create a ClusterRoleBinding for cc-operator-manager-rolebinding
+    documentIndex: 8
+    asserts:
+        - isKind:
+            of: ClusterRoleBinding
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-manager-rolebinding
+        - equal:
+            path: roleRef.apiGroup
+            value: rbac.authorization.k8s.io
+        - equal:
+            path: roleRef.kind
+            value: ClusterRole
+        - equal:
+            path: roleRef.name
+            value: cc-operator-manager-role
+        - contains:
+            path: subjects
+            content:
+                kind: ServiceAccount
+                name: cc-operator-controller-manager
+                namespace: confidential-containers-system
+
+  - it: should create a ClusterRoleBinding for cc-operator-metrics-auth-rolebinding
+    documentIndex: 9
+    asserts:
+        - isKind:
+            of: ClusterRoleBinding
+        - isAPIVersion:
+            of: rbac.authorization.k8s.io/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-metrics-auth-rolebinding
+        - equal:
+            path: roleRef.apiGroup
+            value: rbac.authorization.k8s.io
+        - equal:
+            path: roleRef.kind
+            value: ClusterRole
+        - equal:
+            path: roleRef.name
+            value: cc-operator-metrics-auth-role
+        - contains:
+            path: subjects
+            content:
+                kind: ServiceAccount
+                name: cc-operator-controller-manager
+                namespace: confidential-containers-system
+
+  - it: should create a ConfigMap for cc-operator-manager-config
+    documentIndex: 10
+    asserts:
+        - isKind:
+            of: ConfigMap
+        - isAPIVersion:
+            of: v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-manager-config
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+
+  - it: should create a Service for cc-operator-controller-manager-metrics-service
+    documentIndex: 11
+    asserts:
+        - isKind:
+            of: Service
+        - isAPIVersion:
+            of: v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-controller-manager-metrics-service
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+        - equal:
+            path: metadata.labels.control-plane
+            value: controller-manager
+        - contains:
+            path: spec.ports
+            content:
+                name: https
+                port: 8443
+                protocol: TCP
+                targetPort: 8443
+        - equal:
+            path: spec.selector.control-plane
+            value: controller-manager
+
+  - it: should create a Deployment for cc-operator-controller-manager
+    documentIndex: 12
+    asserts:
+        - isKind:
+            of: Deployment
+        - isAPIVersion:
+            of: apps/v1
+        - equal:
+            path: metadata.name
+            value: cc-operator-controller-manager
+        - equal:
+            path: metadata.namespace
+            value: confidential-containers-system
+        - equal:
+            path: metadata.labels.control-plane
+            value: controller-manager
+        - equal:
+            path: spec.replicas
+            value: 1
+        - equal:
+            path: spec.selector.matchLabels.control-plane
+            value: controller-manager
+        - equal:
+            path: spec.template.metadata.labels.control-plane
+            value: controller-manager
+        - equal:
+            path: spec.template.spec.containers[0].args
+            value: ["--metrics-secure", "--metrics-bind-address=:8443", "--leader-elect"]
+        - equal:
+            path: spec.template.spec.containers[0].command
+            value: ["/manager"]
+        - equal:
+            path: spec.template.spec.containers[0].env[0].name
+            value: CCRUNTIME_NAMESPACE
+        - equal:
+            path: spec.template.spec.containers[0].env[0].valueFrom.fieldRef.fieldPath
+            value: metadata.namespace
+        - equal:
+            path: spec.template.spec.containers[0].image
+            value: quay.io/confidential-containers/operator:v0.13.0
+        - equal:
+            path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+            value: /healthz
+        - equal:
+            path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+            value: 8081
+        - equal:
+            path: spec.template.spec.containers[0].livenessProbe.initialDelaySeconds
+            value: 15
+        - equal:
+            path: spec.template.spec.containers[0].livenessProbe.periodSeconds
+            value: 20
+        - equal:
+            path: spec.template.spec.containers[0].name
+            value: manager
+        - equal:
+            path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+            value: /readyz
+        - equal:
+            path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+            value: 8081
+        - equal:
+            path: spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+            value: 5
+        - equal:
+            path: spec.template.spec.containers[0].readinessProbe.periodSeconds
+            value: 10
+        - equal:
+            path: spec.template.spec.containers[0].resources.limits.cpu
+            value: 200m
+        - equal:
+            path: spec.template.spec.containers[0].resources.limits.memory
+            value: 100Mi
+        - equal:
+            path: spec.template.spec.containers[0].resources.requests.cpu
+            value: 100m
+        - equal:
+            path: spec.template.spec.containers[0].resources.requests.memory
+            value: 20Mi
+        - equal:
+            path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+            value: false
+        - equal:
+            path: spec.template.spec.securityContext.runAsNonRoot
+            value: true
+        - equal:
+            path: spec.template.spec.serviceAccountName
+            value: cc-operator-controller-manager
+        - equal:
+            path: spec.template.spec.terminationGracePeriodSeconds
+            value: 10

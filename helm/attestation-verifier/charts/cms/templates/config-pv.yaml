@@ -1,0 +1,14 @@
+{{- include "factory.headers" . }}
+{{- if .Values.global }}
+---
+{{ include "factory.pvConfigCommonSpec" . }}
+  storageClassName: manual
+  hostPath:
+    path: {{ .Values.global.storage.hostPath.path }}/verifier/cms/config
+{{- else }}
+---
+{{ include "factory.pvConfigCommonSpec" . }}
+  storageClassName: manual
+  hostPath:
+    path: {{ .Values.storage.hostPath.path }}/verifier/cms/config
+{{- end }}

@@ -1,0 +1,30 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "factory.name" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  HVS_URL: https://{{ .Values.dependentServices.hvs }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.hvs.containerPort }}/hvs/v2
+  AAS_API_URL: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/
+  CMS_BASE_URL: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1/
+  LOG_LEVEL: {{ .Values.config.logLevel }}
+  PROVISION_ATTESTATION: "{{ .Values.config.provisionAttestation }}"
+  TRUSTAGENT_PORT: "{{ .Values.service.ta.containerPort }}"
+  TA_ENABLE_CONSOLE_LOG: "true"
+  {{- if .Values.config.nats.enabled }}
+  NATS_SERVERS: nats://nats.{{ .Release.Namespace }}.svc.cluster.local:4222
+  TA_SERVICE_MODE: "{{ .Values.config.nats.serviceMode }}"
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "factory.name" . }}-ima-configs
+  namespace: {{ .Release.Namespace }}
+data:
+  ima_policy: |
+    {{- .Values.config.imaPolicy | nindent 4 }}
+  ima_allowlist: |
+    {{- .Values.config.imaAllowlist | nindent 4 }}

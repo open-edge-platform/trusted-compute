@@ -1,0 +1,53 @@
+# Default values for global-admin-generator.
+
+nameOverride: "" # The name for global admin generator chart (Default: .Chart.Name)
+
+# Warning: Ensure that the naming is applied consistently for all dependent services when modifying nameOverride
+dependentServices: # The dependent Service Name for deploying Global Admin chart, default is the chart name and override is from nameOverride value.
+  aas: aas
+
+enable: true
+
+
+securityContext:
+  aasManager: # The security content for AAS-MANAGER Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+  aasManagerInit: # The fsGroup id for init containers for AAS DB
+    fsGroup: 500
+
+aas:
+  # Please update the url section if aas is exposed via ingress
+  url:
+  secret:
+    adminUsername: # Admin Username for AAS
+    adminPassword: # Admin Password for AAS
+
+    # The values provided for adminUsername and adminPassword here should be same as that of provided for aas.secret.adminUsername and aas.secret.adminPassword in values.yaml file for ihub chart
+
+image:
+  svc:
+    pullPolicy: Always # The pull policy for pulling from container registry
+    imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName: <user input>
+  aasManager:
+    name: <user input> # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
+    pullPolicy: Always # The pull policy for pulling from container registry for AAS Manager<br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+
+secret:
+  globalAdminUsername:
+  globalAdminPassword:
+
+service:
+  aas:
+    containerPort: 8444 # The containerPort on which AAS can listen
+    port: 30444 # The externally exposed NodePort on which AAS can listen to external traffic
+
+services_list: # Services list for global admin token generation. Accepted values HVS, WLS, WLA, KBS, TA
+  -
+  -

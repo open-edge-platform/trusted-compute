@@ -1,0 +1,114 @@
+{{- include "factory.headers" . }}
+---
+{{- if  .Values.global }}
+{{- if .Values.global.config.nats.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "nats.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nats.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "nats.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.global }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- else }}
+      {{- if .Values.image.svc.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.svc.imagePullSecret }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-aas
+          image: {{ .Values.global.image.initName }}:{{.Chart.AppVersion }}
+          env:
+            - name: URL
+              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+            - name: VERSION
+              value: {{.Chart.AppVersion }}
+            - name: DEPEDENT_SERVICE_NAME
+              value: {{ .Values.dependentServices.aas }}
+            - name: COMPONENT
+              value: {{ include "nats.name" . }}
+      containers:
+        - name: nats
+          image: {{ .Values.image.name }}:{{.Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          env:
+            - name: NATS_CERT_COMMON_NAME
+              value: {{ .Values.config.CertCn }}
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: CMS_K8S_ENDPOINT_URL
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1
+            - name: NATS_CERT_SAN_LIST
+              value: {{ .Values.global.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc.cluster.local
+            - name: NATS_ACCOUNT_NAME
+              value: {{ .Values.config.accountName }}
+            {{- include "factory.envBearerToken" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
+        {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
+  {{- end }}
+{{- else }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "nats.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nats.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "nats.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.image.imagePullSecret }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-aas
+          image: {{ .Values.image.initName }}:{{.Chart.AppVersion }}
+          env:
+            - name: URL
+              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+            - name: VERSION
+              value: {{.Chart.AppVersion }}
+            - name: DEPEDENT_SERVICE_NAME
+              value: {{ .Values.dependentServices.aas }}
+            - name: COMPONENT
+              value: {{ include "nats.name" . }}
+      containers:
+        - name: nats
+          image: {{ .Values.image.name }}:{{.Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NATS_CERT_COMMON_NAME
+              value: {{ .Values.config.CertCn }}
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: CMS_K8S_ENDPOINT_URL
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1
+            - name: NATS_CERT_SAN_LIST
+              value: {{ .Values.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc.cluster.local
+            - name: NATS_ACCOUNT_NAME
+              value: {{ .Values.config.accountName }}
+            {{- include "factory.envBearerToken" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
+          {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
+  {{- end }}

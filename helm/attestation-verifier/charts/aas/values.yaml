@@ -1,0 +1,85 @@
+# Default values for aas.
+
+nameOverride: "" # The name for AAS chart<br> (Default: `.Chart.Name`)
+controlPlaneHostname: <user input> # K8s control plane IP/Hostname<br> (**REQUIRED**)
+versionUpgrade: false # Set this true when performing upgrading to next minor/major version
+currentVersion: # Set the currently deployed version
+dbVersionUpgrade: false # Set this to true when there is db version ugrade
+
+# Warning: Ensure that the naming is applied consistently for all dependent services when modifying nameOverride
+dependentServices: # The dependent Service Name for deploying  Authentication and Authorization Service chart, default is the chart name and override is from nameOverride value.
+  cms: cms
+
+config:
+  envVarPrefix: AAS
+  dbPort: 5432 # PostgreSQL DB port
+  dbSSL: on # PostgreSQL DB SSL<br> (Allowed: `on`/`off`)
+  #TODO: to remove the below values if hardcoding the path
+  dbSSLCert: /etc/postgresql/secrets/server.crt # PostgreSQL DB SSL Cert
+  dbSSLKey: /etc/postgresql/secrets/server.key # PostgreSQL DB SSL Key
+  dbSSLCiphers: ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256 # PostgreSQL DB SSL Ciphers
+  dbListenAddresses: "*" # PostgreSQL DB Listen Address
+  dbName: aasdb # AAS DB Name
+  dbSSLMode: verify-full # PostgreSQL DB SSL Mode
+  dbhostSSLPodRange: 10.1.0.0/8 # PostgreSQL DB Host Address(IP address/subnet-mask). IP range varies for different k8s network plugins(Ex: Flannel - 10.1.0.0/8 (default), Calico - 192.168.0.0/16).
+  createCredentials: true # Trigger to run create-credentials setup task when set to True. Default is False
+  dbMaxConnections: 200 # Determines the maximum number of concurrent connections to the database server. Default is 200
+  dbSharedBuffers: 2GB # Determines how much memory is dedicated to PostgreSQL to use for caching data. Default is 2GB
+  
+secret:
+  dbUsername: # DB Username for AAS DB
+  dbPassword: # DB Password for AAS DB
+  adminUsername:  # Admin Username for AAS
+  adminPassword: # Admin Password for AAS
+    
+image:
+  db:
+    registry: dockerhub.io # The image registry where PostgreSQL image is pulled from
+    name: postgres:14.2 # The image name of PostgreSQL
+    pullPolicy: Always # The pull policy for pulling from container registry for PostgreSQL image<br> (Allowed values: `Always`/`IfNotPresent`)
+    dbVersionUpgradeImage: # The image name of PostgresDB version upgrade
+  svc:
+    name: <user input> # The image name with which AAS image is pushed to registry
+    pullPolicy: Always # The pull policy for pulling from container registry for AAS<br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName: # The image name of init container
+storage:
+ hostPath:
+    server: <user input> # The NFS Server IP/Hostname
+    reclaimPolicy: Retain # The reclaim policy for NFS<br> (Allowed values: `Retain`/)
+    accessModes:
+      - ReadWriteMany     
+    path: /opt # The path for storing persistent data on NFS
+    dbSize: 1Gi # The DB size for storing DB data for AAS in NFS path
+    configSize: 10Mi # The configuration size for storing config for AAS in NFS path
+    logsSize: 1Gi # The logs size for storing logs for AAS in NFS path
+    baseSize: 2.1Gi # The base volume size (configSize + logSize + dbSize)
+
+securityContext:
+  aasdbInit: # The fsGroup id for init containers for AAS DB
+    fsGroup: 500
+  aasdb: # The security content for AAS DB Service Pod
+    runAsUser: 503
+    runAsGroup: 500
+  aasInit: # The fsGroup id for init containers for AAS
+    fsGroup: 500
+  aas: # The security content for AAS Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+
+service: 
+  directoryName: authservice
+  cms:
+    containerPort: 8445 # The containerPort on which CMS can listen
+    port: 30445 # The externally exposed NodePort on which CMS can listen to external traffic
+  aasdb:
+    containerPort: 5432 # The containerPort on which AAS DB can listen 
+  aas:
+    containerPort: 8444 # The containerPort on which AAS can listen
+    port: 30444 # The externally exposed NodePort on which AAS can listen to external traffic
+  ingress:
+    enable: false # Accept true or false to notify ingress rules are enable or disabled

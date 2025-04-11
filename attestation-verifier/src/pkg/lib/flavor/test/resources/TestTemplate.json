@@ -1,0 +1,54 @@
+{
+    "id": "fe20cb78-4584-4635-a674-e9af2a9e5f76",
+    "label": "test-template",
+    "condition": [
+        "//host_info/tpm_enabled='true'",
+        "//host_info/tpm_version='2.0'",
+        "//host_info/txt_enabled='true'"
+    ],
+    "flavor_parts": {
+        "PLATFORM": {
+            "meta": {
+                "tboot_installed": true,
+                "tpm_version": "2.0"
+            },
+            "pcr_rules": [
+                {
+                    "pcr": {
+                        "index": 0,
+                        "bank": "SHA256"
+                    },
+                    "pcr_matches": true
+                },
+                {
+                    "pcr": {
+                        "index": 17,
+                        "bank": "SHA256"
+                    },
+                    "pcr_matches": true,
+                    "eventlog_equals": {
+                        "excluding_tags": [
+                            "LCP_CONTROL_HASH",
+                            "initrd",
+                            "vmlinuz"
+                        ]
+                    }
+                },
+                {
+                    "pcr": {
+                        "index": 18,
+                        "bank": "SHA256"
+                    },
+                    "pcr_matches": true,
+                    "eventlog_equals": {
+                        "excluding_tags": [
+                            "LCP_CONTROL_HASH",
+                            "initrd",
+                            "vmlinuz"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

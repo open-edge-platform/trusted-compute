@@ -1,0 +1,47 @@
+# Default values for cms.
+
+nameOverride: "" # The name for CMS chart<br> (Default: `.Chart.Name`)
+controlPlaneHostname: <user input> # K8s control plane IP/Hostname<br> (**REQUIRED**)
+versionUpgrade: false # Set this true when performing upgrading to next minor/major version
+currentVersion: # Set the currently deployed version
+
+# Warning: Ensure that the naming is applied consistently for all dependent services when modifying nameOverride
+dependentServices: # The dependent Service Name for deploying  Certificate Management Service chart, default is the chart name and override is from nameOverride value.
+  aas: aas
+
+image:
+  svc:
+    name: <user input> # The image name with which CMS image is pushed to registry<br> (**REQUIRED**)
+    pullPolicy: Always # The pull policy for pulling from container registry for CMS<br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+
+storage:
+  hostPath:
+    server: <user input> # The NFS Server IP/Hostname<br> (**REQUIRED**)
+    reclaimPolicy: Retain # The reclaim policy for NFS<br> (Allowed values: `Retain`/)
+    accessModes: ReadWriteMany # The access modes for NFS<br> (Allowed values: `ReadWriteMany`)
+    path: /opt # The path for storing persistent data on NFS
+    configSize: 10Mi # The configuration size for storing config for CMS in NFS path
+    logsSize: 1Gi # The logs size for storing logs for CMS in NFS path
+    baseSize: 1.1Gi # The base volume size (configSize + logSize)
+ 
+securityContext:
+  init: # The fsGroup id for init containers
+    fsGroup: 500
+  cms: # The security content for CMS Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+      
+service:
+  directoryName: cms 
+  cms: 
+    containerPort: 8445 # The containerPort on which CMS can listen to traffic
+    port: 30445 # The externally exposed NodePort on which CMS can listen to external traffic
+  aas:
+    containerPort: 8444 # The containerPort on which CMS can listen to traffic
+  ingress:
+    enable: false # Accept true or false to notify ingress rules are enable or disabled

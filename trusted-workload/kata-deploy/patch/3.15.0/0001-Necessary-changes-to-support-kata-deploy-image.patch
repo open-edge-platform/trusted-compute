@@ -1,0 +1,106 @@
+From a9070a85d928369dffc32ce03ae259b8e308645e Mon Sep 17 00:00:00 2001
+From: "Jena, Satyabrata" <satyabrata.jena@intel.com>
+Date: Tue, 8 Apr 2025 04:01:30 +0000
+Subject: [PATCH] Necessary changes to support kata-deploy image for
+ trusted-workload.
+
+Signed-off-by: Jena, Satyabrata <satyabrata.jena@intel.com>
+---
+ .../kata-deploy/scripts/kata-deploy.sh        | 31 +++++++++++--------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
+
+diff --git a/tools/packaging/kata-deploy/scripts/kata-deploy.sh b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+index 3a35f5972..0396daf62 100755
+--- a/tools/packaging/kata-deploy/scripts/kata-deploy.sh
++++ b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+@@ -1,8 +1,7 @@
+ #!/usr/bin/env bash
+-# Copyright (c) 2019 Intel Corporation
+-#
+-# SPDX-License-Identifier: Apache-2.0
+ #
++# Copyright (C) 2025 Intel Corporation
++# SPDX-License-Identifier: BSD-3-Clause
+ 
+ set -o errexit
+ set -o pipefail
+@@ -484,8 +483,9 @@ function configure_cri_runtime() {
+ 	elif [ "$1" == "microk8s" ]; then
+ 		host_systemctl restart snap.microk8s.daemon-containerd.service
+ 	else
+-		host_systemctl daemon-reload
+-		host_systemctl restart "$1"
++		#host_systemctl daemon-reload
++		#host_systemctl restart "$1"
++		echo "configure_cri_runtime"
+ 	fi
+ 
+ 	wait_till_node_is_ready
+@@ -672,8 +672,9 @@ function restart_cri_runtime() {
+ 	elif [ "$1" == "microk8s" ]; then
+ 		host_systemctl restart snap.microk8s.daemon-containerd.service
+ 	else
+-		host_systemctl daemon-reload
+-		host_systemctl restart "${runtime}"
++		#host_systemctl daemon-reload
++		#host_systemctl restart "${runtime}"
++		echo "restart_cri_runtime"
+ 	fi
+ }
+ 
+@@ -690,7 +691,7 @@ function cleanup_cri_runtime() {
+ 	[ "${HELM_POST_DELETE_HOOK}" == "false" ] && return
+ 
+ 	# Only run this code in the HELM_POST_DELETE_HOOK
+-	restart_cri_runtime "$1"
++	#restart_cri_runtime "$1"
+ }
+ 
+ function cleanup_crio() {
+@@ -717,10 +718,11 @@ function cleanup_containerd() {
+ 
+ function reset_runtime() {
+ 	kubectl label node "$NODE_NAME" katacontainers.io/kata-runtime-
+-	restart_cri_runtime "$1"
++	#restart_cri_runtime "$1"
+ 
+ 	if [ "$1" == "crio" ] || [ "$1" == "containerd" ]; then
+-		host_systemctl restart kubelet
++		#host_systemctl restart kubelet
++		echo "reset_runtime"
+ 	fi
+ 
+ 	wait_till_node_is_ready
+@@ -866,7 +868,7 @@ function main() {
+ 			fi
+ 
+ 			install_artifacts
+-			configure_cri_runtime "$runtime"
++			#configure_cri_runtime "$runtime"
+ 			kubectl label node "$NODE_NAME" --overwrite katacontainers.io/kata-runtime=true
+ 			;;
+ 		cleanup)
+@@ -888,7 +890,9 @@ function main() {
+ 				fi
+ 			fi
+ 
+-			cleanup_cri_runtime "$runtime"
++			#cleanup_cri_runtime "$runtime"
++
++
+ 			if [ "${HELM_POST_DELETE_HOOK}" == "false" ]; then
+ 				# If we still have any other installation here, it means we'll break them
+ 				# removing the label, so we just don't do it.
+@@ -898,7 +902,8 @@ function main() {
+ 				fi
+ 			fi
+ 			remove_artifacts
+-
++			kubectl label node "$NODE_NAME" confidentialcontainers.org/startuninstall-	
++			
+ 			if [ "${HELM_POST_DELETE_HOOK}" == "true" ]; then
+ 				# After everything was cleaned up, there's no reason to continue
+ 				# and sleep forever.  Let's just return success..
+-- 
+2.34.1
+

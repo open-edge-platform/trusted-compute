@@ -1,0 +1,44 @@
+version: "3.6"
+services:
+   wls-pg-db:
+      image: postgres:11
+      command: postgres -c 'max_connections=400' -c 'shared_buffers=400MB'
+      volumes:
+         - wls-pgdata-volume:/var/lib/postgresql/data
+      environment:
+         POSTGRES_DB: wls
+         POSTGRES_USER: runner
+         POSTGRES_PASSWORD: test
+
+   workload-service:
+      image: isecl/workload-service:latest
+      hostname: workload-service
+      depends_on:
+         - "wls-pg-db"
+      ports:
+         - 5000:5000
+
+      environment:
+         WLS_LOGLEVEL: INFO
+         WLS_PORT: 5000
+         WLS_DB_HOSTNAME: wls-pg-db
+         WLS_DB: wls
+         WLS_DB_PORT: 5432
+         WLS_DB_USERNAME: runner
+         WLS_DB_PASSWORD: test
+         WLS_SERVICE_USERNAME: admin@wls
+         WLS_SERVICE_PASSWORD: wlsAdminPass
+         CMS_TLS_CERT_SHA384: sha384valueofCMSTLSCert
+         BEARER_TOKEN:
+         HVS_URL: hvsurl
+         CMS_BASE_URL: https://certservice.example.com:8445:/cms/v1
+         AAS_API_URL: https://authservice.example.com:8444/aas
+
+      volumes:
+         - wls-config-volume:/etc/workload-service
+         - wls-log-volume:/var/log/workload-service
+
+volumes:
+   wls-config-volume:
+   wls-pgdata-volume:
+   wls-log-volume:

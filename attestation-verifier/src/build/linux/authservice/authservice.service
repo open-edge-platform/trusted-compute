@@ -1,0 +1,17 @@
+[Unit]
+Description=Auth Service
+
+[Service]
+Type=simple
+User=aas
+Group=aas
+ExecStart=/usr/bin/authservice run
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutStartSec=0
+Restart=on-failure
+PermissionsStartOnly=true
+RuntimeDirectory=authservice
+RuntimeDirectoryMode=0775
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+version: "3.6"
+
+services:
+  
+   cms:
+      image: isecl/cms:v3.0.0
+      hostname: cms
+      ports:
+         - 8445:8445
+
+      environment:
+         CMS_ADMIN_USERNAME: ${CMS_ADMIN_USERNAME:-admin}
+         CMS_ENABLE_CONSOLE_LOG: "true"
+        #
+
+      volumes:
+         - cms-config-volume:/etc/cms
+         - cms-log-volume:/var/log/cms
+
+volumes:
+   cms-config-volume:
+   cms-log-volume:

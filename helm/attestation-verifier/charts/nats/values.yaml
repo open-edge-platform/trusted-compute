@@ -1,0 +1,36 @@
+# Default values for NATS.
+
+nameOverride: "" # The name for NATS chart<br> (Default: `.Chart.Name`)
+controlPlaneHostname: <user input> # K8s control plane IP/Hostname<br> (**REQUIRED**)
+
+# Warning: Ensure that the naming is applied consistently for all dependent services when modifying nameOverride
+dependentServices: # The dependent Service Name for deploying NATS chart, default is the chart name and override is from nameOverride value.
+  cms: cms
+  aas: aas
+
+image:
+  svc:
+    name: nats:2.7.2-alpine3.15 # The name of the NATS image <br> (**REQUIRED**)
+    pullPolicy: Always # The pull policy for pulling from container registry for NATS<br> (Allowed values: `Always`/`IfNotPresent`)
+
+securityContext:
+  init: # The fsGroup id for init containers
+    fsGroup: 500
+  nats: # The security content for NATS Pod
+    runAsUser: 503
+    runAsGroup: 500
+
+service:
+  directoryName: nats
+  cms:
+    containerPort: 8445 # The containerPort on which CMS can listen
+  aas:
+    containerPort: 8444 # The containerPort on which AAS can listen
+    port: 30444 # The externally exposed NodePort on which AAS can listen to external traffic
+  natsCluster:
+    name: cluster
+    containerPort: 6222 # The containerPort on which NATS can listen to traffic
+  natsClient:
+    name: client
+    containerPort: 4222 # The containerPort on which NATS can listen to traffic
+    port: 30222 # The externally exposed NodePort on which NATS can listen to external traffic

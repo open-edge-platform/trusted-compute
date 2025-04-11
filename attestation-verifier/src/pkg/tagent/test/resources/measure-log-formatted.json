@@ -1,0 +1,172 @@
+[{
+	"pcr ": {
+		"index": 0,
+		"bank": "SHA1",
+	},
+	"tpm_events": [{
+		"type_id": "0x8",
+		"type_name": "EV_S_CRTM_VERSION",
+		"measurement": "1489f923c4dca729178b3e3233458550d8dddf29"
+	}]
+}, {
+	"pcr ": {
+		"index": 1,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0x80000002",
+		"type_name": "EV_EFI_VARIABLE_BOOT",
+		"tags": ["BootOrder"],
+		"measurement": "328bc5914ee3a0a71da25ead500fe734232bdd040fcb735e7c4cf35a88fca650"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "067174ec6eae4a3e4a7a61ce08772741b7f062300295be33278d3407cb6e5145"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "e946d1dcf8bb903d14ce4528e39e08e742d12082"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "5675c0ca0c606533b39f51712d1442f64166d8090a2ed23afb7ce4e0398a24a3"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "c6e81abfe9ef0cd299207b3d4dca2b0aaf6df491"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "4aca3b23fda1b755073bf89f227b48dfa52fddfd45985f9d776262fe0055409c"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "99ed2615f073980bb4b6fc0989952f7ea92093df"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "7f9244ad980c0382a8c4c6f996b838dc04cbb051f4853f370b4a4888c971965b"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "a9cd18f10b404c3ba34a4b65815fb77017b328f3"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "ef085991f4a6f246cfc2215f4f0874400b21d92b25aac0cae7161562cb5e7830"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "9b58227af40d026d52991141cf7be57c629a060f"
+	}]
+}, {
+	"pcr ": {
+		"index": 8,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0xd",
+		"type_name": "EV_IPL",
+		"measurement": "309af0ba3bb2917f330255e9f19d3a0ae48e46de607dcc5f6e7bde2ff394b406"
+	}]
+}, {
+	"pcr ": {
+		"index": 5,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0x80000007",
+		"type_name": "EV_EFI_ACTION",
+		"measurement": "443a6b7b82b7af564f2e393cd9d5a388b7fa4a98"
+	}]
+}, {
+	"pcr ": {
+		"index": 5,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0x80000007",
+		"type_name": "EV_EFI_ACTION",
+		"measurement": "d8043d6b7b85ad358eb3b6ae6a873ab7ef23a26352c5dc4faa5aeedacf5eb41b"
+	}]
+}, {
+	"pcr ": {
+		"index": 5,
+		"bank": "SHA1"
+	},
+	"tpm_events": [{
+		"type_id": "0x80000007",
+		"type_name": "EV_EFI_ACTION",
+		"measurement": "475545ddc978d7bfd036facc7e2e987f48189f0d"
+	}]
+}, {
+	"pcr ": {
+		"index": 5,
+		"bank": "SHA256"
+	},
+	"tpm_events": [{
+		"type_id": "0x80000007",
+		"type_name": "EV_EFI_ACTION",
+		"measurement": "b54f7542cbd872a81a9d9dea839b2b8d747c7ebd5ea6615c40f42f44a6dbeba0"
+	}]
+}]

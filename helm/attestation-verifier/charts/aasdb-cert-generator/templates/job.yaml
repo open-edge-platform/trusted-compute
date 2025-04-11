@@ -1,0 +1,58 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aasdb-cert-generator.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aasdb-cert-generator.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "aasdb-cert-generator.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.securityContext.aasdbCertGeneratorInit | nindent 8 }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        - name: aasdb-cert-generator-cfssl
+          image: cfssl/cfssl:1.6.1
+          imagePullPolicy: Always
+          securityContext:
+            {{- toYaml .Values.securityContext.aasdbCertGenerator | nindent 12 }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              echo Creating Database SSL Cert &&
+              cd /tmp/certs/ &&
+              echo '{ "hosts": [{{- if .Values.global.controlPlaneHostname }}"{{ .Values.global.controlPlaneHostname }}"{{- else }}"{{ .Values.controlPlaneHostname }}"{{- end }}],"CN": "Attestation Verifier Self Sign Cert","key": {"algo": "rsa", "size": 4096}}' > ca-csr.json &&
+              cfssl gencert -initca ca-csr.json | cfssljson -bare ca - &&
+              echo '{"CN":"AAS DB TLS Certificate","hosts":["aasdb.{{ .Release.Namespace }}.svc.cluster.local  "],"key":{"algo":"rsa","size":4096}}' | cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -profile=server -hostname="aasdb.{{ .Release.Namespace }}.svc.cluster.local" - | cfssljson -bare aasdb-server
+          volumeMounts:
+            - name: cert-volume
+              mountPath: /tmp/certs
+      containers:
+        - name: aasdb-cert-generator-kubectl
+          image: bitnami/kubectl:1.23
+          imagePullPolicy: Always
+          securityContext:
+            {{- toYaml .Values.securityContext.aasdbCertGenerator | nindent 12 }}
+          command: ["/bin/sh", "-c"]
+          args:
+              - >
+                echo Storing SSL cert to k8s secrets &&
+                cd /tmp/certs &&
+                kubectl create secret generic aasdb-certs -n {{ .Release.Namespace }} --from-file=server.crt=aasdb-server.pem --from-file=server.key=aasdb-server-key.pem
+          volumeMounts:
+            - name: cert-volume
+              mountPath: /tmp/certs
+      volumes:
+        - name: cert-volume
+          emptyDir: {}

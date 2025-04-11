@@ -1,0 +1,1767 @@
+{
+    "host_info": {
+        "os_name": "VMware ESXi",
+        "os_version": "6.7.0",
+        "bios_version": "SE5C620.86B.00.01.0014.070920180847",
+        "vmm_name": "VMware ESXi",
+        "vmm_version": "10302608",
+        "processor_info": "intel-skylake",
+        "host_name": "127.0.0.1",
+        "bios_name": "Intel Corporation",
+        "hardware_uuid": "0019204C-C4B7-E811-906E-00163566263E",
+        "process_flags": "",
+        "no_of_sockets": "2",
+        "tboot_installed": "false",
+        "is_docker_env": "false",
+        "hardware_features": {
+            "TXT": {
+                "enabled": "true"
+            },
+            "TPM": {
+                "enabled": "true",
+                "meta": {
+                    "tpm_version": "2.0",
+                    "pcr_banks": ""
+                }
+            },
+            "CBNT": {
+                "enabled": "false",
+                "meta": {
+                    "profile": "",
+                    "msr": ""
+                }
+            },
+            "UEFI": {
+                "enabled": "false",
+                "meta": {
+                    "secure_boot_enabled": false
+                }
+            },
+            "PFR": {
+                "enabled": "false"
+            },
+            "BMC": {
+                "enabled": "false"
+            }
+        },
+        "installed_components": null
+    },
+    "pcr_manifest": {
+        "sha1pcrs": [],
+        "sha2pcrs": [
+            {
+                "index": "pcr_0",
+                "value": "1009d6bc1d92739e4e8e3c6819364f9149ee652804565b83bf731bdb6352b2a6",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_1",
+                "value": "5abf45d76f6d37d37e47a7faca315fb50362e2547d132501f3b385fab2879a83",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_2",
+                "value": "0033ef74f1d62b9d95c641bfda24642bafb7a6b54d03d90655d7c5f9b1d47caf",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_3",
+                "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_4",
+                "value": "be3d09913fb2d87c750faa9291bacc716303f5e3eca9b1189d99b1d12c9f6d9b",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_5",
+                "value": "0f6364c3461c92bf2005ceadfc51fba304dc8c34ab24aead74cb315d4acf0145",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_6",
+                "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_7",
+                "value": "d827a4403bf40d5ad38b3c27c3a05df44032456870ae10028b1babf00b2b7229",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_8",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_9",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_10",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_11",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_12",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_13",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_14",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_15",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_16",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_17",
+                "value": "42c78f255e5d9e5b071d52b9471af6e742f9cb4452ba13608079fd6eb3cfcd94",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_18",
+                "value": "162bac3800543ff0b2fea09475fd6a87cd36b90684f43be8c32861c3d9789a14",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_19",
+                "value": "b69aa2f1fde73bd8e6823908ca9e74f7dd98d040c24b99567476f1f476e5b596",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_20",
+                "value": "edf8863599aa86eb92959b669fd2a55532dc0c5aaf0084475ad04e7527ac35e1",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_21",
+                "value": "1769a4dd84d7919dc3408a93499367caaded24eeba42be06a19edd12303b2920",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_22",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_23",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            }
+        ],
+        "pcr_event_log_map": {
+            "SHA1": [],
+            "SHA256": [
+                {
+                    "pcr": {
+                        "index": 17,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "14fc51186adf98be977b9e9b65fc9ee26df0599c4f45804fcc45d0bdcf5025db"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "c61aaa86c13133a0f1e661faf82e74ba199cd79cef652097e638a756bd194428"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "87e44776d6916f7ab2e80aaa0320138009b6efe7dbfdf733eb55166ef969346e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "b",
+                            "tags": [
+                                "componentName.b",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "ae5acb05f82652e87ff52833027bf96fc35e83e3f10c3c078ed9f1acb23acc02"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b"
+                        }
+                    ]
+                },
+                {
+                    "pcr": {
+                        "index": 18,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "da256395df4046319ef0af857d377a729e5bc0693429ac827002ffafe485b2e7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "87e44776d6916f7ab2e80aaa0320138009b6efe7dbfdf733eb55166ef969346e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "TPM_EVENT_LOG_PREBOOT",
+                            "tags": [
+                                "componentName.TPM_EVENT_LOG_PREBOOT",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b"
+                        }
+                    ]
+                },
+                {
+                    "pcr": {
+                        "index": 19,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "k.b00",
+                            "tags": [
+                                "componentName.k.b00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "ca50651cec169cb0223e45c4229eb5bf9742bda1e23c12dc6db3e6565fddf939"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sb.v00",
+                            "tags": [
+                                "componentName.sb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "0abeaaf1e7c09cfbad1e4e175f60c65dc85234650d7b37635afb9f50229e5b1a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "s.v00",
+                            "tags": [
+                                "componentName.s.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "a3fbc24c9547e20626b06ca0bae9ce667c8c1b9d20d8951f8c54afbfe3a9989b"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "esxupdt.v00",
+                            "tags": [
+                                "componentName.esxupdt.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-update_VMware"
+                            ],
+                            "measurement": "d9f3430bd9cf187ccb972883723739428778c56288a5aa79bdf3599a1f57c9c3"
+                        }
+                    ]
+                },
+                {
+                    "pcr": {
+                        "index": 20,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "chardevs.b00",
+                            "tags": [
+                                "componentName.chardevs.b00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "9c25aaf5ff12bde16d5c412f607a043e84575e4ae9e82150e07780f4affa1a53"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "user.b00",
+                            "tags": [
+                                "componentName.user.b00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "bf9a959f5bfa7349ad29cdb6c61be08360d0d4a32bb0032bd463296a03fb9dc2"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "procfs.b00",
+                            "tags": [
+                                "componentName.procfs.b00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "9214f2292df62120988a4fc45eaffb819ce52c584d4132c392cae0efa5ab96d4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmx.v00",
+                            "tags": [
+                                "componentName.vmx.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "c109245663d3bac921504b23de2ca5de7cf356aa7ab3e7dfe19e1d5f4aaecfd3"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vim.v00",
+                            "tags": [
+                                "componentName.vim.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "6377450c6cc2f3044fcf7d18319af49b95e96ef3fe200af5b59646113d1e3bc5"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_liba.v00",
+                            "tags": [
+                                "componentName.ata_liba.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-libata-92_VMW"
+                            ],
+                            "measurement": "daa943b8230898dc465a0268ebbe870c1d2bcfd41a98069a5b5196bd75d88151"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v00",
+                            "tags": [
+                                "componentName.ata_pata.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-amd_VMW"
+                            ],
+                            "measurement": "f9a652b8dd2058e3c85e9c0c26384060a8f713eda79391f529bda740c362ba37"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v01",
+                            "tags": [
+                                "componentName.ata_pata.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-atiixp_VMW"
+                            ],
+                            "measurement": "91c4116c9c4a7574344cc51e77e2d6f9160b46233d15846fe266460831b11b16"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v02",
+                            "tags": [
+                                "componentName.ata_pata.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-cmd64x_VMW"
+                            ],
+                            "measurement": "4b72f0d50e042452167b35f341eb616e1bdd479c4579c1f1d1367a331dfcd374"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v03",
+                            "tags": [
+                                "componentName.ata_pata.v03",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-hpt3x2n_VMW"
+                            ],
+                            "measurement": "be10bcc5f2884dcf721f10b3c37ace63e3d1b90ebce2db041ad5027303c491ee"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v04",
+                            "tags": [
+                                "componentName.ata_pata.v04",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-pdc2027x_VMW"
+                            ],
+                            "measurement": "76f701b7355ae10ec10171dcb876b4a61293d20ce3795e072037b5cf5bc05fb4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v05",
+                            "tags": [
+                                "componentName.ata_pata.v05",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-serverworks_VMW"
+                            ],
+                            "measurement": "3ee54e50b12a963b4654dcf6408c7d0be1e95e658348ff7bbbadd93ec75e8d15"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v06",
+                            "tags": [
+                                "componentName.ata_pata.v06",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-sil680_VMW"
+                            ],
+                            "measurement": "0cc7a9d5f1fb441f45738d954850e492cf7f35f0ff98070a03d6a1101556c6af"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ata_pata.v07",
+                            "tags": [
+                                "componentName.ata_pata.v07",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ata-pata-via_VMW"
+                            ],
+                            "measurement": "2f2f12f9694d661b1d80da90c76c3da4546528b7552737bca6d9f5fbcb84beba"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "block_cc.v00",
+                            "tags": [
+                                "componentName.block_cc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_block-cciss_VMW"
+                            ],
+                            "measurement": "380c9337c874044dc353984a6158ea351d499db079171ddf7c921bd7861a953a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "bnxtnet.v00",
+                            "tags": [
+                                "componentName.bnxtnet.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_bnxtnet_VMW"
+                            ],
+                            "measurement": "f0c9c1963744203d1029a8673bbb5684747bf4537f16a7116094c3339df30688"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "bnxtroce.v00",
+                            "tags": [
+                                "componentName.bnxtroce.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_bnxtroce_VMW"
+                            ],
+                            "measurement": "609658fbf86ffcdfe418a45cafaeb5b02f902cbba4791ad4b2a2e72bd2ad510b"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "brcmfcoe.v00",
+                            "tags": [
+                                "componentName.brcmfcoe.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_brcmfcoe_VMW"
+                            ],
+                            "measurement": "37bb39cf89cc1f04fd87f2663dc99e17fa6235422e4b2522a0a4623131c9612a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "char_ran.v00",
+                            "tags": [
+                                "componentName.char_ran.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_char-random_VMW"
+                            ],
+                            "measurement": "d3b236e0cc9b3d9b7940c19fe72317d00ad195e0a2dd17767448399443cecf33"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ehci_ehc.v00",
+                            "tags": [
+                                "componentName.ehci_ehc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ehci-ehci-hcd_VMW"
+                            ],
+                            "measurement": "ec5799c82c12d8169800324a94f7d72f8612e66d34bd8d972c7970e69edd6df8"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "elxiscsi.v00",
+                            "tags": [
+                                "componentName.elxiscsi.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_elxiscsi_VMW"
+                            ],
+                            "measurement": "3a546e4659dcea6adf977c950876b1cc4890f12c7b702dd864246814ed99b236"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "elxnet.v00",
+                            "tags": [
+                                "componentName.elxnet.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_elxnet_VMW"
+                            ],
+                            "measurement": "8e1d80d3d923f49ef1254015671376ee7eabd4d86450dc7513f7c24244856c5d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "hid_hid.v00",
+                            "tags": [
+                                "componentName.hid_hid.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_hid-hid_VMW"
+                            ],
+                            "measurement": "c478a813b4ca5dc9b168a6c35a23fd3dbd46c5cb5017e83d85e6e617128f250e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "i40en.v00",
+                            "tags": [
+                                "componentName.i40en.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_i40en_VMW"
+                            ],
+                            "measurement": "1116a6828fa13d703597daf497cf377ba9abb4b4eba190e3c50bf6d493dda448"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "iavmd.v00",
+                            "tags": [
+                                "componentName.iavmd.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_iavmd_VMW"
+                            ],
+                            "measurement": "e5ba8bbfcd651347b604884c1ce3d373f9278fe0b10d7b0c180e1b0fa45da68d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "igbn.v00",
+                            "tags": [
+                                "componentName.igbn.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_igbn_VMW"
+                            ],
+                            "measurement": "39360bea8202a3410fb07a8c45d82f785567440cb6f85ed83303b499c834303a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ima_qla4.v00",
+                            "tags": [
+                                "componentName.ima_qla4.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ima-qla4xxx_VMW"
+                            ],
+                            "measurement": "c4d81b0d751b6d3a6c1dc8a2e1c6ed059474bce9ad9c9b7f662bdb674ec91408"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ipmi_ipm.v00",
+                            "tags": [
+                                "componentName.ipmi_ipm.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ipmi-ipmi-devintf_VMW"
+                            ],
+                            "measurement": "eae4e253e8e04549e3fcccf12efbe312e806681f37269588d6a277589cc2a85a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ipmi_ipm.v01",
+                            "tags": [
+                                "componentName.ipmi_ipm.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ipmi-ipmi-msghandler_VMW"
+                            ],
+                            "measurement": "787154c89dcbb562ff6a757d66a84813823f74465c9f9fb38693cd7b4f79f528"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ipmi_ipm.v02",
+                            "tags": [
+                                "componentName.ipmi_ipm.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ipmi-ipmi-si-drv_VMW"
+                            ],
+                            "measurement": "70ff03ad07707ed84d5d7ca0dd154252a523010b7bf19fdbb6fc0159c43750c4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "iser.v00",
+                            "tags": [
+                                "componentName.iser.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_iser_VMW"
+                            ],
+                            "measurement": "d08cde99aa97c7407ddf1d6be61a10e693d4213d60586be822bbc888646ceee8"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ixgben.v00",
+                            "tags": [
+                                "componentName.ixgben.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ixgben_VMW"
+                            ],
+                            "measurement": "dbe128b31f0aa4e11024c809fd77825e61efe6107ce1bd959b93acf79748cc0c"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lpfc.v00",
+                            "tags": [
+                                "componentName.lpfc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lpfc_VMW"
+                            ],
+                            "measurement": "9329bde1692e35e25ccfabc7752062201720af88d22eb98acd28c2a9b3232a78"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lpnic.v00",
+                            "tags": [
+                                "componentName.lpnic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lpnic_VMW"
+                            ],
+                            "measurement": "abaa43d7cf21269dcc25b21c39b0e2bc454e3901ae82434f750417e3afa0168a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsi_mr3.v00",
+                            "tags": [
+                                "componentName.lsi_mr3.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsi-mr3_VMW"
+                            ],
+                            "measurement": "70cefc45e7ade90ef4c538d13b77efc4bff88fae5473a9dc55869efbf830dcf4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsi_msgp.v00",
+                            "tags": [
+                                "componentName.lsi_msgp.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsi-msgpt2_VMW"
+                            ],
+                            "measurement": "60ec522fff89cfd2fb600fdda9c3e4cd8732adf69bbfd737903b140a1e997453"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsi_msgp.v01",
+                            "tags": [
+                                "componentName.lsi_msgp.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsi-msgpt35_VMW"
+                            ],
+                            "measurement": "bb91028e378cb438f0c7adf8c2838d0a674b83abdf36ad1f0eadd454ad158cda"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsi_msgp.v02",
+                            "tags": [
+                                "componentName.lsi_msgp.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsi-msgpt3_VMW"
+                            ],
+                            "measurement": "57ead82c16bdf174cc2958ebd014b24aa56cecd329f6de7857b95cc274d932bb"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "misc_cni.v00",
+                            "tags": [
+                                "componentName.misc_cni.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_misc-cnic-register_VMW"
+                            ],
+                            "measurement": "3d262839d165c0884371fee158408ad614ee4b94547c5267ced0bc9e687b3d37"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "misc_dri.v00",
+                            "tags": [
+                                "componentName.misc_dri.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_misc-drivers_VMW"
+                            ],
+                            "measurement": "d6f7b473da05874195a36cf7825b3679b683e7c175e7b5e3b3c605af031063f7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "mtip32xx.v00",
+                            "tags": [
+                                "componentName.mtip32xx.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_mtip32xx-native_VMW"
+                            ],
+                            "measurement": "7d2e9fccd6e8f3956d6b3a4eed66132e32644d04204675a25f63d537f1b3b62b"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ne1000.v00",
+                            "tags": [
+                                "componentName.ne1000.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ne1000_VMW"
+                            ],
+                            "measurement": "d117edea586d3e71bbc471700629d9da9cf9946ca26e918adc898edb45409134"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nenic.v00",
+                            "tags": [
+                                "componentName.nenic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nenic_VMW"
+                            ],
+                            "measurement": "21e93c9c486be852e5e6c8df72695b65fdfa4f5a0064681a5bb7878cd0aadbe1"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_bnx2.v00",
+                            "tags": [
+                                "componentName.net_bnx2.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-bnx2_VMW"
+                            ],
+                            "measurement": "6c4b47fdcc57deed177c4d5fa8d7d6148d4fd3b5fda2b61dbfa4b05d2257782f"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_bnx2.v01",
+                            "tags": [
+                                "componentName.net_bnx2.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-bnx2x_VMW"
+                            ],
+                            "measurement": "387c0e309a4d93b8f0c519404f2029a3f4ba358a07871ef57f69923d889b5759"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_cdc_.v00",
+                            "tags": [
+                                "componentName.net_cdc_.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-cdc-ether_VMW"
+                            ],
+                            "measurement": "5ee9da08f0f5289d70b537f338d15910d08d9495749ed43dfdc0cad60d5a9d56"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_cnic.v00",
+                            "tags": [
+                                "componentName.net_cnic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-cnic_VMW"
+                            ],
+                            "measurement": "18ed30b53ba702c1a44c03aa719c91e2448de6e9860e8f85a9193606b2ae37cc"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_e100.v00",
+                            "tags": [
+                                "componentName.net_e100.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-e1000_VMW"
+                            ],
+                            "measurement": "c10dbb7360f5b2390659a22a290e40f5965aa55ddd0d384528de4134d4236a8e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_e100.v01",
+                            "tags": [
+                                "componentName.net_e100.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-e1000e_VMW"
+                            ],
+                            "measurement": "2947dbbf5cebbb4994108c458eae63355752f8971c494e60729f53bff04bd44e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_enic.v00",
+                            "tags": [
+                                "componentName.net_enic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-enic_VMW"
+                            ],
+                            "measurement": "c57c73ec2be29f67b4fdd9e2578fcd9f0997fa4757d1b8beedb5adb33f9e2f8c"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_fcoe.v00",
+                            "tags": [
+                                "componentName.net_fcoe.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-fcoe_VMW"
+                            ],
+                            "measurement": "2c05e11fafd2768da8872a3079c32b57e659f816995d395cca0fa5cf7951c5ff"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_forc.v00",
+                            "tags": [
+                                "componentName.net_forc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-forcedeth_VMW"
+                            ],
+                            "measurement": "5665fe3de06ce6fea7292b1f2e5dd85dfe9ccf7fd1c4ac8454dc93f64376fd3d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_igb.v00",
+                            "tags": [
+                                "componentName.net_igb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-igb_VMW"
+                            ],
+                            "measurement": "9a77cf66672acc25eb2f2be4f1292dd8c38f0adacb50d3b98c525064dd2bd6df"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_ixgb.v00",
+                            "tags": [
+                                "componentName.net_ixgb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-ixgbe_VMW"
+                            ],
+                            "measurement": "cb4375a4aa78bbafe3c88bac6efa8469a6892510bf733976d016ef3f2d0defeb"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_libf.v00",
+                            "tags": [
+                                "componentName.net_libf.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-libfcoe-92_VMW"
+                            ],
+                            "measurement": "76d4352756c8b757b0ddae446834b5fa1385230e6d8691d18ae3bba7e71ec1bb"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_mlx4.v00",
+                            "tags": [
+                                "componentName.net_mlx4.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-mlx4-core_VMW"
+                            ],
+                            "measurement": "115b29318823707420fd933eb008f7dd86b1314c9f31c5f3ec892392c7046137"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_mlx4.v01",
+                            "tags": [
+                                "componentName.net_mlx4.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-mlx4-en_VMW"
+                            ],
+                            "measurement": "c8eaf45ea58ce448095bd5126f71ff105ee4f236f9206d0832d89e1a1b802a44"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_nx_n.v00",
+                            "tags": [
+                                "componentName.net_nx_n.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-nx-nic_VMW"
+                            ],
+                            "measurement": "99fba40cf33a10dd14dd883efd876049ece9762d94b492821673aaedef837117"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_tg3.v00",
+                            "tags": [
+                                "componentName.net_tg3.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-tg3_VMW"
+                            ],
+                            "measurement": "bed493aa9806bd8694d34654c9cf63a02d054b5d2f08e17e94e30a4df2a476d8"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_usbn.v00",
+                            "tags": [
+                                "componentName.net_usbn.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-usbnet_VMW"
+                            ],
+                            "measurement": "91e111e16cd70cb10a3b01ff8d1bd7ebe3274f028ab5fd1fcbe1120b042e88d7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "net_vmxn.v00",
+                            "tags": [
+                                "componentName.net_vmxn.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_net-vmxnet3_VMW"
+                            ],
+                            "measurement": "5cf8ad90927b31ec3aa14decd3cc3affbf6a0f60319c7e19b92bf0ee2905f65b"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nfnic.v00",
+                            "tags": [
+                                "componentName.nfnic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nfnic_VMW"
+                            ],
+                            "measurement": "cd0c56ae3b21fa19efc30820f540fafdfe48f5351cb20b0f220c9944e7ecc25a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nhpsa.v00",
+                            "tags": [
+                                "componentName.nhpsa.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nhpsa_VMW"
+                            ],
+                            "measurement": "7bcbce6b8bf588f576d901672b635d179d0d7f4dbacf9d427f9958fa81931669"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nmlx4_co.v00",
+                            "tags": [
+                                "componentName.nmlx4_co.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nmlx4-core_VMW"
+                            ],
+                            "measurement": "fab21369f5debd14be716c8b1d94792ce8bb47649c1b6b2375a701375485d899"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nmlx4_en.v00",
+                            "tags": [
+                                "componentName.nmlx4_en.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nmlx4-en_VMW"
+                            ],
+                            "measurement": "8fdc5e23d22424bb75011a077818633b9d7731d6b9fb3d5ae09904459b1acc3c"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nmlx4_rd.v00",
+                            "tags": [
+                                "componentName.nmlx4_rd.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nmlx4-rdma_VMW"
+                            ],
+                            "measurement": "eb14eb3ba4ebec881a2103151c9b644e7661724ce860895513be1cbc85c70860"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nmlx5_co.v00",
+                            "tags": [
+                                "componentName.nmlx5_co.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nmlx5-core_VMW"
+                            ],
+                            "measurement": "82dfbe6d79aa55065d06fbe6234c3497e3af8c3a48e0a45cde8dfc06e48ce856"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nmlx5_rd.v00",
+                            "tags": [
+                                "componentName.nmlx5_rd.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nmlx5-rdma_VMW"
+                            ],
+                            "measurement": "0913d737869401548597d8aa9430072896b1445a43825503a126ed6bf3f4e48e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ntg3.v00",
+                            "tags": [
+                                "componentName.ntg3.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ntg3_VMW"
+                            ],
+                            "measurement": "8b48a231ffb8e8756de1449d38ab2321182ddd5e6c566cdc406655dc7aa5aa14"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nvme.v00",
+                            "tags": [
+                                "componentName.nvme.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nvme_VMW"
+                            ],
+                            "measurement": "3cc62f788c797cbcebf90f31c018cb2cb6a46df95decbedb73c5964eaf55e5ff"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nvmxnet3.v00",
+                            "tags": [
+                                "componentName.nvmxnet3.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nvmxnet3-ens_VMW"
+                            ],
+                            "measurement": "3ecf09562a63d714f8c52b5b674a78189c37dc6dfab757b069b1d6f93a143ca4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "nvmxnet3.v01",
+                            "tags": [
+                                "componentName.nvmxnet3.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_nvmxnet3_VMW"
+                            ],
+                            "measurement": "2b1f09eb5e283556b35904dc0aadf2926dae1bedb70fefba55537e3bbb8ca3de"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "ohci_usb.v00",
+                            "tags": [
+                                "componentName.ohci_usb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_ohci-usb-ohci_VMW"
+                            ],
+                            "measurement": "b2923a3d556693d4f45326274453088a4b731703b1a02534923de102a5c35403"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "pvscsi.v00",
+                            "tags": [
+                                "componentName.pvscsi.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_pvscsi_VMW"
+                            ],
+                            "measurement": "6184203d3f2c8bf5165b886c0aec7a343acb4fe0c92e7acb231cbe2a4d9c47e8"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qcnic.v00",
+                            "tags": [
+                                "componentName.qcnic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qcnic_VMW"
+                            ],
+                            "measurement": "54356f38742c22a4462cfdae2fb07041e83537054491bf4efd3af92c5aadef26"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qedentv.v00",
+                            "tags": [
+                                "componentName.qedentv.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qedentv_VMW"
+                            ],
+                            "measurement": "3cacf200be96bf8797f864fadcb97cfbfda55bcca7b5fa958834028ca1805b5f"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qfle3.v00",
+                            "tags": [
+                                "componentName.qfle3.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qfle3_VMW"
+                            ],
+                            "measurement": "fbb3bb20b07089c826bdcf517c838d460a442ab3505005996253c96981c3c309"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qfle3f.v00",
+                            "tags": [
+                                "componentName.qfle3f.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qfle3f_VMW"
+                            ],
+                            "measurement": "8e1e7c329a0d4b083abbf00213a53a208e58ab11fadc55be501134832982b83f"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qfle3i.v00",
+                            "tags": [
+                                "componentName.qfle3i.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qfle3i_VMW"
+                            ],
+                            "measurement": "7971ec9dd51590ce357f692fdf452e68bb60b5f646404f9f65fa7ff51edcff34"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qflge.v00",
+                            "tags": [
+                                "componentName.qflge.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qflge_VMW"
+                            ],
+                            "measurement": "2a8b500327a154db41a79a7b6e5c49806f8de7e1a388f1687eec005534989a42"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_ahc.v00",
+                            "tags": [
+                                "componentName.sata_ahc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-ahci_VMW"
+                            ],
+                            "measurement": "0453eadc3d315491952a3bf2db0a5455c1222e263baf5fc53a4667dbf1b12874"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_ata.v00",
+                            "tags": [
+                                "componentName.sata_ata.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-ata-piix_VMW"
+                            ],
+                            "measurement": "50d619a78a56a7c264d40781d30013d9a8fb6525bca4eabe60c44ae335569370"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_sat.v00",
+                            "tags": [
+                                "componentName.sata_sat.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-sata-nv_VMW"
+                            ],
+                            "measurement": "2634ad6845b68e80f2e6f286381f9ef4fe10d9829d5c179132cd16a353f443e1"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_sat.v01",
+                            "tags": [
+                                "componentName.sata_sat.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-sata-promise_VMW"
+                            ],
+                            "measurement": "d310475e306dfffc5df8de05dbd437aaeac822d1934a055a2ad68b6b80084425"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_sat.v02",
+                            "tags": [
+                                "componentName.sata_sat.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-sata-sil24_VMW"
+                            ],
+                            "measurement": "6d686227f2c68d23775a8ef97e35d8fa9cf85fbf2baa08709e50937cb3d68222"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_sat.v03",
+                            "tags": [
+                                "componentName.sata_sat.v03",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-sata-sil_VMW"
+                            ],
+                            "measurement": "cdc6442acd76675ba4aff36df8eb19eefe77bb47581805c9c3d0b73ee8403330"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "sata_sat.v04",
+                            "tags": [
+                                "componentName.sata_sat.v04",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_sata-sata-svw_VMW"
+                            ],
+                            "measurement": "0a2e9665e355bd1e3dc7ade3a9d4a342d7a43bcdaf23486be788ba887a954362"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_aac.v00",
+                            "tags": [
+                                "componentName.scsi_aac.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-aacraid_VMW"
+                            ],
+                            "measurement": "7ada563f371d0a7047bb4ad9f206dfc20a8d900f6abb2a7fab9513fdc61105a2"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_adp.v00",
+                            "tags": [
+                                "componentName.scsi_adp.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-adp94xx_VMW"
+                            ],
+                            "measurement": "fc933db4b8a6038c1411e3e39702146f0f6577d2450480660a50e1e395e09db8"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_aic.v00",
+                            "tags": [
+                                "componentName.scsi_aic.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-aic79xx_VMW"
+                            ],
+                            "measurement": "c522d0310eca6421118d245c4e5746bde4177b0b09d7f38fcbf0dfbfd8c9ad14"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_bnx.v00",
+                            "tags": [
+                                "componentName.scsi_bnx.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-bnx2fc_VMW"
+                            ],
+                            "measurement": "6fa59620b5e0c957a37d1c87219a7272e3399ca2572047235c5942d83e322f44"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_bnx.v01",
+                            "tags": [
+                                "componentName.scsi_bnx.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-bnx2i_VMW"
+                            ],
+                            "measurement": "952bd522b7b78fbc2607084b16777922b5f841c11b81eec0668ee297d184e0b7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_fni.v00",
+                            "tags": [
+                                "componentName.scsi_fni.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-fnic_VMW"
+                            ],
+                            "measurement": "5ffc46e89daae60898b07fa16881345402a1cc9e55d7599abd193e20bb4d85c3"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_hps.v00",
+                            "tags": [
+                                "componentName.scsi_hps.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-hpsa_VMW"
+                            ],
+                            "measurement": "2b17fbbff64398417e8609d42eb5e7e6a325e58e26e3483f07f30088e3ee7d11"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_ips.v00",
+                            "tags": [
+                                "componentName.scsi_ips.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-ips_VMW"
+                            ],
+                            "measurement": "e1c2712e99692b2dbb09ed3a2889dc720755d448ae223a30eb579148491cccb9"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_isc.v00",
+                            "tags": [
+                                "componentName.scsi_isc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-iscsi-linux-92_VMW"
+                            ],
+                            "measurement": "d15ed6e1d173b8798a69311aac03a47ef93968455f7de313df94fd3266af9f82"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_lib.v00",
+                            "tags": [
+                                "componentName.scsi_lib.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-libfc-92_VMW"
+                            ],
+                            "measurement": "7259d673140d3f12225d99eb00ab820f74fc29200718b0755096f43808fe1d96"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_meg.v00",
+                            "tags": [
+                                "componentName.scsi_meg.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-megaraid-mbox_VMW"
+                            ],
+                            "measurement": "00ad08ad7e82571dcdf6758a3f1a24083e24d14e7b6f2680e7e23883a54bb818"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_meg.v01",
+                            "tags": [
+                                "componentName.scsi_meg.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-megaraid-sas_VMW"
+                            ],
+                            "measurement": "ed30ce9aadf52526997d8016f54f6e378d359b073de01b772869c1e8dff3bf2e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_meg.v02",
+                            "tags": [
+                                "componentName.scsi_meg.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-megaraid2_VMW"
+                            ],
+                            "measurement": "47f43ab33cb690a275a49b82a9ede5584d9bb8ae9db1f54964a1954beddec7ec"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_mpt.v00",
+                            "tags": [
+                                "componentName.scsi_mpt.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-mpt2sas_VMW"
+                            ],
+                            "measurement": "afce6a63c47ae618805d7db53702a4048bc615de7cbc2770a7507f814860de1e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_mpt.v01",
+                            "tags": [
+                                "componentName.scsi_mpt.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-mptsas_VMW"
+                            ],
+                            "measurement": "313cdffe675f1c49cf5193afb029f168bd7a5d37bb659b78a78c954b2a954f53"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_mpt.v02",
+                            "tags": [
+                                "componentName.scsi_mpt.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-mptspi_VMW"
+                            ],
+                            "measurement": "98f91a3c514f4210599a99ebbe0c6053f0d0554155dfc4bc9725cf0424bdefb9"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "scsi_qla.v00",
+                            "tags": [
+                                "componentName.scsi_qla.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_scsi-qla4xxx_VMW"
+                            ],
+                            "measurement": "4ad05baf081c4eae75208b8cfc1173a587c253330ef67b43f455f0c671cf1f60"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_isc.v00",
+                            "tags": [
+                                "componentName.shim_isc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-iscsi-linux-9-2-1-0_VMW"
+                            ],
+                            "measurement": "adb19b66c40eb603d631a8594466fcba026e914112aa4dc04e277054d1fda891"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_isc.v01",
+                            "tags": [
+                                "componentName.shim_isc.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-iscsi-linux-9-2-2-0_VMW"
+                            ],
+                            "measurement": "5924a22eb11ba41ad431b8d254783e340216d6c68c005718a3ed9b6ab1df03f1"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v00",
+                            "tags": [
+                                "componentName.shim_lib.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libata-9-2-1-0_VMW"
+                            ],
+                            "measurement": "8155c04ed145c417727f3f81da66b9a5c88ce8af5e38090b36234ea13235fbe9"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v01",
+                            "tags": [
+                                "componentName.shim_lib.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libata-9-2-2-0_VMW"
+                            ],
+                            "measurement": "ae00945a1669da0240be155c682d49d73e559081e53d5c9375b4e1e8ff9d4280"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v02",
+                            "tags": [
+                                "componentName.shim_lib.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libfc-9-2-1-0_VMW"
+                            ],
+                            "measurement": "f378423eece481d0798c9176888d7c1b26d50ced8fc5e06b188b0b75269b0e7a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v03",
+                            "tags": [
+                                "componentName.shim_lib.v03",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libfc-9-2-2-0_VMW"
+                            ],
+                            "measurement": "0d34870ce3752f17b1c529e8d0ecb8bc21ed82b8a280dd9cd59d0afa2a0bc107"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v04",
+                            "tags": [
+                                "componentName.shim_lib.v04",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libfcoe-9-2-1-0_VMW"
+                            ],
+                            "measurement": "d18750c25088f8cae5f196077ad14e209fd2f51f28adb2c204dfd4559697d04a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_lib.v05",
+                            "tags": [
+                                "componentName.shim_lib.v05",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-libfcoe-9-2-2-0_VMW"
+                            ],
+                            "measurement": "4f69cb449a2e5b7e94f639902fc99497bf6b065926932be734601b34e487b7f2"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_vmk.v00",
+                            "tags": [
+                                "componentName.shim_vmk.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-vmklinux-9-2-1-0_VMW"
+                            ],
+                            "measurement": "a59def28aa5bb4bc322100f087dca891ed402f9a8683b79d294414dfc41a5e04"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_vmk.v01",
+                            "tags": [
+                                "componentName.shim_vmk.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-vmklinux-9-2-2-0_VMW"
+                            ],
+                            "measurement": "5efac89bbf66c900f04f1aed1087e6ee4419da7537f6587fce69098954e443b5"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "shim_vmk.v02",
+                            "tags": [
+                                "componentName.shim_vmk.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_shim-vmklinux-9-2-3-0_VMW"
+                            ],
+                            "measurement": "705d0c5c6605a0c8fd026977e3648a13ed15f7c3e4ab59180dba6b0253e78afe"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "smartpqi.v00",
+                            "tags": [
+                                "componentName.smartpqi.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_smartpqi_VMW"
+                            ],
+                            "measurement": "cbda73484346fe62a1c1d42f650aebb193f8182dcc8c6b0676e88a90c4a6f1ed"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "uhci_usb.v00",
+                            "tags": [
+                                "componentName.uhci_usb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_uhci-usb-uhci_VMW"
+                            ],
+                            "measurement": "b81afae025748a3463f16bb326ebcd06d46a079eaa2091eb8db7513557531f48"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "usb_stor.v00",
+                            "tags": [
+                                "componentName.usb_stor.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_usb-storage-usb-storage_VMW"
+                            ],
+                            "measurement": "a1daa62fe8f0e8e8541a0d5fcf7d50faba920033a78f13f679671eeacc5a8704"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "usbcore_.v00",
+                            "tags": [
+                                "componentName.usbcore_.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_usbcore-usb_VMW"
+                            ],
+                            "measurement": "d2fd95749dda31fa9264ba1ebacbf122245a11778f66f9ddfe333589bc325f5d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmkata.v00",
+                            "tags": [
+                                "componentName.vmkata.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmkata_VMW"
+                            ],
+                            "measurement": "e74f86b2242c179c7c7a655e40aa6560b2c095b90324d6c0441462a3416c3daf"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmkfcoe.v00",
+                            "tags": [
+                                "componentName.vmkfcoe.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmkfcoe_VMW"
+                            ],
+                            "measurement": "83d9fdfd4ea6eaab8404739022dafc6a3431d35347571baf1a91d4abc7cbe851"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmkplexe.v00",
+                            "tags": [
+                                "componentName.vmkplexe.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmkplexer-vmkplexer_VMW"
+                            ],
+                            "measurement": "7368f63b3804458add76413891de5527058972fa46df7a799f298179b035d9a7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmkusb.v00",
+                            "tags": [
+                                "componentName.vmkusb.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmkusb_VMW"
+                            ],
+                            "measurement": "d976fd845954fb887f09afad4c3e93b5cf256b5400049065580b85394b0019de"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmw_ahci.v00",
+                            "tags": [
+                                "componentName.vmw_ahci.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmw-ahci_VMW"
+                            ],
+                            "measurement": "6ba65ee281570baf4d2592c4815195cbb508c143384d6a154443c4a1dd4b0537"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "xhci_xhc.v00",
+                            "tags": [
+                                "componentName.xhci_xhc.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_xhci-xhci_VMW"
+                            ],
+                            "measurement": "14e09cb5039ff6964a51324e04ea94443ed99dd4d29fa57f6d206183231aa87c"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "elx_esx_.v00",
+                            "tags": [
+                                "componentName.elx_esx_.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_elx-esx-libelxima.so_VMware"
+                            ],
+                            "measurement": "229a545080467a050635a1b4a27b7888637be5991d759fb58037cd44aa22b7c5"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "btldr.t00",
+                            "tags": [
+                                "componentName.btldr.t00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-base_VMware"
+                            ],
+                            "measurement": "62d0ceb0144593c76038af70b978db7ec8ea8c94f82dd1e998cade9c28ffb499"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "esx_dvfi.v00",
+                            "tags": [
+                                "componentName.esx_dvfi.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-dvfilter-generic-fastpath_VMware"
+                            ],
+                            "measurement": "8a907bde51cf5d68fc78b31e2c32cd6a05ad24e7f19af4591c356ab866c43f56"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "esx_ui.v00",
+                            "tags": [
+                                "componentName.esx_ui.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-ui_VMware"
+                            ],
+                            "measurement": "1c8364410e7f48b9a95484e293351002e07ab10c61a0096c40e8462a9e00923a"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "weaselin.t00",
+                            "tags": [
+                                "componentName.weaselin.t00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-update_VMware"
+                            ],
+                            "measurement": "7e8bb07c66fff59a538469ac4860bfe88db6200136cf8d4eaa30fc739ea0d392"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_hp_h.v00",
+                            "tags": [
+                                "componentName.lsu_hp_h.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-hp-hpsa-plugin_VMware"
+                            ],
+                            "measurement": "b49fa415c21f77981998ff613169d2abe584e9a23eff44d9e9558d6e1dc6c59d"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_inte.v00",
+                            "tags": [
+                                "componentName.lsu_inte.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-intel-vmd-plugin_VMware"
+                            ],
+                            "measurement": "923df62889a9733efb39ce04ba06d2a103b399b3e4818e460da0c167cbf4885c"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_lsi_.v00",
+                            "tags": [
+                                "componentName.lsu_lsi_.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-lsi-lsi-mr3-plugin_VMware"
+                            ],
+                            "measurement": "4540d62641bc68672c35f5e5bc51cf688a01bd64449fcaf80ac38504b72b4094"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_lsi_.v01",
+                            "tags": [
+                                "componentName.lsu_lsi_.v01",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-lsi-lsi-msgpt3-plugin_VMware"
+                            ],
+                            "measurement": "3875bdc8ffc373cbc2a5e6a71700d620cb4b9ebb2033cc3c05f3cded60f9d2fd"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_lsi_.v02",
+                            "tags": [
+                                "componentName.lsu_lsi_.v02",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-lsi-megaraid-sas-plugin_VMware"
+                            ],
+                            "measurement": "b14e9648a59cd69a98e8cc0d2fec699c26b424299e8df4f52f22ad44a5a4ef62"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_lsi_.v03",
+                            "tags": [
+                                "componentName.lsu_lsi_.v03",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-lsi-mpt2sas-plugin_VMware"
+                            ],
+                            "measurement": "0a6fd87086a04852ef7badb48706cfc668f011b6221706113b5e2256ea890805"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "lsu_smar.v00",
+                            "tags": [
+                                "componentName.lsu_smar.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_lsu-smartpqi-plugin_VMware"
+                            ],
+                            "measurement": "e52622612193c02614ab4c9d9da6be42bf9bb45efdae756884287622dea6dcbd"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "native_m.v00",
+                            "tags": [
+                                "componentName.native_m.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_native-misc-drivers_VMware"
+                            ],
+                            "measurement": "bdba465454ae22edc7e346a63da82e011b269c9dc6b88cbcec149a6a511679ae"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "qlnative.v00",
+                            "tags": [
+                                "componentName.qlnative.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_qlnativefc_VMware"
+                            ],
+                            "measurement": "8fdf96783929ed899457b5853202452bd4326de11906fa08d522180923007ca7"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "rste.v00",
+                            "tags": [
+                                "componentName.rste.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_rste_VMware"
+                            ],
+                            "measurement": "f9a72ae03d6e60f46e84ec1aefd5cb5d453ba84e518fb9b98d184f1d01a046b4"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vmware_e.v00",
+                            "tags": [
+                                "componentName.vmware_e.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vmware-esx-esxcli-nvme-plugin_VMware"
+                            ],
+                            "measurement": "2c6a94cb4577d9d69262c35f97cccf67dd5deb30064c5e2e36659c3e228c6f2e"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vsan.v00",
+                            "tags": [
+                                "componentName.vsan.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vsan_VMware"
+                            ],
+                            "measurement": "943c5df6e4db59d7910c5e9db3cf7dd3131c0dd9b181a29a6604516b2d960868"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vsanheal.v00",
+                            "tags": [
+                                "componentName.vsanheal.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vsanhealth_VMware"
+                            ],
+                            "measurement": "5517cdf0764edd19d2676e3b7a6b077aa0857f8091d21c827a8f74e1fb5477a1"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "vsanmgmt.v00",
+                            "tags": [
+                                "componentName.vsanmgmt.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_vsanhealth_VMware"
+                            ],
+                            "measurement": "417d53da2328ae85c1adbcb66719c8ead69321831a391163a5e3cfa6ec9da1a3"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "xorg.v00",
+                            "tags": [
+                                "componentName.xorg.v00",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails_esx-xserver_VMware"
+                            ],
+                            "measurement": "940c3f666a0e19188e3b7d93d6aa544d1673fc3d9419f8660522c48ee0ef8080"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "imgdb.tgz",
+                            "tags": [
+                                "componentName.imgdb.tgz",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "2da2920acc7759b7a32c5bfa752d6f692985cb537e2316901d59faed2673d564"
+                        },
+                        {
+                            "type_id": "0x60000001",
+                            "type_name": "state.tgz",
+                            "tags": [
+                                "componentName.state.tgz",
+                                "Vim25Api.HostTpmSoftwareComponentEventDetails"
+                            ],
+                            "measurement": "1aefaf33bc21d3db115d0462063da653137bf89943e742ef06fb83e245427f47"
+                        }
+                    ]
+                },
+                {
+                    "pcr": {
+                        "index": 21,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x60000002",
+                            "type_name": "",
+                            "tags": [
+                                "commandLine.",
+                                "Vim25Api.HostTpmCommandEventDetails"
+                            ],
+                            "measurement": "f180c6bc92cfe0b585cdaaa8c28f52a6b97d325cfebae44f99ee66f13deac357"
+                        },
+                        {
+                            "type_id": "0x60000003",
+                            "type_name": "jumpstrt.gz",
+                            "tags": [
+                                "bootOptions.jumpstrt.gz",
+                                "Vim25Api.HostTpmOptionEventDetails"
+                            ],
+                            "measurement": "bf7a703a2167d75ad3128f31e5a8a4ea6672e14b16825cb6ed277faf25cd4883"
+                        },
+                        {
+                            "type_id": "0x60000003",
+                            "type_name": "useropts.gz",
+                            "tags": [
+                                "bootOptions.useropts.gz",
+                                "Vim25Api.HostTpmOptionEventDetails"
+                            ],
+                            "measurement": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+                        },
+                        {
+                            "type_id": "0x60000003",
+                            "type_name": "features.gz",
+                            "tags": [
+                                "bootOptions.features.gz",
+                                "Vim25Api.HostTpmOptionEventDetails"
+                            ],
+                            "measurement": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                        },
+                        {
+                            "type_id": "0x60000004",
+                            "type_name": "execInstalledOnly = FALSE",
+                            "tags": [
+                                "bootSecurityOption.execInstalledOnly = FALSE",
+                                "Vim25Api.HostTpmBootSecurityOptionEventDetails"
+                            ],
+                            "measurement": "f0e0032641b9438941346480ae1564eee57ab378abb155c7cd49dbdd770d55af"
+                        },
+                        {
+                            "type_id": "0x60000004",
+                            "type_name": "uefiSecureBootEnabled = TRUE",
+                            "tags": [
+                                "bootSecurityOption.uefiSecureBootEnabled = TRUE",
+                                "Vim25Api.HostTpmBootSecurityOptionEventDetails"
+                            ],
+                            "measurement": "f0ae8cb4bb9a16ddc90443ccad01fbe5739250e5eaae1d6f06f4f6bb7af10acb"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+  }

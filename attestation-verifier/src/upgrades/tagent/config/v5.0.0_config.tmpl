@@ -1,0 +1,28 @@
+ta-service-mode: {{.mode}}
+log:
+    max-length: {{.logging.logentrymaxlength}}
+    enable-stdout: {{.logging.logenablestdout}}
+    level: {{.logging.loglevel}}
+server:
+    port: {{.webservice.port}}
+    read-timeout: {{.webservice.readtimeout}}
+    read-header-timeout: {{.webservice.readheadertimeout}}
+    write-timeout: {{.webservice.writetimeout}}
+    idle-timeout: {{.webservice.idletimeout}}
+    max-header-bytes: {{.webservice.maxheaderbytes}}
+hvs:
+    url: {{.hvs.url}}
+tpm:
+    tag-secret-key: {{.tpm.tagsecretkey}}
+aas:
+    base-url: {{.aas.baseurl}}
+cms:
+    base-url: {{.cms.baseurl}}
+    tls-cert-sha384: {{.cms.tlscertdigest}}
+tls:
+    common-name: {{.tls.certsan}}
+    san-list: {{.tls.certcn}}
+nats:
+    servers: {{.nats.servers}}
+    host-id: {{.nats.hostid}}
+api-token: {{.apitoken}}

@@ -1,0 +1,32 @@
+{
+  {{- if .Values.aas.url }}
+  "aas_api_url": "{{ .Values.aas.url }}",
+  {{- else }}
+  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1",
+  {{- end }}
+  {{- if .Values.global }}
+  "aas_admin_username": "{{ required "A valid admin username is required!" .Values.global.aas.secret.adminUsername }}",
+  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.global.aas.secret.adminPassword }}",
+  {{- else }}
+  "aas_admin_username": "{{ required "A valid admin username is required!" .Values.aas.secret.adminUsername }}",
+  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.aas.secret.adminPassword }}",
+  {{- end }}
+   "users_and_roles":[
+      {
+         "username": "{{ .Values.secret.installAdminUsername }}",
+         "password": "{{ .Values.secret.installAdminPassword }}",
+         "print_bearer_token":true,
+         "roles":[
+            {
+               "service": "CMS",
+               "name": "CertApprover",
+               {{- if .Values.global }}
+               "context":"CN=NATS TLS Certificate;SAN=nats.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.global.controlPlaneHostname }};certType=TLS"
+               {{- else }}
+	       "context":"CN=NATS TLS Certificate;SAN=nats.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.controlPlaneHostname }};certType=TLS"
+               {{- end }}
+            }
+         ]
+      }
+   ]
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Manifest xmlns="lib:wml:manifests:1.0" DigestAlg="SHA384" Label="ISL_Applications123" Uuid="834076cd-f733-4cca-a417-113fac90adc7">
+    <Dir Include=".*" Exclude="" Path="/opt/trustagent/hypertext/WEB-INF" />
+    <Symlink Path="/opt/trustagent/bin/tpm_nvinfo" />
+    <File Path="/opt/trustagent/bin/module_analysis_da.sh" />
+</Manifest>

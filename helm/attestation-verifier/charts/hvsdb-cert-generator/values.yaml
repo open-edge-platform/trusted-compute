@@ -1,0 +1,14 @@
+# Default values for hvsdb-cert-generator.
+
+nameOverride: "" # The name for HVS DB chart (Default: .Chart.Name)
+
+securityContext:
+  hvsdbCertGeneratorInit: # The fsGroup id for init containers for HVS DB Secret generator job
+    fsGroup: 500
+  hvsdbCertGenerator: # The security content for HVS DB Secret generator job
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false

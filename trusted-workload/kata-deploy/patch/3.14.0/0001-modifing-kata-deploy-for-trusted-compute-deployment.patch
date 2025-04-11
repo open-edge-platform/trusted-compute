@@ -1,0 +1,85 @@
+From 3cb50b9307d129bb2a81d5250886809b25809345 Mon Sep 17 00:00:00 2001
+From: "Kumar, Anand" <anand.kumar@intel.com>
+Date: Mon, 17 Mar 2025 17:57:58 +0000
+Subject: [PATCH] modifing kata-deploy for trusted-compute deployment
+
+Signed-off-by: Kumar, Anand <anand.kumar@intel.com>
+---
+ .../kata-deploy/scripts/kata-deploy.sh        | 25 +++++++++++--------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
+
+diff --git a/tools/packaging/kata-deploy/scripts/kata-deploy.sh b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+index c8e298338..87d1205f2 100755
+--- a/tools/packaging/kata-deploy/scripts/kata-deploy.sh
++++ b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env bash
+-# Copyright (c) 2019 Intel Corporation
+ #
+-# SPDX-License-Identifier: Apache-2.0
++# Copyright (C) 2025 Intel Corporation
++# SPDX-License-Identifier: BSD-3-Clause
+ #
+ 
+ set -o errexit
+@@ -473,8 +473,10 @@ function configure_cri_runtime() {
+ 		# do nothing, k0s will automatically load the config on the fly
+ 		:
+ 	else
+-		host_systemctl daemon-reload
+-		host_systemctl restart "$1"
++		#host_systemctl daemon-reload
++		#host_systemctl restart "$1"
++		echo "configure_cri_runtime"
++
+ 	fi
+ 
+ 	wait_till_node_is_ready
+@@ -659,8 +661,9 @@ function restart_cri_runtime() {
+ 		# do nothing, k0s will automatically unload the config on the fly
+ 		:
+ 	else
+-		host_systemctl daemon-reload
+-		host_systemctl restart "${runtime}"
++		#host_systemctl daemon-reload
++		#host_systemctl restart "${runtime}"
++		echo "restart_cri_runtime"
+ 	fi
+ }
+ 
+@@ -677,7 +680,7 @@ function cleanup_cri_runtime() {
+ 	[ "${HELM_POST_DELETE_HOOK}" == "false" ] && return
+ 
+ 	# Only run this code in the HELM_POST_DELETE_HOOK
+-	restart_cri_runtime "$1"
++	#restart_cri_runtime "$1"
+ }
+ 
+ function cleanup_crio() {
+@@ -704,10 +707,12 @@ function cleanup_containerd() {
+ 
+ function reset_runtime() {
+ 	kubectl label node "$NODE_NAME" katacontainers.io/kata-runtime-
+-	restart_cri_runtime "$1"
++	#restart_cri_runtime "$1"
+ 
+ 	if [ "$1" == "crio" ] || [ "$1" == "containerd" ]; then
+-		host_systemctl restart kubelet
++		#host_systemctl restart kubelet
++		echo "reset_runtime"
++
+ 	fi
+ 
+ 	wait_till_node_is_ready
+@@ -850,7 +855,7 @@ function main() {
+ 			fi
+ 
+ 			install_artifacts
+-			configure_cri_runtime "$runtime"
++			#configure_cri_runtime "$runtime"
+ 			kubectl label node "$NODE_NAME" --overwrite katacontainers.io/kata-runtime=true
+ 			;;
+ 		cleanup)
+-- 
+2.34.1
+

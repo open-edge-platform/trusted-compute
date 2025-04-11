@@ -1,0 +1,130 @@
+# Default values for TA.
+
+nameOverride: "" # The name for TA chart<br> (Default: `.Chart.Name`)
+controlPlaneHostname: 127.0.0.1 # K8s control plane IP/Hostname<br> (**REQUIRED**)
+nodeLabel: 
+  txt: "" # The node label for TXT-ENABLED hosts<br> (**REQUIRED IF NODE IS TXT ENABLED**)
+  suefi: "host-99f50870" # The node label for SUEFI-ENABLED hosts (**REQUIRED IF NODE IS SUEFI ENABLED**)
+versionUpgrade: false # Set this true when performing upgrading to next minor/major version
+currentVersion: "" # Set the currently deployed version
+
+
+# Warning: Ensure that the naming is applied consistently for all dependent services when modifying nameOverride
+dependentServices: # The dependent Service Name for deploying  TA chart, default is the chart name and override is from nameOverride value.
+  cms: cms
+  aas: aas
+  hvs: hvs
+  nats: nats
+  
+image:
+  svc:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/tagent # The image registry where TA image is pushed<br> (**REQUIRED**)
+    pullPolicy: Always # The pull policy for pulling from container registry for TA <br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait
+  aasManager:
+    name:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
+    pullPolicy: Always # The pull policy for pulling from container registry for AAS Manager <br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait  # The image name of init container
+
+config:
+  logLevel: trace  # Log Level for Trust agent<br> (Allowed values: `info`/`warn`/`debug`/`trace`)
+  provisionAttestation: "n" # TPM provisioning<br> (Allowed values: `y`\`n`)
+  tpmOwnerSecret: # The TPM owner secret if TPM is already owned
+  tpmEndorsementSecret: # The TPM endorsement secret if TPM is already owned
+  nats:
+    enabled: true # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
+    servers:  # NATS Server IP/Hostname
+    serviceMode: outbound # The model for TA<br> (Allowed values: `outbound`)
+  imaPolicy: |
+    measure uid=504 template=ima-ng
+    dont_measure fsmagic=0x794c7630
+  imaAllowlist: |
+    /opt/verifier/cms/0.1.1-dev/config/root-ca.key
+    /opt/verifier/cms/0.1.1-dev/config/tls.key
+    /opt/verifier/cms/0.1.1-dev/config/intermediate-ca/signing-ca.key
+    /opt/verifier/cms/0.1.1-dev/config/intermediate-ca/tls-client-ca.key
+    /opt/verifier/cms/0.1.1-dev/config/jwt/cms-jwt.key
+    /opt/verifier/authservice/0.1.1-dev/config/certs/tokensign/jwt.key
+    /opt/verifier/authservice/0.1.1-dev/config/tls.key
+    /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/endorsement-ca.key
+    /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/flavor-signing.key
+    /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/privacy-ca.key
+    /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/tag-ca.key
+    /opt/verifier/hvs/0.1.1-dev/config/tls.key
+
+# TODO: use {VERSION} for the versions in verifier paths
+# Disabled due to issues in github actions
+    # /opt/verifier/cms/{VERSION}/config/root-ca.key
+    # /opt/verifier/cms/{VERSION}/config/tls.key
+    # /opt/verifier/cms/{VERSION}/config/intermediate-ca/signing-ca.key
+    # /opt/verifier/cms/{VERSION}/config/intermediate-ca/tls-client-ca.key
+    # /opt/verifier/cms/{VERSION}/config/jwt/cms-jwt.key
+    # /opt/verifier/authservice/{VERSION}/config/certs/tokensign/jwt.key
+    # /opt/verifier/authservice/{VERSION}/config/tls.key
+    # /opt/verifier/hvs/{VERSION}/config/trusted-keys/endorsement-ca.key
+    # /opt/verifier/hvs/{VERSION}/config/trusted-keys/flavor-signing.key
+    # /opt/verifier/hvs/{VERSION}/config/trusted-keys/privacy-ca.key
+    # /opt/verifier/hvs/{VERSION}/config/trusted-keys/tag-ca.key
+    # /opt/verifier/hvs/{VERSION}/config/tls.key
+
+# TODO: Enable Trusted workload in allowlist
+# Add the following paths to the allowlist for Trusted workload
+    # /opt/kata/bin/containerd-shim-kata-v2
+    # /opt/kata/bin/qemu-system-x86_64
+    # /opt/kata/libexec/virtiofsd
+    # /opt/kata/share/defaults/kata-containers/configuration-qemu.toml
+    # /opt/kata/share/kata-containers/vmlinuz-6.12.19-1.emt3
+    # /opt/kata/share/kata-containers/trusted-vm.img
+    # /opt/kata/share/kata-qemu/qemu/bios-256k.bin
+    # /opt/kata/share/kata-qemu/qemu/efi-virtio.rom
+    # /opt/kata/share/kata-qemu/qemu/linuxboot_dma.bin
+    # /opt/kata/share/kata-qemu/qemu/pvh.bin
+    # /opt/kata/share/kata-qemu/qemu/kvmvapic.bin
+
+aas:
+# Please update the url section if aas is exposed via ingress
+  url:
+  secret: 
+    adminUsername: adminUsername # Admin Username for AAS
+    adminPassword: adminPassword # Admin Password for AAS
+
+    # The values provided for adminUsername and adminPassword here should be same as that of provided for aas.secret.adminUsername and aas.secret.adminPassword in values.yaml file for ihub chart
+    #
+secret:
+  installAdminUsername: installAdminUsernameta #serviceUsername #installAdminUsername # Admin Username for TA
+  installAdminPassword: installAdminPasswordta #servicePassword #installAdminPassword # Admin Password for TA
+
+securityContext:
+  aasManager: # The security content for AAS-MANAGER Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+  aasManagerInit: # The fsGroup id for init containers for AAS DB
+    fsGroup: 500
+      
+hostAliasEnabled: false # Set this to true for using host aliases and also add entries accordingly in ip, hostname entries. hostalias is required when ingress is deployed and pods are not able to resolve the domain names
+aliases:
+  hostAliases:
+    - ip: ""
+      hostnames:
+        - ""
+        - ""
+
+service:
+  directoryName: trustagent
+  cms:
+    containerPort: 8445 # The containerPort on which CMS can listen
+  aas: 
+    containerPort: 8444 # The containerPort on which AAS can listen
+  hvs:
+    containerPort: 8443 # The containerPort on which HVS can listen
+    port: 30443
+  ta:
+    containerPort: 1443 # The containerPort on which TA can listen
+    port: 31443 # The externally exposed NodePort on which TA can listen to external traffic
+

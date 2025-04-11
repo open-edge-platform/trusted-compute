@@ -1,0 +1,42 @@
+version = 1
+
+[[annotations]]
+path = [
+    "REUSE.toml",
+    "trivyignore.yaml",
+    "ci/**",
+    "trusted-vm/config-6.12.8-142",
+    "attestation-verifier/src/upgrades/manifest/supported_versions",
+    "attestation-verifier/src/upgrades/tagent/config/v5.0.0_config.tmpl",
+    "**.md",
+    "**/VERSION",
+    "**/CODEOWNERS",
+    "**/.gitignore",
+    "**/.patch",
+    "**/.github/workflows/**",
+    "**.github/workflows/lint.sh",
+    "**go.mod",
+    "**go.sum",
+    "**/.helmignore",
+    "**/Chart.lock",
+    "**.yml",
+    "**.yaml",
+    "**.tpl",
+    "**.json",
+    "**/docs/**",
+    "**/pkg/**",
+    "**/NOTES.txt",
+    "**.pem",
+    "**.xml",
+    "**.service",
+    "**.env",
+    "**.sql",
+    "**.conf",
+    "venv/**",
+    "**.zip",
+    ".gitattributes",
+    "**.tar.gz"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 Intel Corporation"
+SPDX-License-Identifier = "Apache-2.0"

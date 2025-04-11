@@ -1,0 +1,116 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+replicaCount: 1
+
+image:
+  repository: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-manager
+  pullPolicy: Always 
+  aasManager:
+    pullPolicy: Always # The pull policy for pulling from container registry<br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait # The image name of init container
+    dbVersionUpgradeImage: # The name of PostgresDB version upgrade image. Can be left empty during helm installation without upgrades, might be required during upgrades, refer product guide for more information
+    aasManagerName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager
+  
+  # svc:
+  #   name: <user input> # The image name with which HVS image is pushed to registry<br> (**REQUIRED**)
+  #   pullPolicy: Always # The pull policy for pulling from container registry for HVS<br> (Allowed values: `Always`/`IfNotPresent`)
+  #   imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+nameOverride: ""
+fullnameOverride: "attestation-manager"
+
+# managerArgs:
+#     pollduration: 10
+
+  
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+  fsGroup: 500
+
+securityContext:
+   capabilities:
+     drop:
+     - ALL
+   readOnlyRootFilesystem: true
+   allowPrivilegeEscalation: false
+   runAsNonRoot: true
+   runAsUser: 503
+   aasManager: # The security content for AAS-MANAGER Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+   aasManagerInit: # The fsGroup id for init containers for AAS DB
+       fsGroup: 500
+service:
+  type: ClusterIP
+  port: 80
+
+env:
+  aasPort: "8444"
+  cmsPort: "8445"
+  hvsPort: "8443"
+  hostname: "tc-node" # The hostname for registrating to Verifier
+  logLevel: "INFO"
+  amServerAddress: "" # The address of the attestation status manager server eg: attest-node.integration10.espd.infra-host.com
+  amServerAddressType: "DNS" # The address type of the attestation manager server, can be DNS or IP 
+  amServerPort: "443" # The port of the traefik
+  pollDuration: "60" # duration in minutes
+
+dependentServices: # The dependent Service Name for deploying  Certificate Management Service chart, default is the chart name and override is from nameOverride value.
+  aas: aas
+  cms: cms
+  hvs: hvs
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+ 
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

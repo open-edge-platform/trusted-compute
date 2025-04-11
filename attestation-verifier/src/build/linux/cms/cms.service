@@ -1,0 +1,18 @@
+[Unit]
+Description=Certificate Management Service
+
+[Service]
+Type=simple
+User=cms
+Group=cms
+WorkingDirectory=/opt/cms/bin/
+ExecStart=/usr/bin/cms run
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutStartSec=0
+Restart=on-failure
+PermissionsStartOnly=true
+RuntimeDirectory=cms
+RuntimeDirectoryMode=0775
+
+[Install]
+WantedBy=multi-user.target

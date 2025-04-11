@@ -1,0 +1,187 @@
+{{- include "factory.headers" . }}
+---
+{{- if  .Values.global }}
+{{- if .Values.global.config.nats.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "factory.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "factory.labelsChart" . | nindent 4 }}
+    {{- include "factory.labelsSvc" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "factory.labelsSvcSelector" . | nindent 6 }}
+  replicas: 2
+  serviceName: "nats"
+  template:
+    metadata:
+      labels:
+        {{- include "factory.labelsSvcSelector" . | nindent 8 }}
+    spec:
+      # Common volumes for the containers
+      volumes:
+        - name: config-volume
+          configMap:
+            name: nats-config
+        - name: pid
+          emptyDir: {}
+        - name: nats-certs-volume
+          secret:
+            secretName: nats-certs
+            defaultMode: 0640
+      # Required to be able to HUP signal and apply config reload
+      # to the server without restarting the pod.
+      shareProcessNamespace: true
+
+      #################
+      #               #
+      #  NATS Server  #
+      #               #
+      #################
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 500
+      containers:
+        - name: nats
+          image: {{ .Values.image.svc.name }}
+          imagePullPolicy: {{ .Values.image.svc.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.nats | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.service.natsClient.containerPort }}
+              name: {{ .Values.service.natsClient.name }}
+            - containerPort: {{ .Values.service.natsCluster.containerPort }}
+              name: {{ .Values.service.natsCluster.name }}
+
+          command:
+            - "nats-server"
+            - "--config"
+            - "/etc/nats-config/nats.conf"
+
+          # Required to be able to define an environment variable
+          # that refers to other environment variables.  This env var
+          # is later used as part of the configuration file.
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CLUSTER_ADVERTISE
+              value: $(POD_NAME).nats.$(POD_NAMESPACE).svc
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/nats-config
+            - name: pid
+              mountPath: /var/run/nats
+            - name: nats-certs-volume
+              mountPath: /etc/nats-certs
+          # Gracefully stop NATS Server on pod deletion or image upgrade.
+          #
+          lifecycle:
+            preStop:
+              exec:
+                # Using the alpine based NATS image, we add an extra sleep that is
+                # the same amount as the terminationGracePeriodSeconds to allow
+                # the NATS Server to gracefully terminate the client connections.
+                #
+                command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
+{{- end }}
+{{- else }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "factory.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "factory.labelsChart" . | nindent 4 }}
+      {{- include "factory.labelsSvc" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "factory.labelsSvcSelector" . | nindent 6 }}
+  replicas: 2
+  serviceName: "nats"
+  template:
+    metadata:
+      labels:
+        {{- include "factory.labelsSvcSelector" . | nindent 8 }}
+    spec:
+      # Common volumes for the containers
+      volumes:
+        - name: config-volume
+          configMap:
+            name: nats-config
+        - name: pid
+          emptyDir: {}
+        - name: nats-certs-volume
+          secret:
+            secretName: nats-certs
+            defaultMode: 0640
+      # Required to be able to HUP signal and apply config reload
+      # to the server without restarting the pod.
+      shareProcessNamespace: true
+
+      #################
+      #               #
+      #  NATS Server  #
+      #               #
+      #################
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 500
+      containers:
+        - name: nats
+          image: {{ .Values.image.svc.name }}
+          imagePullPolicy: {{ .Values.image.svc.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.nats | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.service.natsClient.containerPort }}
+              name: {{ .Values.service.natsClient.name }}
+            - containerPort: {{ .Values.service.natsCluster.containerPort }}
+              name: {{ .Values.service.natsCluster.name }}
+
+          command:
+            - "nats-server"
+            - "--config"
+            - "/etc/nats-config/nats.conf"
+
+          # Required to be able to define an environment variable
+          # that refers to other environment variables.  This env var
+          # is later used as part of the configuration file.
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CLUSTER_ADVERTISE
+              value: $(POD_NAME).nats.$(POD_NAMESPACE).svc
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/nats-config
+            - name: pid
+              mountPath: /var/run/nats
+            - name: nats-certs-volume
+              mountPath: /etc/nats-certs
+          # Gracefully stop NATS Server on pod deletion or image upgrade.
+          #
+          lifecycle:
+            preStop:
+              exec:
+                # Using the alpine based NATS image, we add an extra sleep that is
+                # the same amount as the terminationGracePeriodSeconds to allow
+                # the NATS Server to gracefully terminate the client connections.
+                #
+                command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
+{{- end }}

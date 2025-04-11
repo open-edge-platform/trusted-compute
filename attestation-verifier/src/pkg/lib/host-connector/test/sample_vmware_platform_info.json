@@ -1,0 +1,24 @@
+{
+  "os_name": "VMware ESXi",
+  "os_version": "6.7.0",
+  "bios_version": "SE5C620.86B.00.01.0014.070920180847",
+  "vmm_name": "VMware ESXi",
+  "vmm_version": "10302608",
+  "processor_info": "intel-skylake",
+  "host_name": "hostName",
+  "bios_name": "Intel Corporation",
+  "hardware_uuid": "0019204C-C4B7-E811-906E-00163566263E",
+  "no_of_sockets": "2",
+  "hardware_features": {
+    "TXT": {
+      "enabled": "true"
+    },
+    "TPM": {
+      "enabled": "true",
+      "meta": {
+        "tpm_version": "2.0"
+      }
+    }
+  },
+  "installed_components": null
+}

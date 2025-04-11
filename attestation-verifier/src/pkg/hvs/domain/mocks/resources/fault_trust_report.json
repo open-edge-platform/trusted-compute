@@ -1,0 +1,1420 @@
+{
+    "reports": [
+        {
+            "id": "ac14fc90-0965-4cef-a493-66ca4d970ab8",
+            "trust_information": {
+                "OVERALL": false,
+                "flavors_trust": {
+                    "HOST_UNIQUE": {
+                        "trust": false,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIncludes",
+                                    "markers": [
+                                        "HOST_UNIQUE"
+                                    ],
+                                    "expected_values": {
+                                        "pcr_index": "pcr_19",
+                                        "event_log": [
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "7f3da1bdd3d5a414ec83cd02b02b437c59b9a216",
+                                                "label": "",
+                                                "info": {
+                                                    "ComponentName": "commandLine.",
+                                                    "EventName": "Vim25Api.HostTpmCommandEventDetails",
+                                                    "EventType": "HostTpmCommandEvent"
+                                                }
+                                            }
+                                        ],
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "c13ce98b-2be4-473c-a882-57835bdfa9ab",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+                                    "markers": [
+                                        "HOST_UNIQUE"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_19",
+                                        "value": "b4a074202b1ed0699c10703d7aba63053ef8c1f3",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "c13ce98b-2be4-473c-a882-57835bdfa9ab",
+                                "faults": [
+                                    {
+                                        "fault_name": "com.intel.mtwilson.core.verifier.policy.fault.PcrEventLogInvalid",
+                                        "description": "PCR 19 Event Log is invalid",
+                                        "pcr_index": "pcr_19"
+                                    }
+                                ],
+                                "trusted": false
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+                                    "markers": [
+                                        "HOST_UNIQUE"
+                                    ]
+                                },
+                                "flavor_id": "c13ce98b-2be4-473c-a882-57835bdfa9ab",
+                                "trusted": true
+                            }
+                        ]
+                    },
+                    "OS": {
+                        "trust": false,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "OS"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_18",
+                                        "value": "2b619a34d3f418f373ba2e60831ff9b079e89008",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "f68544ee-c3ba-4957-bafc-d414e361ad54",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "OS"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_20",
+                                        "value": "d30ec1384ce7c5c5f03faa670251fe524afecc9d",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "f68544ee-c3ba-4957-bafc-d414e361ad54",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogEqualsExcluding",
+                                    "markers": [
+                                        "OS"
+                                    ],
+                                    "expected_values": {
+                                        "pcr_index": "pcr_19",
+                                        "event_log": [
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "973a0474da4dd9f65413f1d75fe9f5679ac52a15",
+                                                "label": "jumpstrt.gz",
+                                                "info": {
+                                                    "ComponentName": "bootOptions.jumpstrt.gz",
+                                                    "EventName": "Vim25Api.HostTpmOptionEventDetails",
+                                                    "EventType": "HostTpmOptionEvent"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
+                                                "label": "useropts.gz",
+                                                "info": {
+                                                    "ComponentName": "bootOptions.useropts.gz",
+                                                    "EventName": "Vim25Api.HostTpmOptionEventDetails",
+                                                    "EventType": "HostTpmOptionEvent"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                                                "label": "features.gz",
+                                                "info": {
+                                                    "ComponentName": "bootOptions.features.gz",
+                                                    "EventName": "Vim25Api.HostTpmOptionEventDetails",
+                                                    "EventType": "HostTpmOptionEvent"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "ce4e2f29a80f350550bf9f694b9ddf95d0c4561e",
+                                                "label": "procfs.b00",
+                                                "info": {
+                                                    "ComponentName": "componentName.procfs.b00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.procfs-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "62b0e6df1d881274e3a317d487e8db921eb80417",
+                                                "label": "vmx.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmx.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmx-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "075b221ca8861c773eff3a6f04aab0eade2e27a7",
+                                                "label": "vim.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vim.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vim-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "3f2f76a1bf6212618a16f80c3de0b1a30649702f",
+                                                "label": "tpm.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.tpm.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.tpm-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "984e0476b990376832120c19cf48b27ee3afbd71",
+                                                "label": "sb.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.sb.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.sb-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "73da961d42cd8bee6a18d5bc3abe829709ed2145",
+                                                "label": "s.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.s.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.s-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "cf49316717f82a9fa7294cffd51eb63e7eabf070",
+                                                "label": "bnxtnet.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.bnxtnet.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.bnxtnet-bnxtnet-216.0.50.0-16vmw.701.0.0.16850804",
+                                                    "PackageName": "bnxtnet",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "216.0.50.0-16vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "b62465071ab9b635b58ba7f4c1976121cb24b0c7",
+                                                "label": "bnxtroce.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.bnxtroce.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.bnxtroce-bnxtroce-216.0.58.0-7vmw.701.0.0.16850804",
+                                                    "PackageName": "bnxtroce",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "216.0.58.0-7vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c9980331be89734335e909d7282e2e3f2d1fa09a",
+                                                "label": "brcmfcoe.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.brcmfcoe.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.brcmfcoe-brcmfcoe-12.0.1500.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "brcmfcoe",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "12.0.1500.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "a7e45960794d8450351a8092230242bfeb5d2ed8",
+                                                "label": "brcmnvme.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.brcmnvme.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.brcmnvme-brcmnvmefc-12.6.278.10-3vmw.701.0.0.16850804",
+                                                    "PackageName": "brcmnvmefc",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "12.6.278.10-3vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "8ba47ece934d19e23273cc9a884f9cf0cf521aa0",
+                                                "label": "elxiscsi.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.elxiscsi.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.elxiscsi-elxiscsi-12.0.1200.0-2vmw.701.0.0.16850804",
+                                                    "PackageName": "elxiscsi",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "12.0.1200.0-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "eb9abf9d144cd0736a880d6407b628f722f3e844",
+                                                "label": "elxnet.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.elxnet.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.elxnet-elxnet-12.0.1250.0-5vmw.701.0.0.16850804",
+                                                    "PackageName": "elxnet",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "12.0.1250.0-5vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "8a87bf6c6a41cc89784f9f117dae6dfb2e8a1293",
+                                                "label": "i40en.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.i40en.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.i40en-i40en-1.8.1.123-1vmw.701.0.0.16850804",
+                                                    "PackageName": "i40en",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.8.1.123-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "4889f7d3340d26a487a605e398872b0f21835ec1",
+                                                "label": "i40iwn.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.i40iwn.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.i40iwn-i40iwn-1.1.2.6-1vmw.701.0.0.16850804",
+                                                    "PackageName": "i40iwn",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.1.2.6-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "fc23f857c7e71aa9ec518d339d4093846ddcdf88",
+                                                "label": "iavmd.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.iavmd.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.iavmd-iavmd-2.0.0.1055-5vmw.701.0.0.16850804",
+                                                    "PackageName": "iavmd",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.0.0.1055-5vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "84b9495a214f18a9be2222af1ee4fa4bc293051d",
+                                                "label": "icen.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.icen.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.icen-icen-1.0.0.9-1vmw.701.0.0.16850804",
+                                                    "PackageName": "icen",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.0.9-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "77d0192c46f77ce315a98729d7228e4133f05a63",
+                                                "label": "igbn.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.igbn.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.igbn-igbn-0.1.1.0-7vmw.701.0.0.16850804",
+                                                    "PackageName": "igbn",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "0.1.1.0-7vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "d25490f4d9e732103c0aa20690ed607e5dbd7fbe",
+                                                "label": "iser.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.iser.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.iser-iser-1.1.0.1-1vmw.701.0.0.16850804",
+                                                    "PackageName": "iser",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.1.0.1-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "ec62ce53e41f22c177b939c8e714c3e60d621b01",
+                                                "label": "ixgben.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.ixgben.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.ixgben-ixgben-1.7.1.28-1vmw.701.0.0.16850804",
+                                                    "PackageName": "ixgben",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.7.1.28-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "105ffc353ccbb025c42cb64d2a543e98479cf2cf",
+                                                "label": "lpfc.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lpfc.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lpfc-lpfc-12.6.278.10-8vmw.701.0.0.16850804",
+                                                    "PackageName": "lpfc",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "12.6.278.10-8vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "22e0679820127a1024dea4018a45481a7a1343ef",
+                                                "label": "lpnic.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lpnic.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lpnic-lpnic-11.4.62.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lpnic",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "11.4.62.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "8fe8c3f97bdddd2fa86894f46a34928e22e83fcf",
+                                                "label": "lsi_mr3.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsi_mr3.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsi_mr3-lsi-mr3-7.712.51.00-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lsi-mr3",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "7.712.51.00-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "a4b747951acf2f7da118f061aed70f4b2b9cfc74",
+                                                "label": "lsi_msgp.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsi_msgp.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsi_msgp-lsi-msgpt2-20.00.06.00-3vmw.701.0.0.16850804",
+                                                    "PackageName": "lsi-msgpt2",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "20.00.06.00-3vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "1ec2107a57d73b00466db9fa4a58b93f8900bff1",
+                                                "label": "lsi_msgp.v01",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsi_msgp.v01",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsi_msgp-lsi-msgpt35-13.00.13.00-2vmw.701.0.0.16850804",
+                                                    "PackageName": "lsi-msgpt35",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "13.00.13.00-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "2534b3ddbe710462552108589ecbbb2814018d3d",
+                                                "label": "lsi_msgp.v02",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsi_msgp.v02",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsi_msgp-lsi-msgpt3-17.00.10.00-2vmw.701.0.0.16850804",
+                                                    "PackageName": "lsi-msgpt3",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "17.00.10.00-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "aca9fca190f5fa5805ee2c4c1d39ffb40e352085",
+                                                "label": "mtip32xx.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.mtip32xx.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.mtip32xx-mtip32xx-native-3.9.8-1vmw.701.0.0.16850804",
+                                                    "PackageName": "mtip32xx-native",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.9.8-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "77ef836ed613a8070824db7ea430384c5bb10017",
+                                                "label": "ne1000.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.ne1000.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.ne1000-ne1000-0.8.4-11vmw.701.0.0.16850804",
+                                                    "PackageName": "ne1000",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "0.8.4-11vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "17f237d4bf474e303ebab8e5bb3308926c91ee04",
+                                                "label": "nenic.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nenic.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nenic-nenic-1.0.29.0-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nenic",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.29.0-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "58c83ed1eeadb8502b689adff10919be7b6412eb",
+                                                "label": "nfnic.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nfnic.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nfnic-nfnic-4.0.0.44-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nfnic",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "4.0.0.44-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "7768dfb55efcae1b27a913825f90c7e798d885cd",
+                                                "label": "nhpsa.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nhpsa.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nhpsa-nhpsa-70.0050.0.100-1vmw.701.0.0.16850804",
+                                                    "PackageName": "nhpsa",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "70.0050.0.100-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "d89586168ea47976dd4de0d30592e0b4972c91e7",
+                                                "label": "nmlx4_co.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nmlx4_co.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nmlx4_co-nmlx4-core-3.19.16.8-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nmlx4-core",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.19.16.8-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "cce1ffb15081b924d5efc5aa674e9977e585bed6",
+                                                "label": "nmlx4_en.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nmlx4_en.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nmlx4_en-nmlx4-en-3.19.16.8-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nmlx4-en",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.19.16.8-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "57c692a9120a2be8b7e87b83dd423bd93a1ad811",
+                                                "label": "nmlx4_rd.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nmlx4_rd.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nmlx4_rd-nmlx4-rdma-3.19.16.8-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nmlx4-rdma",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.19.16.8-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "bdb7a6a97a5bdf74040270ddc4e8519a7de49b94",
+                                                "label": "nmlx5_co.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nmlx5_co.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nmlx5_co-nmlx5-core-4.19.16.8-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nmlx5-core",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "4.19.16.8-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "5e0341a43d556def593b9d1b9a3ec3c80cf998fb",
+                                                "label": "nmlx5_rd.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nmlx5_rd.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nmlx5_rd-nmlx5-rdma-4.19.16.8-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nmlx5-rdma",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "4.19.16.8-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "8b42a0d2ba322da9c5a1be77337f44f205f35532",
+                                                "label": "ntg3.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.ntg3.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.ntg3-ntg3-4.1.5.0-0vmw.701.0.0.16850804",
+                                                    "PackageName": "ntg3",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "4.1.5.0-0vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "924acfb083c375dc929c18c3894cbf719d1156e6",
+                                                "label": "nvme_pci.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nvme_pci.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nvme_pci-nvme-pcie-1.2.3.9-2vmw.701.0.0.16850804",
+                                                    "PackageName": "nvme-pcie",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.2.3.9-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "fb76d1ca59609f106411740b095e2805f1313398",
+                                                "label": "nvmerdma.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nvmerdma.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nvmerdma-nvmerdma-1.0.1.2-1vmw.701.0.0.16850804",
+                                                    "PackageName": "nvmerdma",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.1.2-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c086888e1bb95f208e90e6ea291da1b892bb099c",
+                                                "label": "nvmxnet3.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.nvmxnet3.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nvmxnet3-nvmxnet3-ens-2.0.0.22-1vmw.701.0.0.16850804",
+                                                    "PackageName": "nvmxnet3-ens",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.0.0.22-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "2f202df3d51410cf8b58713ddadf0c0c669b50bd",
+                                                "label": "nvmxnet3.v01",
+                                                "info": {
+                                                    "ComponentName": "componentName.nvmxnet3.v01",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.nvmxnet3-nvmxnet3-2.0.0.30-1vmw.701.0.0.16850804",
+                                                    "PackageName": "nvmxnet3",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.0.0.30-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c5f3be6fdfb2ba1a6324e6136b5d9cdca74a4e8f",
+                                                "label": "pvscsi.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.pvscsi.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.pvscsi-pvscsi-0.1-2vmw.701.0.0.16850804",
+                                                    "PackageName": "pvscsi",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "0.1-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "5d1cb99a99a56328330a7c0d36c8de1efa3bedb2",
+                                                "label": "qcnic.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qcnic.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qcnic-qcnic-1.0.15.0-10vmw.701.0.0.16850804",
+                                                    "PackageName": "qcnic",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.15.0-10vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "74ebf2f2ac40cd9c506ee8123d1b5c5e141069a4",
+                                                "label": "qedentv.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qedentv.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qedentv-qedentv-3.40.3.0-12vmw.701.0.0.16850804",
+                                                    "PackageName": "qedentv",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.40.3.0-12vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "1818dc8fd041d2ad9eaacf082e1226c2cdd02e46",
+                                                "label": "qedrntv.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qedrntv.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qedrntv-qedrntv-3.40.4.0-12vmw.701.0.0.16850804",
+                                                    "PackageName": "qedrntv",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "3.40.4.0-12vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "793eb7331d70d7b6b21155b8100e32603924ab62",
+                                                "label": "qfle3.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qfle3.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qfle3-qfle3-1.0.67.0-9vmw.701.0.0.16850804",
+                                                    "PackageName": "qfle3",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.67.0-9vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "2aa27cae75745f4585b6d57d2db317995d1ea523",
+                                                "label": "qfle3f.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qfle3f.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qfle3f-qfle3f-1.0.51.0-14vmw.701.0.0.16850804",
+                                                    "PackageName": "qfle3f",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.51.0-14vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "d282848142dac77c4b254668b8f0bfda4bb1465d",
+                                                "label": "qfle3i.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qfle3i.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qfle3i-qfle3i-1.0.15.0-9vmw.701.0.0.16850804",
+                                                    "PackageName": "qfle3i",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.15.0-9vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "a507728c78980c20dd9ae58fe748164b3708235b",
+                                                "label": "qflge.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qflge.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qflge-qflge-1.1.0.11-1vmw.701.0.0.16850804",
+                                                    "PackageName": "qflge",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.1.0.11-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "7fdfd56d890cc2b9eed9614220a9eeb5b868c19a",
+                                                "label": "rste.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.rste.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.rste-rste-2.0.2.0088-7vmw.701.0.0.16850804",
+                                                    "PackageName": "rste",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.0.2.0088-7vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "fba692a4ae2aba810860b5cb0d67073ec48a91f5",
+                                                "label": "sfvmk.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.sfvmk.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.sfvmk-sfvmk-2.4.0.0010-15vmw.701.0.0.16850804",
+                                                    "PackageName": "sfvmk",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.4.0.0010-15vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "f7585a63f423997b7b0ebb8caced6ee62c27415b",
+                                                "label": "smartpqi.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.smartpqi.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.smartpqi-smartpqi-70.4000.0.100-3vmw.701.0.0.16850804",
+                                                    "PackageName": "smartpqi",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "70.4000.0.100-3vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "b2d83c90d0080f2495fc30033174c6a4fc6fa6e4",
+                                                "label": "vmkata.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmkata.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmkata-vmkata-0.1-1vmw.701.0.0.16850804",
+                                                    "PackageName": "vmkata",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "0.1-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "b3e8388b9b5c397e8a689ba1fb2dda47a073025b",
+                                                "label": "vmkfcoe.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmkfcoe.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmkfcoe-vmkfcoe-1.0.0.2-1vmw.701.0.0.16850804",
+                                                    "PackageName": "vmkfcoe",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "1.0.0.2-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "888e70551331376771a1e2ed0b5d9065e57baf06",
+                                                "label": "vmkusb.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmkusb.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmkusb-vmkusb-0.1-1vmw.701.0.0.16850804",
+                                                    "PackageName": "vmkusb",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "0.1-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "9e9d00ce6d3a0d6d6df3ecebafa2d59bd8e89df0",
+                                                "label": "vmw_ahci.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmw_ahci.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmw_ahci-vmw-ahci-2.0.5-2vmw.701.0.0.16850804",
+                                                    "PackageName": "vmw-ahci",
+                                                    "PackageVendor": "VMW",
+                                                    "PackageVersion": "2.0.5-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "3a53970433a14b942ef9bc6a4f9d12e8821a181f",
+                                                "label": "crx.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.crx.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.crx-crx-7.0.1-0.0.16850804",
+                                                    "PackageName": "crx",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "deef364aad6bcaefd49032d02925bd3f6b228be6",
+                                                "label": "elx_esx_.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.elx_esx_.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.elx_esx_-elx-esx-libelxima.so-12.0.1200.0-3vmw.701.0.0.16850804",
+                                                    "PackageName": "elx-esx-libelxima.so",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "12.0.1200.0-3vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "5f0fa855f1ea6cc2e4858d97b478875aa53909bb",
+                                                "label": "btldr.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.btldr.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.btldr-esx-base-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-base",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c3974c8c1b351679937f6cf728f4e31d0c3c3902",
+                                                "label": "esx_dvfi.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.esx_dvfi.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.esx_dvfi-esx-dvfilter-generic-fastpath-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-dvfilter-generic-fastpath",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "02b011e4983d343f53017d18fe9f34f649e5048d",
+                                                "label": "esx_ui.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.esx_ui.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.esx_ui-esx-ui-1.34.4-16668064",
+                                                    "PackageName": "esx-ui",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.34.4-16668064"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c9c61aa1f5a8ebce06cf456d0eea7292dd0e5c7e",
+                                                "label": "esxupdt.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.esxupdt.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.esxupdt-esx-update-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-update",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "1b667dd663ef038bba1beea1fd4113391d14cfbb",
+                                                "label": "tpmesxup.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.tpmesxup.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.tpmesxup-esx-update-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-update",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "335eaaa62bfa89ffd9b721847b0e641b5a7b6b4c",
+                                                "label": "weaselin.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.weaselin.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.weaselin-esx-update-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-update",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "ece75a8f0ea4f7f815aaa34eeeb1d3fc5509fb0d",
+                                                "label": "loadesx.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.loadesx.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.loadesx-loadesx-7.0.1-0.0.16850804",
+                                                    "PackageName": "loadesx",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "81e275aac52be9475d34eeaff9fc8bb88168a1be",
+                                                "label": "lsuv2_hp.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_hp.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_hp-lsuv2-hpv2-hpsa-plugin-1.0.0-3vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-hpv2-hpsa-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-3vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "d46cc873bbc269ba78fd920d93947ce8edea4da0",
+                                                "label": "lsuv2_in.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_in.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_in-lsuv2-intelv2-nvme-vmd-plugin-1.0.0-2vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-intelv2-nvme-vmd-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-2vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "bd5db5bdb1b427e466da3adec8813c3097704182",
+                                                "label": "lsuv2_ls.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_ls.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_ls-lsuv2-lsiv2-drivers-plugin-1.0.0-4vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-lsiv2-drivers-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-4vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "c8f92e3d568549a14b95e70affdeea91673ebf1f",
+                                                "label": "lsuv2_nv.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_nv.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_nv-lsuv2-nvme-pcie-plugin-1.0.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-nvme-pcie-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "e514e4433cbef75e039d1c13c07e90ae717eff6b",
+                                                "label": "lsuv2_oe.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_oe.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_oe-lsuv2-oem-dell-plugin-1.0.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-oem-dell-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "f3677bb28d6d2fef68e9c0eafe202ed2361b1d49",
+                                                "label": "lsuv2_oe.v01",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_oe.v01",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_oe-lsuv2-oem-hp-plugin-1.0.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-oem-hp-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "d9272613b0c4a0c879bec676f2170bf34cc82ea4",
+                                                "label": "lsuv2_oe.v02",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_oe.v02",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_oe-lsuv2-oem-lenovo-plugin-1.0.0-1vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-oem-lenovo-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "8ef405f5a7756a9c3a5aea082e59a3e74542ed46",
+                                                "label": "lsuv2_sm.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.lsuv2_sm.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.lsuv2_sm-lsuv2-smartpqiv2-plugin-1.0.0-4vmw.701.0.0.16850804",
+                                                    "PackageName": "lsuv2-smartpqiv2-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.0.0-4vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "df4b08fa79b70c070463679e623e11573d013c71",
+                                                "label": "native_m.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.native_m.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.native_m-native-misc-drivers-7.0.1-0.0.16850804",
+                                                    "PackageName": "native-misc-drivers",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "f0c6fd13aa45dcd9b483b939b290a2b6a54e7427",
+                                                "label": "qlnative.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.qlnative.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.qlnative-qlnativefc-4.0.3.0-17vmw.701.0.0.16850804",
+                                                    "PackageName": "qlnativefc",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "4.0.3.0-17vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "5e1ef1eae50f16edc59fc7fa4bef89a78c2de960",
+                                                "label": "vdfs.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vdfs.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vdfs-vdfs-7.0.1-0.0.16850804",
+                                                    "PackageName": "vdfs",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "85c190b0d822e0af6b5368a0ef27d15b5620aa19",
+                                                "label": "vmware_e.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vmware_e.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vmware_e-vmware-esx-esxcli-nvme-plugin-1.2.0.38-1vmw.701.0.0.16850804",
+                                                    "PackageName": "vmware-esx-esxcli-nvme-plugin",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "1.2.0.38-1vmw.701.0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "885dcb89aa000ac641a15566fa0d3bf824efd758",
+                                                "label": "vsan.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vsan.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vsan-vsan-7.0.1-0.0.16850804",
+                                                    "PackageName": "vsan",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "68ce9468d571cb567377faf122a7201da11d69e0",
+                                                "label": "vsanheal.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vsanheal.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vsanheal-vsanhealth-7.0.1-0.0.16850804",
+                                                    "PackageName": "vsanhealth",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "3ef48b553129501c89e13ac4732f290e4419fe1a",
+                                                "label": "vsanmgmt.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.vsanmgmt.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.vsanmgmt-vsanhealth-7.0.1-0.0.16850804",
+                                                    "PackageName": "vsanhealth",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "925814f2bfbf5d09b59a4f8f2dbcc2939cf82748",
+                                                "label": "xorg.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.xorg.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.xorg-esx-xserver-7.0.1-0.0.16850804",
+                                                    "PackageName": "esx-xserver",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "5cbcdda31f3d59e529ab58bd7de5b771c0142219",
+                                                "label": "gc.v00",
+                                                "info": {
+                                                    "ComponentName": "componentName.gc.v00",
+                                                    "EventName": "Vim25Api.HostTpmSoftwareComponentEventDetails",
+                                                    "EventType": "HostTpmSoftwareComponentEvent",
+                                                    "FullComponentName": "componentName.gc-gc-7.0.1-0.0.16850804",
+                                                    "PackageName": "gc",
+                                                    "PackageVendor": "VMware",
+                                                    "PackageVersion": "7.0.1-0.0.16850804"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "739aff7705b06ba29c915e41491105672507b632",
+                                                "label": "execInstalledOnly = FALSE",
+                                                "info": {
+                                                    "ComponentName": "bootSecurityOption.execInstalledOnly = FALSE",
+                                                    "EventName": "Vim25Api.HostTpmBootSecurityOptionEventDetails",
+                                                    "EventType": "HostTpmBootSecurityOptionEvent"
+                                                }
+                                            },
+                                            {
+                                                "digest_type": "com.intel.mtwilson.core.common.model.MeasurementSha1",
+                                                "value": "031144feec670c41b1d3fb2b7cbf98911da47b25",
+                                                "label": "uefiSecureBootEnabled = FALSE",
+                                                "info": {
+                                                    "ComponentName": "bootSecurityOption.uefiSecureBootEnabled = FALSE",
+                                                    "EventName": "Vim25Api.HostTpmBootSecurityOptionEventDetails",
+                                                    "EventType": "HostTpmBootSecurityOptionEvent"
+                                                }
+                                            }
+                                        ],
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "f68544ee-c3ba-4957-bafc-d414e361ad54",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrEventLogIntegrity",
+                                    "markers": [
+                                        "OS"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_19",
+                                        "value": "b4a074202b1ed0699c10703d7aba63053ef8c1f3",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "f68544ee-c3ba-4957-bafc-d414e361ad54",
+                                "faults": [
+                                    {
+                                        "fault_name": "com.intel.mtwilson.core.verifier.policy.fault.PcrEventLogInvalid",
+                                        "description": "PCR 19 Event Log is invalid",
+                                        "pcr_index": "pcr_19"
+                                    }
+                                ],
+                                "trusted": false
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+                                    "markers": [
+                                        "OS"
+                                    ]
+                                },
+                                "flavor_id": "f68544ee-c3ba-4957-bafc-d414e361ad54",
+                                "trusted": true
+                            }
+                        ]
+                    },
+                    "PLATFORM": {
+                        "trust": true,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "PLATFORM"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_0",
+                                        "value": "853896315b9f453e7089eb64919daf119049c869",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "51b66580-af84-4781-b082-8b60a61b28cd",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "PLATFORM"
+                                    ],
+                                    "expected_pcr": {
+                                        "digest_type": "com.intel.mtwilson.core.common.model.PcrSha1",
+                                        "index": "pcr_17",
+                                        "value": "59af843a3f11bc8299358753f8e66f77ea67fc88",
+                                        "pcr_bank": "SHA1"
+                                    }
+                                },
+                                "flavor_id": "51b66580-af84-4781-b082-8b60a61b28cd",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "com.intel.mtwilson.core.verifier.policy.rule.FlavorTrusted",
+                                    "markers": [
+                                        "PLATFORM"
+                                    ]
+                                },
+                                "flavor_id": "51b66580-af84-4781-b082-8b60a61b28cd",
+                                "trusted": true
+                            }
+                        ]
+                    }
+                }
+            },
+            "host_id": "73153f67-6e6f-49d6-ab82-6da53e98d636",
+            "host_info": {
+                "os_name": "VMware ESXi",
+                "os_version": "7.0.1",
+                "bios_version": "SE5C610.86B.01.01.1008.031920151331",
+                "vmm_name": "VMware ESXi",
+                "vmm_version": "16850804",
+                "processor_info": "intel-haswell",
+                "host_name": "10.1.69.231",
+                "bios_name": "Intel Corporation",
+                "hardware_uuid": "80DD7987-8806-E411-906E-0017A4403562",
+                "no_of_sockets": "2",
+                "hardware_features": {
+                    "TXT": {
+                        "enabled": "false"
+                    },
+                    "TPM": {
+                        "enabled": "true",
+                        "meta": {
+                            "tpm_version": "1.2"
+                        }
+                    }
+                },
+                "installed_components": null
+            },
+            "created": "2020-12-28T19:43:46.813024Z",
+            "expiration": "2020-12-29T19:43:46.813025Z"
+        }
+    ]
+}

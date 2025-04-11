@@ -1,0 +1,1 @@
+root=/dev/mapper/rhel-root ro crashkernel=auto resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet intel_iommu=on noefi CONFIG_FILE_PATH=/tbootxm.conf ima_template=ima-ng ima_hash=sha1

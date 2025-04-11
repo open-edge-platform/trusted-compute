@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+
+TARGETS = intel-secl sgx-caching-service sgx-verification-service sgx-hvs
+
+all: clean download-eca $(TARGETS) skc-all
+	mkdir -p binaries
+	cp intel-secl/deployments/installer/*.bin binaries/
+	cp intel-secl/deployments/installer/*.sh binaries/
+	cp intel-secl/installer/isecl-k8s-extensions-v*.tar.gz binaries/
+	cp intel-secl/tools/aas-manager/populate-users.env binaries/env
+
+download-eca:
+	cd intel-secl && make download-eca && cd -
+
+sgx_agent:
+	cd utils/build/skc-tools/sgx_agent/build_scripts/ && ./sgxagent_build.sh
+	
+skc_library:
+	cd utils/build/skc-tools/skc_library/build_scripts/ && ./skc_library_build.sh
+
+skc-all: sgx_agent skc_library
+	mkdir -p binaries/env
+	cp sgx-caching-service/out/*.bin binaries/
+	cp sgx-caching-service/dist/linux/scs.env binaries/env
+	cp sgx-verification-service/out/*.bin binaries/
+	cp sgx-verification-service/dist/linux/sqvs.env binaries/env
+	cp sgx-verification-service/dist/linux/trusted_rootca_icx_preprod.pem binaries/
+	cp sgx-verification-service/dist/linux/trusted_rootca_icx_prod.pem binaries/trusted_rootca.pem
+	cp sgx-hvs/out/*.bin binaries/
+	cp sgx-hvs/dist/linux/shvs.env binaries/env
+	cp utils/build/skc-tools/sgx_agent/build_scripts/sgx_agent.* binaries/
+	cp utils/build/skc-tools/sgx_agent/agent_untar.sh binaries/
+	cp utils/build/skc-tools/skc_library/build_scripts/skc_library.* binaries/
+	cp utils/build/skc-tools/skc_library/skclib_untar.sh binaries/
+	cp -pf utils/build/skc-tools/skc_scripts/env/*.env binaries/env
+	cp -pf utils/build/skc-tools/skc_scripts/env/install_pgdb.sh binaries/
+	cp -pf utils/build/skc-tools/skc_scripts/install_*.sh binaries/
+	cp -pf utils/build/skc-tools/skc_scripts/*.conf binaries/
+	cp -rpf utils/build/skc-tools/kbs_script/ binaries/
+
+clean: $(patsubst %, %-clean, $(TARGETS))
+	rm -rf binaries/
+
+$(TARGETS):
+	cd $@ && make installer
+
+%-clean:
+	cd $* && make clean
+
+.PHONY: all clean $(TARGETS) skc-all sgx_agent skc_library

@@ -1,0 +1,9 @@
+{{- include "factory.headers" . }}
+---
+{{- if .Values.global }}
+{{- if .Values.global.config.nats.enabled }}
+{{- include "factory.getAasUserAndRoles" . }}
+{{- end }}
+{{- else }}
+{{- include "factory.getAasUserAndRoles" . }}
+{{- end }}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest xmlns="lib:wml:measurements:1.0" Label="ISecL_Default_Workload_Flavor_v" Uuid="7a9ac586-40f9-43b2-976b-26667431efca" DigestAlg="SHA384">
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/trustagent/var"/>
+   <File Path="/opt/trustagent/var"/>
+   <File Path="/opt/trustagent/var/.*\.sh" SearchType="regex"/>
+</Manifest>

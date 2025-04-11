@@ -1,0 +1,336 @@
+{
+    "reports": [
+        {
+            "id": "40a94a24-35bb-4fbf-b2ea-3c4abdfb17b6",
+            "trust_information": {
+                "OVERALL": false,
+                "flavors_trust": {
+                    "HOST_UNIQUE": {
+                        "trust": true,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "rule.FlavorTrusted",
+                                    "markers": [
+                                        "HOST_UNIQUE"
+                                    ]
+                                },
+                                "flavor_id": "51889b05-d6bd-4d87-a876-ae261183fdec",
+                                "trusted": true
+                            }
+                        ]
+                    },
+                    "OS": {
+                        "trust": true,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "OS"
+                                    ],
+                                    "expected_pcr": {
+                                        "pcr": {
+                                            "index": 7,
+                                            "bank": "SHA256"
+                                        },
+                                        "measurement": "9cf3201b9211938c73f9a9663149964fc84c923ad72f5cbd1634e83d577a156f",
+                                        "pcr_matches": true
+                                    }
+                                },
+                                "flavor_id": "3800132b-0cf6-4dc7-88a2-67678676c120",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "rule.FlavorTrusted",
+                                    "markers": [
+                                        "OS"
+                                    ]
+                                },
+                                "flavor_id": "3800132b-0cf6-4dc7-88a2-67678676c120",
+                                "trusted": true
+                            }
+                        ]
+                    },
+                    "PLATFORM": {
+                        "trust": true,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "rule.PcrMatchesConstant",
+                                    "markers": [
+                                        "PLATFORM"
+                                    ],
+                                    "expected_pcr": {
+                                        "pcr": {
+                                            "index": 0,
+                                            "bank": "SHA256"
+                                        },
+                                        "measurement": "fad7981e1d16de3269667f4e84bf84a0a0c84f4f8a183e13ac5ba1c441bbfd3c",
+                                        "pcr_matches": true
+                                    }
+                                },
+                                "flavor_id": "753e5fc3-11b0-4a38-a2a0-4a264aa40139",
+                                "trusted": true
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "rule.FlavorTrusted",
+                                    "markers": [
+                                        "PLATFORM"
+                                    ]
+                                },
+                                "flavor_id": "753e5fc3-11b0-4a38-a2a0-4a264aa40139",
+                                "trusted": true
+                            }
+                        ]
+                    },
+                    "SOFTWARE": {
+                        "trust": false,
+                        "rules": [
+                            {
+                                "rule": {
+                                    "rule_name": "rule.XmlMeasurementsDigestEquals",
+                                    "markers": [
+                                        "SOFTWARE"
+                                    ]
+                                },
+                                "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                "faults": [
+                                    {
+                                        "fault_name": "fault.XmlMeasurementLogMissing",
+                                        "description": "Host report does not contain XML Measurement log for flavor cbe4ac01-3793-4597-97ff-72cfb9e660ec."
+                                    }
+                                ],
+                                "trusted": false
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "rule.XmlMeasurementLogIntegrity",
+                                    "markers": [
+                                        "SOFTWARE"
+                                    ],
+                                    "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                    "flavor_name": "ISecL_Default_Application_Flavor_v4.0_TPM2.0",
+                                    "expected_value": "37406b9006e6872cc26a9a3eeab8737fee6114d9d690d745358145095c268b9373d5c4768de409f7ff716f557f603eba"
+                                },
+                                "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                "faults": [
+                                    {
+                                        "fault_name": "fault.XmlMeasurementLogMissing",
+                                        "description": "Host report does not contain XML Measurement log for flavor cbe4ac01-3793-4597-97ff-72cfb9e660ec."
+                                    }
+                                ],
+                                "trusted": false
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "rule.XmlMeasurementLogEquals",
+                                    "markers": [
+                                        "SOFTWARE"
+                                    ],
+                                    "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                    "flavor_name": "ISecL_Default_Application_Flavor_v4.0_TPM2.0",
+                                    "expected_measurements": [
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1",
+                                            "Path": "/opt/tbootxm/dracut_files/check"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "cb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e",
+                                            "Path": "/opt/tbootxm/lib/update_menuentry.pl"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "acf89c753b5304f4ffa12e0ffda73ce6e329fbc0fcd03eaf6c293e3d5ba35340fee4afc35d1635c65b46ab50e8a97e80",
+                                            "Path": "/opt/tbootxm/bin/tboot-xm-uninstall.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "5d3d014dac89441a810780d2f50f37ba4f807f4e6c20042590b5777ffb48b798f597f8f1a45d4330f9ac668031c323bb",
+                                            "Path": "/opt/tbootxm/lib/libwml.so"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98",
+                                            "Path": "/opt/tbootxm/initrd_hooks/tcb"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc",
+                                            "Path": "/opt/tbootxm/mkinitrd_files/setup-measure_host.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "e0b7270a3de5a7fcf202ed6fd0a68c7d4c062dda8f5b611e44680e6bc872ccd767ad5de04a07947d9cf572835adf847f",
+                                            "Path": "/opt/tbootxm/bin/tpmextend"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "946c01624f6fa13e86e779caf37934c421e814f3b33e059cc7095c92fb0522f343dc82edd995aaa4822f21c1711d031c",
+                                            "Path": "/opt/trustagent/bin/tagent"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "e2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a",
+                                            "Path": "/opt/tbootxm/dracut_files/install"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "9943affcdc0cdcc3a8382fa2d2cd3603b14f96a6b901488bd025ab181b5cf66824f35a850c7d201cf91cf67be50eab4e",
+                                            "Path": "/opt/tbootxm/bin/configure_host.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "8d55a8ff087b2e04adcbd63285dca251bd0e94b8e880695661039177d9acea5ec5522fc3a5c6d1e003c797f10936b0a8",
+                                            "Path": "/opt/tbootxm/bin/functions.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e",
+                                            "Path": "/opt/tbootxm/lib/create_menuentry.pl"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb",
+                                            "Path": "/opt/tbootxm/dracut_files/module-setup.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "092ddbc8364d6a243153f19af2f30baaa962f1ed0b3565dbd39a87386373a737d568a2dbf0aecbdf037c6cea401415be",
+                                            "Path": "/opt/tbootxm/bin/measure_host"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "d13fbf1edf5371b139f4bff3fa290f939f2ed94119fba8e8bfa196d773d9e1088bde8d94bc962ece9c403782820c6dae",
+                                            "Path": "/opt/tbootxm/bin/generate_initrd.sh"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "baf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c",
+                                            "Path": "/opt/tbootxm/lib/remove_menuentry.pl"
+                                        },
+                                        {
+                                            "type": "fileMeasurementType",
+                                            "value": "090dde1f7960e99644ad09776bc182c4f43127354b9f592c3e6c6169e595c7e00be020550bb2f2fb30e3c1a7dca2328c",
+                                            "Path": "/opt/tbootxm/bin/measure"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "be5de9ba4ed7e27c5581a7486e41234c8a839b1636cc14ce2bdafb07b6113dfe64971c0ecf3adc469ee675e49583f578",
+                                            "Path": "/opt/tbootxm/bin",
+                                            "Include": ".*"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7",
+                                            "Path": "/opt/tbootxm/initrd_hooks",
+                                            "Include": ".*"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247",
+                                            "Path": "/opt/tbootxm/mkinitrd_files",
+                                            "Include": ".*"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "c5f70f28a126c9ddf3ba0e7c510da12a84a8c1fee9cb13ee24df4c1dd50bf2582b3ee17f2cc4109efa50f9a83c3ec549",
+                                            "Path": "/opt/tbootxm/lib",
+                                            "Include": ".*"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "a5f6af1a79a22db40cdbcdca8bf0b2e00aa6f01a8d04f216c291719149c4d59d9102a4ea806503b3bdb3c7e236f59fb4",
+                                            "Path": "/opt/trustagent/bin",
+                                            "Include": ".*"
+                                        },
+                                        {
+                                            "type": "directoryMeasurementType",
+                                            "value": "1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232",
+                                            "Path": "/opt/tbootxm/dracut_files",
+                                            "Include": ".*"
+                                        }
+                                    ]
+                                },
+                                "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                "faults": [
+                                    {
+                                        "fault_name": "fault.XmlMeasurementLogMissing",
+                                        "description": "Host report does not contain XML Measurement log for flavor cbe4ac01-3793-4597-97ff-72cfb9e660ec."
+                                    }
+                                ],
+                                "trusted": false
+                            },
+                            {
+                                "rule": {
+                                    "rule_name": "rule.FlavorTrusted",
+                                    "markers": [
+                                        "SOFTWARE"
+                                    ]
+                                },
+                                "flavor_id": "cbe4ac01-3793-4597-97ff-72cfb9e660ec",
+                                "trusted": true
+                            }
+                        ]
+                    }
+                }
+            },
+            "host_id": "0e50d114-6809-455c-aa26-36f09e877938",
+            "host_info": {
+                "os_name": "RedHatEnterprise",
+                "os_version": "8.4",
+                "os_type": "",
+                "bios_version": "SE5C610.86B.01.01.0016.033120161139",
+                "vmm_name": "",
+                "vmm_version": "",
+                "processor_info": "F1 06 04 00 FF FB EB BF",
+                "host_name": "localhost.localdomain",
+                "bios_name": "Intel Corporation",
+                "hardware_uuid": "0009e54e-642f-e511-906e-0012795d96dd",
+                "process_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+                "no_of_sockets": "2",
+                "tboot_installed": "false",
+                "is_docker_env": "false",
+                "hardware_features": {
+                    "TXT": {
+                        "enabled": "true"
+                    },
+                    "TPM": {
+                        "enabled": "true",
+                        "meta": {
+                            "tpm_version": "2.0"
+                        }
+                    },
+                    "CBNT": {
+                        "enabled": "false",
+                        "meta": {
+                            "profile": "",
+                            "msr": ""
+                        }
+                    },
+                    "UEFI": {
+                        "enabled": "true",
+                        "meta": {
+                            "secure_boot_enabled": false
+                        }
+                    },
+                    "PFR": {
+                        "enabled": "false"
+                    },
+                    "BMC": {
+                        "enabled": "false"
+                    }
+                },
+                "installed_components": [
+                    "tagent"
+                ]
+            },
+            "created": "2021-09-09T07:43:19.626393Z",
+            "expiration": "2021-09-10T07:43:19.626394Z"
+        }
+    ]
+}

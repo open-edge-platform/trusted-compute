@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+
+SHELL:=/bin/bash
+BUILDDATE := $(shell TZ=UTC date +%Y-%m-%dT%H:%M:%SZ)
+PROXY_EXISTS := $(shell if [[ "${https_proxy}" || "${http_proxy}" ]]; then echo 1; else echo 0; fi)
+DOCKER_PROXY_FLAGS := ""
+ifeq ($(PROXY_EXISTS),1)
+        DOCKER_PROXY_FLAGS = --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy}
+else
+        undefine DOCKER_PROXY_FLAGS
+endif
+
+TARGETS = authservice cms hvs tagent aas-manager
+
+all: clean k8s
+
+	
+k8s: common init-containers $(TARGETS)
+
+common: download-eca
+	mkdir -p k8s/container-images
+
+init-containers:
+	cd  utils/tools/containers/ && make all
+
+$(TARGETS):
+	cd src && make $@-k8s
+
+clean:
+	rm -rf binaries/
+	rm -rf k8s
+	cd src && make clean
+
+download-eca:
+	cd src && make download-eca && cd -
+
+wpm-installer:
+	mkdir -p k8s/binaries
+	cd src && make wpm-installer
+	cp src/deployments/installer/wpm-v*.bin k8s/binaries/
+
+.PHONY: all clean init-containers $(TARGETS)

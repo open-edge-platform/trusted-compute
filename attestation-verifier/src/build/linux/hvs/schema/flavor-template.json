@@ -1,0 +1,97 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://intel.com/intel-secl/schemas/flavor_template.schema.json",
+    "title": "flavor_template",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "label": {
+            "$ref": "common.schema.json#/definitions/non_empty_string"
+        },
+        "condition": {
+            "description": "An array of 'jsonquery' statements that are used to determine if the template should be executed.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minLength": 1
+        },
+        "flavor_parts": {
+            "$ref": "#/definitions/flavor_template_map"
+        }
+    },
+    "additionalItems": false,
+    "required": [
+        "label",
+        "condition",
+        "flavor_parts"
+    ],
+    "definitions": {
+        "flavor_template_map": {
+            "description": "A map of flavor_part name strings to the flavor_template objects",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/flavor_template"
+            }
+        },
+        "flavor_template": {
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "description": "Arbitrary key/value pairs of meta data that will be copied to the flavor's meta/description object.",
+                    "type": "object"
+                },
+                "pcr_rules": {
+                    "description": "An array of verification rules that will be applied to a PCR.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pcr_rule"
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalItems": false,
+            "required": [
+                "meta",
+                "pcr_rules"
+            ]
+        },
+        "pcr_rule": {
+            "properties": {
+                "pcr": {
+                    "description": "The index and bank of the PCR to verify.",
+                    "$ref": "common.schema.json#/definitions/pcr"
+                },
+                "pcr_matches": {
+                    "type": "boolean"
+                },
+                "eventlog_equals": {
+                    "description": "Identifies which events in a PCR index/bank to copy to the resulting flavor to enforce the 'PCR Event Includes' verification.",
+                    "properties": {
+                        "excluding_tags": {
+                            "description": "A list of event tags to ignore when comparing the logs for equality.",
+                            "$ref": "common.schema.json#/definitions/eventlog_tags"
+                        }
+                    }
+                },
+                "eventlog_includes": {
+                    "description": "Identifies which event tags in a PCR index/bank to copy to the resulting flavor to enforce a 'PCR Event Equals' verification.",
+                    "$ref": "common.schema.json#/definitions/eventlog_tags"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "pcr"
+            ],
+            "not": {
+                "description": "Don't allow the 'eventlog_equals' and 'eventlog_includes' in the same pcr index/bank.",
+                "required": [
+                    "eventlog_equals",
+                    "eventlog_includes"
+                ]
+            }
+        }
+    }
+}

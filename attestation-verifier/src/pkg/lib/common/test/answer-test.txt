@@ -1,0 +1,12 @@
+TEST_ENV_ONE=1
+TEST_ENV_TWO=12
+TEST_ENV_THREE=123
+TEST_ENV_FOUR=1234
+TEST_ENV_FIVE=12345
+
+# THIS_LINE_SHOULD_BE_IGNORED=qwert
+
+# following line should be ignored and not cause error
+INVALID_LINE=
+=invalid-line
+

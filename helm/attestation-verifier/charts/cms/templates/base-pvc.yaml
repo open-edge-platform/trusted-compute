@@ -1,0 +1,14 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "factory.name" . }}-base
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - {{ .Values.storage.hostPath.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.hostPath.baseSize }}

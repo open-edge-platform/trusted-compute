@@ -1,0 +1,57 @@
+{
+    "errorCode": 0,
+    "os_name": "RedHatEnterprise",
+    "os_version": "8.1",
+    "bios_version": "WLYDCRB1.SYS.0020.P33.2012300522",
+    "vmm_name": "Virsh",
+    "vmm_version": "4.5.0",
+    "processor_info": "A6 06 06 00 FF FB EB BF",
+    "host_name": "localhost.localdomain",
+    "bios_name": "Intel Corporation",
+    "hardware_uuid": "88888888-8887-1615-0115-071ba5a5a5a5",
+    "process_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+    "tpm_version": "2.0",
+    "pcr_banks": [
+        "SHA1",
+        "SHA256"
+    ],
+    "no_of_sockets": "1",
+    "tpm_enabled": "true",
+    "txt_enabled": "false",
+    "tboot_installed": "false",
+    "is_docker_env": "false",
+    "hardware_features": {
+        "TXT": {
+            "enabled": "false"
+        },
+        "TPM": {
+            "enabled": "true",
+            "meta": {
+                "tpm_version": "2.0",
+                "pcr_banks": "SHA1_SHA256"
+            }
+        },
+        "CBNT": {
+            "enabled": "true",
+            "meta": {
+                "profile": "BTGP5",
+                "msr": "mk ris kfm"
+            }
+        },
+        "UEFI": {
+            "enabled": "true",
+            "meta": {
+                "secure_boot_enabled": false
+            }
+        },
+        "PFR": {
+            "enabled": "false"
+        },
+        "BMC": {
+            "enabled": "false"
+        }
+    },
+    "installed_components": [
+        "tagent"
+    ]
+}

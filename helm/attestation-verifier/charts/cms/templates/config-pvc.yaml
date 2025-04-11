@@ -1,0 +1,9 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.pvcConfigCommonSpec" . }}
+  storageClassName: manual
+  accessModes:
+    - {{ .Values.storage.hostPath.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.hostPath.configSize }}

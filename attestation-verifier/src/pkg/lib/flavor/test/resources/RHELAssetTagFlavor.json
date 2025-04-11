@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "id": "4f3232b3-6dfb-495e-b819-1f23133c3368",
+    "description": {
+      "flavor_part": "ASSET_TAG",
+      "label": "INTEL_MTWILSON-CA_05-19-2020_02-44-30",
+      "hardware_uuid": "MTWILSON-CA"
+    },
+    "vendor": "INTEL"
+  },
+  "bios": {
+    "bios_name": "Intel Corporation",
+    "bios_version": "SE5C620.86B.00.01.0014.070920180847"
+  },
+  "external": {
+    "asset_tag": {
+      "tag_certificate": {
+        "encoded": "MIID0jCCAjqgAwIBAgIIDxjUkkrv3kYwDQYJKoZIhvcNAQEMBQAwKTERMA8GA1UECxMIbXR3aWxzb24xFDASBgNVBAMTC210d2lsc29uLWNhMB4XDTIwMDUwMTE3NDEwN1oXDTIxMDUwMTE3NDEwN1owKTERMA8GA1UECxMIbXR3aWxzb24xFDASBgNVBAMTC210d2lsc29uLWNhMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA1rNeaao2UuAtDpkAGabVFcqM/ypfPA23dMagPdwYLE0DkTRgpw7HjYKpmFAiIRJquDvu+NGINuiz/DVDXZPxkq6mucTcoN3mNTAG0yl9zVpohM7fqHQkqZVPfBngn5bS8uSdUmCvcGxmidBZh+eOPl6G7SKLzaIscJF5kuX5GsFHP5iAEii7wQAJQgKNVs35F8tmxDj2oJkgr5W6RcJvLgDM+yXk7WJhRUojgxNX5+mtetSYwHmCVd9N8FZv+rDthu5LBxpzKmCrkS23UTrEybbNOJhxZja6No9/jXDLpjYhoyK5atKmu3VZDUaaLb5bLxQ0/wVgUL6ROnaOuESyWayhYyZYu2XOP8ik1V3M0TJ5iCkVYApWaoM/T9ywLHg8kzR32RteMX2lAJzmUvfe+A9agc+c8Mji+D+hCYObba0yewPY49eBCEEpxMpiPJDQn9BPB/A8iOsHl8x6uykM0GkikpwwpKADzawfHw3pIgCNG5K9FLCeayxEzLm6HShnAgMBAAEwDQYJKoZIhvcNAQEMBQADggGBADrqdqHP+0jzNCpIQO1aZMZf7n8BHDvzwJ/al9I07oyHmKjDvBXNU7+yqD0rn5n+KXlgRu/z8pM0G2dk2gtllPfdkGUdfvyprHw5ncD52A1NTYJe5DAkObaPhdXB8ohN9N16dtBk/+P2wpA/B5NG/PrXNwXwD1QXcbMFr2myv/Fm1YP687pKLvW0AlFfRYFXN9QaOHLEkiGdOXcrHy6VqGS3JebWtunzSoo0VEM6G01qqNPU4g2sM4H1zyOvqgh84iddqhmRIJm1qyJkhNGd5mTAZkKK9d7MZuHHsiqOc4BwzOZ4vjPcupBWG3YAfEaJlZq/pWjL7a7tv3QasvqMfUEWushGWFNstIXvx4Uvw5WCHoX0TVP2ZdTYKxFz5uIm+sGxblr6ZXLZ6Xj2v0cUxMS381W5nUwnb5UzVfngziPEBssazbnPPe5WxGwLkee28LuVe2GKkMj4VZ5Z6Ld+ZDC4gwCVYBuCzbudaJdy65pAeH1AVBgpbtnohpUo9OWqTA==",
+        "issuer": "mtwilson-ca",
+        "serial_number": 1087853034797522502,
+        "subject": "mtwilson-ca",
+        "not_before": "2020-05-01T17:41:07+0000",
+        "not_after": "2021-05-01T17:41:07+0000",
+        "fingerprint_sha384": "373c5d0f29d14c2b97c1e614f42a037d997ab8f015382e32c38189f301ae130bfee6cc7645717496827855a1a3107731"
+      }
+    }
+  }
+}

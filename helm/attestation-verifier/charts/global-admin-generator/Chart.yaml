@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 0.0.8
+dependencies:
+- name: factory
+  repository: file://../../charts/factory/
+  version: 0.0.8
+description: A Helm chart for creating Global Admin User Account
+name: global-admin-generator
+type: application
+version: 0.0.8

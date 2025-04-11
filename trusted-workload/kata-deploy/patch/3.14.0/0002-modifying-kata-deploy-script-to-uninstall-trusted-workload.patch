@@ -1,0 +1,34 @@
+From b6bc86ab74c40e5288e259030825170e3d5f06bb Mon Sep 17 00:00:00 2001
+From: "Jena, Satyabrata" <satyabrata.jena@intel.com>
+Date: Tue, 1 Apr 2025 08:47:45 +0000
+Subject: [PATCH] modifying kata-deploy script to uninstall trusted-workload.
+
+Signed-off-by: Jena, Satyabrata <satyabrata.jena@intel.com>
+---
+ tools/packaging/kata-deploy/scripts/kata-deploy.sh | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tools/packaging/kata-deploy/scripts/kata-deploy.sh b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+index 87d1205f2..e493ee657 100755
+--- a/tools/packaging/kata-deploy/scripts/kata-deploy.sh
++++ b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+@@ -877,7 +877,7 @@ function main() {
+ 				fi
+ 			fi
+ 
+-			cleanup_cri_runtime "$runtime"
++			#cleanup_cri_runtime "$runtime"
+ 			if [ "${HELM_POST_DELETE_HOOK}" == "false" ]; then
+ 				# If we still have any other installation here, it means we'll break them
+ 				# removing the label, so we just don't do it.
+@@ -887,6 +887,7 @@ function main() {
+ 				fi
+ 			fi
+ 			remove_artifacts
++			kubectl label node "$NODE_NAME" confidentialcontainers.org/startuninstall-
+ 
+ 			if [ "${HELM_POST_DELETE_HOOK}" == "true" ]; then
+ 				# After everything was cleaned up, there's no reason to continue
+-- 
+2.34.1
+

@@ -1,0 +1,45 @@
+{
+  {{- if .Values.aas.url }}
+  "aas_api_url": "{{ .Values.aas.url }}",
+  {{- else }}
+  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1",
+  {{- end }}
+  {{- if .Values.global }}
+  "aas_admin_username": "{{ required "A valid admin username is required!" .Values.global.aas.secret.adminUsername }}",
+  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.global.aas.secret.adminPassword }}",
+  {{- else }}
+  "aas_admin_username": "{{ required "A valid admin username is required!" .Values.aas.secret.adminUsername }}",
+  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.aas.secret.adminPassword }}",
+  {{- end }}
+   "users_and_roles":[
+      {
+         "username": "{{ .Values.secret.globalAdminUsername }}",
+         "password": "{{ .Values.secret.globalAdminPassword }}",
+         "print_bearer_token": true,
+         "roles": [
+          {{- $size := len .Values.services_list }}
+          {{- $services := .Values.services_list }}
+          {{- $rest_size := sub $size 1 }}
+          {{- range $i, $service_name := .Values.services_list }}
+            {{- if eq (index $services $rest_size ) $service_name }}
+            {
+             "service": "{{ $service_name }}",
+            "name": "Administrator",
+            "permissions": [
+            "*:*:*"
+            ]
+            }
+            {{- else }}
+            {
+            "service": "{{ $service_name }}",
+            "name": "Administrator",
+            "permissions": [
+            "*:*:*"
+            ]
+            },
+            {{- end }}
+          {{- end }}
+	    ]
+     }
+   ]
+}

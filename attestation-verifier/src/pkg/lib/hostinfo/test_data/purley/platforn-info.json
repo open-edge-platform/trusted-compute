@@ -1,0 +1,39 @@
+{
+    "errorCode": 0,
+    "os_name": "RedHatEnterprise",
+    "os_version": "8.1",
+    "bios_version": "SE5C620.86B.00.01.6016.032720190737",
+    "vmm_name": "Docker",
+    "vmm_version": "19.03.12",
+    "processor_info": "54 06 05 00 FF FB EB BF",
+    "host_name": "localhost.localdomain",
+    "bios_name": "Intel Corporation",
+    "hardware_uuid": "8032632b-8fa4-e811-906e-00163566263e",
+    "system_sn": "BQWT83400536",
+    "process_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+    "tpm_version": "2.0",
+    "pcr_banks": [
+        "SHA1",
+        "SHA256"
+    ],
+    "no_of_sockets": "2",
+    "tpm_enabled": "true",
+    "txt_enabled": "true",
+    "tboot_installed": "true",
+    "is_docker_env": "false",
+    "hardware_features": {
+        "TXT": {
+            "enabled": "true"
+        },
+        "TPM": {
+            "enabled": "true",
+            "meta": {
+                "tpm_version": "2.0",
+                "pcr_banks": "SHA1_SHA256"
+            }
+        }
+    },
+    "installed_components": [
+        "tagent"
+    ]
+}

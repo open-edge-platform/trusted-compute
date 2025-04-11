@@ -1,0 +1,67 @@
+{
+	"label": "default-tc",
+	"condition": [
+	"//host_info/os_name//*[text()='OpenEmbedded'] or //host_info/os_name//*[text()='Ubuntu'] or //host_info/os_name//*[text()='Debian GNU/Linux'] or //host_info/os_name//*[text()='Edge Microvisor Toolkit']",
+	"//host_info/hardware_features/TPM/meta/tpm_version//*[text()='2.0']",
+	"//host_info/hardware_features/UEFI/enabled//*[text()='true'] or //host_info/hardware_features/UEFI/meta/secure_boot_enabled//*[text()='true']"
+	],
+	"flavor_parts": {
+		"PLATFORM": {
+			"meta": {
+				"tpm_version": "2.0",
+				"vendor": "Linux"
+			},
+			"pcr_rules": [
+				{
+					"pcr": {
+						"index": 0,
+						"bank": [
+							"SHA384",
+							"SHA256"
+						]
+					},
+					"pcr_matches": true
+				},
+				{
+					"pcr": {
+						"index": 7,
+						"bank": [
+							"SHA384",
+							"SHA256"
+						]
+					},
+					"pcr_matches": true,
+					"eventlog_equals": {}
+				}
+			]
+		},
+		"OS": {
+			"meta": {
+				"tpm_version": "2.0",
+				"vendor": "Linux"
+			},
+			"pcr_rules": [
+				{
+					"pcr": {
+						"index": 8,
+						"bank": [
+							"SHA384",
+							"SHA256"
+						]
+					},
+					"pcr_matches": true
+				},
+				{
+					"pcr": {
+						"index": 9,
+						"bank": [
+							"SHA384",
+							"SHA256"
+						]
+					},
+					"pcr_matches": true
+				}
+			]
+		}
+	}
+ }

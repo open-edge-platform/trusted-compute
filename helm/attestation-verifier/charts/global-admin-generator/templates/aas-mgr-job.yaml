@@ -1,0 +1,5 @@
+{{- include "factory.headers" . }}
+---
+{{- if .Values.enable }}
+{{- include "factory.getAasUserAndRoles" . }}
+{{- end}}

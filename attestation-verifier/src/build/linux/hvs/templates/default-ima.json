@@ -1,0 +1,17 @@
+{  
+    "label": "ima",
+    "condition" :[
+        "//host_info/os_name//*[text()='Centos'] or //host_info/os_name//*[text()='Ubuntu'] or //host_info/os_name//*[text()='Debian GNU/Linux'] or //host_info/os_name//*[text()='Edge Microvisor Toolkit']"
+    ],  
+    "flavor_parts": {  
+        "IMA": {  
+            "pcr_rules": [{  
+                "pcr": {  
+                    "index": 10,  
+                    "bank": ["SHA384", "SHA256"]
+                },  
+                "pcr_matches": true  
+            }]  
+        }  
+    }  
+}

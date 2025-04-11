@@ -1,0 +1,311 @@
+{
+    "aik_certificate": "MIIDUDCCAbigAwIBAgIQVBlRPLkUGcSNtyUOIzdo4jANBgkqhkiG9w0BAQsFADAiMSAwHgYDVQQDExdIVlMgUHJpdmFjeSBDZXJ0aWZpY2F0ZTAeFw0yMDEyMjQxNDI5MTJaFw0yNTEyMjQxNDI5MTJaMCIxIDAeBgNVBAMTF0hWUyBQcml2YWN5IENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlSYj1f/9c72+AptEaZl4N81Pqmhs30Dg05+eOicaR2oj7fKzIyq5yOSzlxoQBQmc6acpthEPjO8XlRZ6CE7SqA8ZkluPWUd1HKKYL3AMa00CK9uUg9CCTFMPsuqDZqucnAa+AbVatiSfZyrDsmUR2m7FDOdbVozstGyN4wMkkEfkBx43MtNc9VSKqjouDNCVEUxFtOg9Cc4qCLFi0mOL/rCe4WQsBORUOu46S7whAm7lGGnThHh3E+aFHjDW6TSEu0jZZeWzNEL2Gd8bcuV/7B8b/PPGwv1ic07Ca4F1O/6Ae2GQMjao+76FhR01vQi4eMJkAfXIIQacuHLY+/TUkwIDAQABowIwADANBgkqhkiG9w0BAQsFAAOCAYEAlLfrfh5oqwZabzh5VpYCA+DdyCKRwK8Jywq+gIgEMZAhWnpNRNEJr8yI/py4luxewXGlEuicFVEYKbiC+gpvgVsvrqxZ2fFqvax3vocmmOkBdC1hMpmmYkGdri4RhccBmRW0ctqy/P1SSvQGvMXhNRqbZhNpqMrjBdSbThnLzQWuY/Kk5YJxV42hz1EhPXzK2xuxFh1AlC641zvoKilKV9vZ8vWpJBDIFJ9j50ieOoDxOAbHqnE57vzDuNYL0V//z4skaUuuMUrWbK4D95x8h+KkL31f+iZm9RqICds+UHBRYm/FJX+ombYOcal3QcJxXD5Dxt4rNtwFVMWnubBnFe3P2iQ2f7RFYU/AaUnY7vd5Z3NxPcCiBdhYo4luv6uFjBQhtx5IAqZyxTrdMoFCZqRt0ok/bA/w2QuLv2lHaAiR+2PtcSUTLAYNYRXgjp3eev7oEoL53xnyaj3A69LcRkUWuiGHaflvSPJ+XbFXITBlnVyzZMYTtiP72kRyhrj2",
+    "host_info": {
+        "os_name": "RedHatEnterprise",
+        "os_version": "8.1",
+        "bios_version": "SE5C610.86B.01.01.0016.033120161139",
+        "vmm_name": "",
+        "vmm_version": "",
+        "processor_info": "F1 06 04 00 FF FB EB BF",
+        "host_name": "localhost.localdomain",
+        "bios_name": "Intel Corporation",
+        "hardware_uuid": "0009e54e-642f-e511-906e-0012795d96dd",
+        "process_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+        "no_of_sockets": "2",
+        "tboot_installed": "true",
+        "hardware_features": {
+            "TXT": {
+                "enabled": "true"
+            },
+            "TPM": {
+                "enabled": "true",
+                "meta": {
+                    "tpm_version": "2.0",
+                    "pcr_banks": "SHA1_SHA256"
+                }
+            }
+        },
+        "installed_components": [
+            "tagent"
+        ]
+    },
+    "pcr_manifest": {
+        "sha1pcrs": [
+            {
+                "index": "pcr_0",
+                "value": "96de47dfaf85a9f9a3ba4143f086a9c07c0fd817",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_1",
+                "value": "20afb7dd06725e8bf0debd9970c8170d29a10a3e",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_2",
+                "value": "a8fa7017a39d66c3be221a925234df5461eee691",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_3",
+                "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_4",
+                "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_5",
+                "value": "af4555c5e3033c33ea5e5f73873f76a7fa0ae192",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_6",
+                "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_7",
+                "value": "366cf01e612ea1ad180a2e52976fc718f2317ba7",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_8",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_9",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_10",
+                "value": "1a9e88478e30f1d94952eeb65c7d843d9a53fa13",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_11",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_12",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_13",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_14",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_15",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_16",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_17",
+                "value": "55a9aa8e276d3196affb7ecff100bda23d51d0af",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_18",
+                "value": "82bf809255ee179ac5478bc9ba12db6879dbd31b",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_19",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_20",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_21",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_22",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            },
+            {
+                "index": "pcr_23",
+                "value": "0000000000000000000000000000000000000000",
+                "pcr_bank": "SHA1"
+            }
+        ],
+        "sha2pcrs": [
+            {
+                "index": "pcr_0",
+                "value": "fad7981e1d16de3269667f4e84bf84a0a0c84f4f8a183e13ac5ba1c441bbfd3c",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_1",
+                "value": "e5bb10e64f9f630011b0c4a54a3994731fb62fc0a4b4db8dda5a0e119c0703f7",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_2",
+                "value": "eb2944e90c41c08d44c3952a01ea6bfc07adfd4f2e7c5ea3addbc5e04a68bc49",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_3",
+                "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_4",
+                "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_5",
+                "value": "142a1fc798d0f8e1b9176a5126d8de256e02c16e8175f4d4de9ddc6c4c696424",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_6",
+                "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_7",
+                "value": "1d792e7db28fe00ca4a7e6ccb5bb28babf080a7ff11de3377240eee96c393fcc",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_8",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_9",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_10",
+                "value": "a4db73db0d165f9a8084f189b981e1b29c6f862cfecf31f4b1e36ac5d7e3594f",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_11",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_12",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_13",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_14",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_15",
+                "value": "93b5ae893e138d7040c9ed40541d27aa1e0120629fd98c1249f2a514314a3b23",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_16",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_17",
+                "value": "8bc16f894471b5e53da2e799728d0187dae1951ef84ff95c347b7e53dab83695",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_18",
+                "value": "6f33d58a1fc09382042d2fd650f4c26af20cf2b18ea3bc0fdb075af2fa04f6d9",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_19",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_20",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_21",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_22",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            },
+            {
+                "index": "pcr_23",
+                "value": "0000000000000000000000000000000000000000000000000000000000000000",
+                "pcr_bank": "SHA256"
+            }
+        ],
+        "pcr_event_log_map": {
+            "SHA1": null,
+            "SHA256": [
+                {
+                    "pcr": {
+                        "index": 15,
+                        "bank": "SHA256"
+                    },
+                    "tpm_events": [
+                        {
+                            "type_id": "0x90000001",
+                            "type_name": "APPLICATION_AGENT_MEASUREMENT",
+                            "tags": [
+                                "ISecL_Default_Workload_Flavor_v3.2-49b9a08c-eda4-4d0d-b37f-072c307f88a5"
+                            ],
+                            "measurement": "17b0761f87b081d5cf10757ccc89f12be355c70e2e29df288b65b30710dcbcd1"
+                        },
+                        {
+                            "type_id": "0x90000001",
+                            "type_name": "APPLICATION_AGENT_MEASUREMENT",
+                            "tags": [
+                                "ISecL_Default_Application_Flavor_v3.2_TPM2.0-76ac365d-2d3a-4c02-8744-5d929acef933"
+                            ],
+                            "measurement": "12275d780fd7e11b8906ed6d1878b43cd98804f292a26e810a8a91638dbc72aa"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "measurement_xmls": [
+        "\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cMeasurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Workload_Flavor_v3.2\" Uuid=\"49b9a08c-eda4-4d0d-b37f-072c307f88a5\" DigestAlg=\"SHA384\"\u003e\u003cCumulativeHash\u003e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\u003c/CumulativeHash\u003e\u003c/Measurement\u003e",
+        "\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cMeasurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Application_Flavor_v3.2_TPM2.0\" Uuid=\"76ac365d-2d3a-4c02-8744-5d929acef933\" DigestAlg=\"SHA384\"\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/bin\"\u003eb0d5cba0bb12d69d8dd3e92bdad09d093a34dd4ea30aea63fb31b9c26d9cbf0e84016fa9a80843b473e1493a427aa63a\u003c/Dir\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/dracut_files\"\u003e1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232\u003c/Dir\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/initrd_hooks\"\u003e77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7\u003c/Dir\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/lib\"\u003eb03eb9d3b6fa0d338fd4ef803a277d523ab31db5c27186a283dd8d1fe0e7afca9bf26b31b1099833b0ba398dbe3c02fb\u003c/Dir\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/mkinitrd_files\"\u003e6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247\u003c/Dir\u003e\u003cFile Path=\"/opt/tbootxm/bin/tpmextend\"\u003eb95c831b66c41204b117c97544d1af30828e3cf2ef7ba3ee0c970a20d4f08acfc7c0a530d3b3b883ddea7d5300087262\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/measure\"\u003e090dde1f7960e99644ad09776bc182c4f43127354b9f592c3e6c6169e595c7e00be020550bb2f2fb30e3c1a7dca2328c\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/configure_host.sh\"\u003e1be6ce8c3a4c3f5592fffc905d62dcfb0ed3bf1cb2ae3ed7376d88cd4dd268f22a69404e2486e948fd3ab52ea6fbb95c\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/generate_initrd.sh\"\u003e4708ed8233a81d6a17b2c4b74b955f27612d2cc04730ad8919618964209ce885cea9011e00236de56a2239a524044db4\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/measure_host\"\u003e63648dde7ef979e0ce32fbb4fc2087bf861ca0c9a2755d13e2135eaecf37e9e43e7523ac923d8073b0fe6159da6aba4a\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/tboot-xm-uninstall.sh\"\u003e7450bc939548eafc4a3ba9734ad1f96e46e1f46a40e4d12ad5b5f6b5eb2baf1597ade91edb035d8b5c1ecc38bde7ee59\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/bin/functions.sh\"\u003e6502f614164b7528480deb18256b40cd2e4e9c7cbc32ebc4dcbd87c1ad9508885b628d83e56d22e106b1dcc8142690f6\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/dracut_files/check\"\u003e6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/dracut_files/install\"\u003ee2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/dracut_files/module-setup.sh\"\u003e0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/initrd_hooks/tcb\"\u003e430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/lib/libwml.so\"\u003ed98b6e5e30d68d5fa6f149e91d07ef55e80be0e6d3c03275823d43e36e02c6f8a7ad9c20b7acabf2124eba0332810ee8\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/lib/create_menuentry.pl\"\u003e79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/lib/update_menuentry.pl\"\u003ecb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/lib/remove_menuentry.pl\"\u003ebaf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c\u003c/File\u003e\u003cFile Path=\"/opt/tbootxm/mkinitrd_files/setup-measure_host.sh\"\u003e2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc\u003c/File\u003e\u003cDir Exclude=\"\" Include=\".*\" Path=\"/opt/trustagent/bin\"\u003ea5f6af1a79a22db40cdbcdca8bf0b2e00aa6f01a8d04f216c291719149c4d59d9102a4ea806503b3bdb3c7e236f59fb4\u003c/Dir\u003e\u003cFile Path=\"/opt/trustagent/bin/tagent\"\u003e7981cff98105f47a0b2d33ddf82c76993d14ebbf3193fce1544e430b816facff27c32913299a4c59f632a07cd24d6d0f\u003c/File\u003e\u003cCumulativeHash\u003ef50e9a2619b3ace84821e75a181861f999a325d2dbae8c390ec1dcfc5da4c93ce8143ba234f74d30668663fe7bb8ee43\u003c/CumulativeHash\u003e\u003c/Measurement\u003e"
+    ]
+}

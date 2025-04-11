@@ -1,0 +1,9 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.pvcConfigCommonSpec" . }}
+  storageClassName: manual
+  accessModes:
+     {{ toYaml .Values.storage.hostPath.accessModes | nindent 4 | trim}}
+  resources:
+    requests:
+      storage: {{ .Values.storage.hostPath.configSize }}

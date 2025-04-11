@@ -1,0 +1,28 @@
+ta-service-mode: http
+log:
+    max-length: 300
+    enable-stdout: false
+    level: info
+server:
+    port: 1443
+    read-timeout: 30ns
+    read-header-timeout: 10ns
+    write-timeout: 10ns
+    idle-timeout: 10ns
+    max-header-bytes: 1048576
+hvs:
+    url: https://localhost:8443/hvs/v2
+tpm:
+    tag-secret-key: hex:12345678abcdefghij
+aas:
+    base-url: https://localhost:8444/aas/v1/
+cms:
+    base-url: https://localhost:8445/cms/v1/
+    tls-cert-sha384: abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
+tls:
+    common-name: Trust Agent TEST TLS Certificate
+    san-list: localhost.localdomain
+nats:
+    servers: []
+    host-id: ""
+api-token: abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz

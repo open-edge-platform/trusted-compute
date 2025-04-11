@@ -1,0 +1,128 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "attestation-manager.fullname" . }}
+  labels:
+    {{- include "attestation-manager.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "attestation-manager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "attestation-manager.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "attestation-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-verifier
+          image: bitnami/kubectl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              echo "Waiting for {{ .Values.dependentServices.hvs }} to be ready..." &&
+              until kubectl get pod -l app.kubernetes.io/name={{ .Values.dependentServices.hvs }} -n {{ .Release.Namespace }} -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
+                echo "Waiting for {{ .Values.dependentServices.hvs }} pod to be ready..."
+                sleep 10
+              done &&
+              echo "{{ .Values.dependentServices.hvs }} is ready."
+        # - name: wait-for-trustagent
+        #   image: bitnami/kubectl:latest
+        #   command: ["/bin/sh", "-c"]
+        #   args:
+        #     - >
+        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} to be ready..." &&
+        #       until kubectl get pod -l app.kubernetes.io/name={{ .Values.dependentServices.trustagent }} -n {{ .Release.Namespace }} -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
+        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} pod to be ready..."
+        #       sleep 10
+        #       done &&
+        #       echo "{{ .Values.dependentServices.trustagent }} is ready."
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 50051
+              protocol: TCP
+          env:
+            - name: AAS_URL
+              value: "https://aas.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: AAS_PORT
+              value: "{{ .Values.env.aasPort }}"
+            - name: CMS_URL
+              value: "https://cms.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: CMS_PORT
+              value: "{{ .Values.env.cmsPort }}"
+            - name: HVS_URL
+              value: "https://hvs.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: HVS_PORT
+              value: "{{ .Values.env.hvsPort }}"
+            - name: TCHOSTNAME
+              value: "{{ .Values.env.hostname }}"
+            - name: LOG_LEVEL
+              value: "{{ .Values.env.logLevel }}"
+            - name: POLL_DURATION
+              value: "{{ .Values.env.pollDuration }}"
+            - name: AAS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: am-aas-credentials
+                  key: username
+            - name: AAS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: am-aas-credentials
+                  key: password
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: Attestation_Manager_SERVER_ADDRESS
+              value: "{{ .Values.env.amServerAddress }}"
+            - name: Attestation_Manager_SERVER_PORT
+              value: "{{ .Values.env.amServerPort }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: attestation-manager-token
+              mountPath: "/mnt/access_token"
+              readOnly: true
+            - name: ca-certificates
+              mountPath: "/mnt/orch-ca.crt"
+              readOnly: true
+      volumes:
+        - name: attestation-manager-token
+          hostPath:
+            path: /etc/intel_edge_node/tokens/attestation-manager/access_token
+        - name: ca-certificates
+          hostPath:
+            path: /etc/intel_edge_node/orch-ca-cert/orch-ca.crt
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,561 @@
+{
+   "aik_certificate": "MIIDUDCCAbigAwIBAgIQE4LpyK20hetmesNFOgL0cDANBgkqhkiG9w0BAQsFADAiMSAwHgYDVQQDExdIVlMgUHJpdmFjeSBDZXJ0aWZpY2F0ZTAeFw0yMDEyMTgwODM2MjRaFw0yNTEyMTgwODM2MjRaMCIxIDAeBgNVBAMTF0hWUyBQcml2YWN5IENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAme4GrZa1Boj/AwEtkhmmPR0ZIaot5CMTECFCTrG4O1xjBLlFVxpOiRrO9K0YFW8hIopPT/QS4dJi2ZwU/3xgnZdCVpChAAwhop6mdt10TThAm+dfcMPx5D2OTgkiz1CvU9Icg2UWBDKSZyVqIPrgwkfQ61eYdkdnkx7XcktanIKuujXFqb3kBzdFgxq1ICef35XehqbOEJTrMyEXRs4/D1FyCa9D1zZrwf5j7azGIZB5O/AQ03wCSbLv2lDoJKZ4U5Yhw/ljKa2g6nyVLH1lEQh9R20Njlx8my1kHbOzcPDl2jGWMuv+i6gu9KdtlozzyALFWfKnYvjLXoT0KRaTNQIDAQABowIwADANBgkqhkiG9w0BAQsFAAOCAYEAulaB2+mXq25RC5JpT1O1VRG3kx/HhHK89q1Dr7T2c+MS5gcOPh5JZKGQpfCoRsugUM2JZpx+BFgTd+XwNxjwKkPtsILDpxbBJEglsxt+e6sKPJeJoV8EQ+zpTNrNk1ijZ9/iGc/Enb2TDl3f2zA2mTaVh9G3mpM8oFgbvZs41ZShjYxMb/4KkPy0YTGQ98qXPuZdLwbH367ULJZQ1X3wA7/TAvCZWNdu1GBEWTYjJ9rXSFpYH/GNsgGWdDF0IhvPzHHmZOiqjrYaVhe4dlR/ZjGmCCF/Q9+eNlNd0tMlXVrZYYEtEYI2TbWcUFRUsl0X9eKRGzx3UgMDwoeKGHcIAWE4rXQ7vpZ4kLdWakzvSQXz3jRSPjPJt/AFgVSiHIpQsSrthBMd2gbwo6h9o6GnV7rbzwbiq83e5W0caq8J0lFTnlj9pNcu6SdxUy3fX2QRUOqE2s+WLduf4zrx/FnBATxn9Gmd4OM4tzj2onL5n+IQqefzwDmMNRpldIIu482I",
+   "host_info": {
+      "os_name": "RedHatEnterprise",
+      "os_version": "8.1",
+      "os_type": "linux",
+      "bios_version": "SE5C610.86B.01.01.0016.033120161139",
+      "vmm_name": "",
+      "vmm_version": "",
+      "processor_info": "F1 06 04 00 FF FB EB BF",
+      "host_name": "localhost.localdomain",
+      "bios_name": "Intel Corporation",
+      "hardware_uuid": "0009e54e-642f-e511-906e-0012795d96dd",
+      "process_flags": "FPU VME DE PSE TSC MSR PAE MCE CX8 APIC SEP MTRR PGE MCA CMOV PAT PSE-36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM PBE",
+      "no_of_sockets": "2",
+      "tboot_installed": "true",
+      "hardware_features": {
+         "TXT": {
+            "enabled": "true"
+         },
+         "TPM": {
+            "enabled": "true",
+            "meta": {
+               "tpm_version": "2.0",
+               "pcr_banks": "SHA1_SHA256"
+            }
+         }
+      },
+      "installed_components": [
+         "tagent"
+      ]
+   },
+   "pcr_manifest": {
+      "sha1pcrs": [
+         {
+            "index": "pcr_0",
+            "value": "96de47dfaf85a9f9a3ba4143f086a9c07c0fd817",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_1",
+            "value": "20afb7dd06725e8bf0debd9970c8170d29a10a3e",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_2",
+            "value": "a8fa7017a39d66c3be221a925234df5461eee691",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_3",
+            "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_4",
+            "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_5",
+            "value": "af4555c5e3033c33ea5e5f73873f76a7fa0ae192",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_6",
+            "value": "b2a83b0ebf2f8374299a5b2bdfc31ea955ad7236",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_7",
+            "value": "366cf01e612ea1ad180a2e52976fc718f2317ba7",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_8",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_9",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_10",
+            "value": "1a9e88478e30f1d94952eeb65c7d843d9a53fa13",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_11",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_12",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_13",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_14",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_15",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_16",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_17",
+            "value": "55a9aa8e276d3196affb7ecff100bda23d51d0af",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_18",
+            "value": "82bf809255ee179ac5478bc9ba12db6879dbd31b",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_19",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_20",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_21",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_22",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         },
+         {
+            "index": "pcr_23",
+            "value": "0000000000000000000000000000000000000000",
+            "pcr_bank": "SHA1"
+         }
+      ],
+      "sha2pcrs": [
+         {
+            "index": "pcr_0",
+            "value": "fad7981e1d16de3269667f4e84bf84a0a0c84f4f8a183e13ac5ba1c441bbfd3c",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_1",
+            "value": "e5bb10e64f9f630011b0c4a54a3994731fb62fc0a4b4db8dda5a0e119c0703f7",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_2",
+            "value": "eb2944e90c41c08d44c3952a01ea6bfc07adfd4f2e7c5ea3addbc5e04a68bc49",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_3",
+            "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_4",
+            "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_5",
+            "value": "142a1fc798d0f8e1b9176a5126d8de256e02c16e8175f4d4de9ddc6c4c696424",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_6",
+            "value": "3d458cfe55cc03ea1f443f1562beec8df51c75e14a9fcf9a7234a13f198e7969",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_7",
+            "value": "1d792e7db28fe00ca4a7e6ccb5bb28babf080a7ff11de3377240eee96c393fcc",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_8",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_9",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_10",
+            "value": "a4db73db0d165f9a8084f189b981e1b29c6f862cfecf31f4b1e36ac5d7e3594f",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_11",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_12",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_13",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_14",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_15",
+            "value": "93b5ae893e138d7040c9ed40541d27aa1e0120629fd98c1249f2a514314a3b23",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_16",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_17",
+            "value": "8bc16f894471b5e53da2e799728d0187dae1951ef84ff95c347b7e53dab83695",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_18",
+            "value": "6f33d58a1fc09382042d2fd650f4c26af20cf2b18ea3bc0fdb075af2fa04f6d9",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_19",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_20",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_21",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_22",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         },
+         {
+            "index": "pcr_23",
+            "value": "0000000000000000000000000000000000000000000000000000000000000000",
+            "pcr_bank": "SHA256"
+         }
+      ],
+      "pcr_event_log_map": {
+         "SHA1": [
+            {
+               "pcr": {
+                  "index": 17,
+                  "bank": "SHA1"
+               },
+               "tpm_events": [
+                  {
+                     "type_id": "0x402",
+                     "type_name": "HASH_START",
+                     "tags": [
+                        "HASH_START"
+                     ],
+                     "measurement": "19f7c22f6c92d9555d792466b2097443444ebd26"
+                  },
+                  {
+                     "type_id": "0x40a",
+                     "type_name": "BIOSAC_REG_DATA",
+                     "tags": [
+                        "BIOSAC_REG_DATA"
+                     ],
+                     "measurement": "3cf4a5c90911c21f6ea71f4ca84425f8e65a2be7"
+                  },
+                  {
+                     "type_id": "0x40b",
+                     "type_name": "CPU_SCRTM_STAT",
+                     "tags": [
+                        "CPU_SCRTM_STAT"
+                     ],
+                     "measurement": "3c585604e87f855973731fea83e21fab9392d2fc"
+                  },
+                  {
+                     "type_id": "0x40c",
+                     "type_name": "LCP_CONTROL_HASH",
+                     "tags": [
+                        "LCP_CONTROL_HASH"
+                     ],
+                     "measurement": "9069ca78e7450a285173431b3e52c5c25299e473"
+                  },
+                  {
+                     "type_id": "0x412",
+                     "type_name": "LCP_DETAILS_HASH",
+                     "tags": [
+                        "LCP_DETAILS_HASH"
+                     ],
+                     "measurement": "5ba93c9db0cff93f52b521d7420e43f6eda2784f"
+                  },
+                  {
+                     "type_id": "0x40e",
+                     "type_name": "STM_HASH",
+                     "tags": [
+                        "STM_HASH"
+                     ],
+                     "measurement": "5ba93c9db0cff93f52b521d7420e43f6eda2784f"
+                  },
+                  {
+                     "type_id": "0x40f",
+                     "type_name": "OSSINITDATA_CAP_HASH",
+                     "tags": [
+                        "OSSINITDATA_CAP_HASH"
+                     ],
+                     "measurement": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895"
+                  },
+                  {
+                     "type_id": "0x404",
+                     "type_name": "MLE_HASH",
+                     "tags": [
+                        "MLE_HASH"
+                     ],
+                     "measurement": "499f72bba2b06b3dfba723547f6d2e25347998af"
+                  },
+                  {
+                     "type_id": "0x414",
+                     "type_name": "NV_INFO_HASH",
+                     "tags": [
+                        "NV_INFO_HASH"
+                     ],
+                     "measurement": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6"
+                  }
+               ]
+            },
+            {
+               "pcr": {
+                  "index": 18,
+                  "bank": "SHA1"
+               },
+               "tpm_events": [
+                  {
+                     "type_id": "0x410",
+                     "type_name": "SINIT_PUBKEY_HASH",
+                     "tags": [
+                        "SINIT_PUBKEY_HASH"
+                     ],
+                     "measurement": "a395b723712b3711a89c2bb5295386c0db85fe44"
+                  },
+                  {
+                     "type_id": "0x40b",
+                     "type_name": "CPU_SCRTM_STAT",
+                     "tags": [
+                        "CPU_SCRTM_STAT"
+                     ],
+                     "measurement": "3c585604e87f855973731fea83e21fab9392d2fc"
+                  },
+                  {
+                     "type_id": "0x40f",
+                     "type_name": "OSSINITDATA_CAP_HASH",
+                     "tags": [
+                        "OSSINITDATA_CAP_HASH"
+                     ],
+                     "measurement": "0cf169a95bd32a9a1dc4c3499ade207d30ab8895"
+                  },
+                  {
+                     "type_id": "0x40c",
+                     "type_name": "LCP_CONTROL_HASH",
+                     "tags": [
+                        "LCP_CONTROL_HASH"
+                     ],
+                     "measurement": "9069ca78e7450a285173431b3e52c5c25299e473"
+                  },
+                  {
+                     "type_id": "0x413",
+                     "type_name": "LCP_AUTHORITIES_HASH",
+                     "tags": [
+                        "LCP_AUTHORITIES_HASH"
+                     ],
+                     "measurement": "5ba93c9db0cff93f52b521d7420e43f6eda2784f"
+                  },
+                  {
+                     "type_id": "0x414",
+                     "type_name": "NV_INFO_HASH",
+                     "tags": [
+                        "NV_INFO_HASH"
+                     ],
+                     "measurement": "274f929dbab8b98a7031bbcd9ea5613c2a28e5e6"
+                  }
+               ]
+            }
+         ],
+         "SHA256": [
+            {
+               "pcr": {
+                  "index": 17,
+                  "bank": "SHA256"
+               },
+               "tpm_events": [
+                  {
+                     "type_id": "0x402",
+                     "type_name": "HASH_START",
+                     "tags": [
+                        "HASH_START"
+                     ],
+                     "measurement": "14fc51186adf98be977b9e9b65fc9ee26df0599c4f45804fcc45d0bdcf5025db"
+                  },
+                  {
+                     "type_id": "0x40a",
+                     "type_name": "BIOSAC_REG_DATA",
+                     "tags": [
+                        "BIOSAC_REG_DATA"
+                     ],
+                     "measurement": "c61aaa86c13133a0f1e661faf82e74ba199cd79cef652097e638a756bd194428"
+                  },
+                  {
+                     "type_id": "0x40b",
+                     "type_name": "CPU_SCRTM_STAT",
+                     "tags": [
+                        "CPU_SCRTM_STAT"
+                     ],
+                     "measurement": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450"
+                  },
+                  {
+                     "type_id": "0x40c",
+                     "type_name": "LCP_CONTROL_HASH",
+                     "tags": [
+                        "LCP_CONTROL_HASH"
+                     ],
+                     "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                  },
+                  {
+                     "type_id": "0x412",
+                     "type_name": "LCP_DETAILS_HASH",
+                     "tags": [
+                        "LCP_DETAILS_HASH"
+                     ],
+                     "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                  },
+                  {
+                     "type_id": "0x40e",
+                     "type_name": "STM_HASH",
+                     "tags": [
+                        "STM_HASH"
+                     ],
+                     "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                  },
+                  {
+                     "type_id": "0x40f",
+                     "type_name": "OSSINITDATA_CAP_HASH",
+                     "tags": [
+                        "OSSINITDATA_CAP_HASH"
+                     ],
+                     "measurement": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93"
+                  },
+                  {
+                     "type_id": "0x404",
+                     "type_name": "MLE_HASH",
+                     "tags": [
+                        "MLE_HASH"
+                     ],
+                     "measurement": "125f11bd4fb1156a29fbac5357ac04d14429c866a37d10643b1599be77917f82"
+                  },
+                  {
+                     "type_id": "0x414",
+                     "type_name": "NV_INFO_HASH",
+                     "tags": [
+                        "NV_INFO_HASH"
+                     ],
+                     "measurement": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b"
+                  }
+               ]
+            },
+            {
+               "pcr": {
+                  "index": 18,
+                  "bank": "SHA256"
+               },
+               "tpm_events": [
+                  {
+                     "type_id": "0x410",
+                     "type_name": "SINIT_PUBKEY_HASH",
+                     "tags": [
+                        "SINIT_PUBKEY_HASH"
+                     ],
+                     "measurement": "da256395df4046319ef0af857d377a729e5bc0693429ac827002ffafe485b2e7"
+                  },
+                  {
+                     "type_id": "0x40b",
+                     "type_name": "CPU_SCRTM_STAT",
+                     "tags": [
+                        "CPU_SCRTM_STAT"
+                     ],
+                     "measurement": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450"
+                  },
+                  {
+                     "type_id": "0x40f",
+                     "type_name": "OSSINITDATA_CAP_HASH",
+                     "tags": [
+                        "OSSINITDATA_CAP_HASH"
+                     ],
+                     "measurement": "d81fe96dc500bc43e1cd5800bef9d72b3d030bdb7e860e10c522e4246b30bd93"
+                  },
+                  {
+                     "type_id": "0x40c",
+                     "type_name": "LCP_CONTROL_HASH",
+                     "tags": [
+                        "LCP_CONTROL_HASH"
+                     ],
+                     "measurement": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+                  },
+                  {
+                     "type_id": "0x413",
+                     "type_name": "LCP_AUTHORITIES_HASH",
+                     "tags": [
+                        "LCP_AUTHORITIES_HASH"
+                     ],
+                     "measurement": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+                  },
+                  {
+                     "type_id": "0x414",
+                     "type_name": "NV_INFO_HASH",
+                     "tags": [
+                        "NV_INFO_HASH"
+                     ],
+                     "measurement": "0f6e0c7a5944963d7081ea494ddff1e9afa689e148e39f684db06578869ea38b"
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   "measurement_xmls": [
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Measurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Workload_Flavor_v2.1\" Uuid=\"06457be5-00a2-43da-9e2d-270a8cd95994\" DigestAlg=\"SHA384\"><CumulativeHash>000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</CumulativeHash></Measurement>",
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Measurement xmlns=\"lib:wml:measurements:1.0\" Label=\"ISecL_Default_Application_Flavor_v2.1_TPM2.0\" Uuid=\"41eb98bc-aab9-4877-8b4a-e78f10148f06\" DigestAlg=\"SHA384\"><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/bin\">b0d5cba0bb12d69d8dd3e92bdad09d093a34dd4ea30aea63fb31b9c26d9cbf0e84016fa9a80843b473e1493a427aa63a</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/dracut_files\">1d9c8eb15a49ea65fb96f2b919c42d5dfd30f4e4c1618205287345aeb4669d18113fe5bc87b033aeef2aeadc2e063232</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/initrd_hooks\">77b913422748a8e62f0720d739d54b2fa7856ebeb9e76fab75c41c375f2ad77b7b9ec5849b20d857e24a894a615d2de7</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/lib\">b03eb9d3b6fa0d338fd4ef803a277d523ab31db5c27186a283dd8d1fe0e7afca9bf26b31b1099833b0ba398dbe3c02fb</Dir><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/tbootxm/mkinitrd_files\">6928eb666f6971af5da42ad785588fb9464465b12c78f7279f46f9f8e04ae428d4872e7813671a1390cc8ed433366247</Dir><File Path=\"/opt/tbootxm/bin/tpmextend\">b936d9ec4b8c7823efb01d946a7caa074bdfffdbd11dc20108ba771b8ef65d8efc72b559cd605b1ba0d70ef99e84ba55</File><File Path=\"/opt/tbootxm/bin/measure\">c72551ddfdfab6ec901b7ed8dc28a1b093793fd590d2f6c3b685426932013ca11a69aeb3c04a31278829f653a24deeb1</File><File Path=\"/opt/tbootxm/bin/configure_host.sh\">8675ca78238f0cf6e09d0d20290a7a2b9837e2a1c19a4a0a7a8c226820c33b6a6538c2f94bb4eb78867bd1a87a859a2c</File><File Path=\"/opt/tbootxm/bin/generate_initrd.sh\">4708ed8233a81d6a17b2c4b74b955f27612d2cc04730ad8919618964209ce885cea9011e00236de56a2239a524044db4</File><File Path=\"/opt/tbootxm/bin/measure_host\">63648dde7ef979e0ce32fbb4fc2087bf861ca0c9a2755d13e2135eaecf37e9e43e7523ac923d8073b0fe6159da6aba4a</File><File Path=\"/opt/tbootxm/bin/tboot-xm-uninstall.sh\">7450bc939548eafc4a3ba9734ad1f96e46e1f46a40e4d12ad5b5f6b5eb2baf1597ade91edb035d8b5c1ecc38bde7ee59</File><File Path=\"/opt/tbootxm/bin/functions.sh\">8526f8aedbe6c4bde3ba331b0ce18051433bdabaf8991a269aff7a5306838b13982f7d1ead941fb74806fc696fef3bf0</File><File Path=\"/opt/tbootxm/dracut_files/check\">6f5949b86d3bf3387eaff8a18bb5d64e60daff9a2568d0c7eb90adde515620b9e5e9cd7d908805c6886cd178e7b382e1</File><File Path=\"/opt/tbootxm/dracut_files/install\">e2fc98a9292838a511d98348b29ba82e73c839cbb02051250c8a8ff85067930b5af2b22de4576793533259fad985df4a</File><File Path=\"/opt/tbootxm/dracut_files/module-setup.sh\">0a27a9e0bff117f30481dcab29bb5120f474f2c3ea10fa2449a9b05123c5d8ce31989fcd986bfa73e6c25c70202c50cb</File><File Path=\"/opt/tbootxm/initrd_hooks/tcb\">430725e0cb08b290897aa850124f765ae0bdf385e6d3b741cdc5ff7dc72119958fbcce3f62d6b6d63c4a10c70c18ca98</File><File Path=\"/opt/tbootxm/lib/libwml.so\">56a04d0f073f0eb2a4f851ebcba79f7080553c27fa8d1f7d4a767dc849015c9cc6c9abe937d0e90d73de27814f28e378</File><File Path=\"/opt/tbootxm/lib/create_menuentry.pl\">79770fb02e5a8f6b51678bde4d017f23ac811b1a9f89182a8b7f9871990dbbc07fd9a0578275c405a02ac5223412095e</File><File Path=\"/opt/tbootxm/lib/update_menuentry.pl\">cb6754eb6f2e39e43d420682bc91c83b38d63808b603c068a3087affb856703d3ae564892ac837cd0d4453e41b2a228e</File><File Path=\"/opt/tbootxm/lib/remove_menuentry.pl\">baf4f9b63ab9bb1e8616e3fb037580e38c0ebd4073b3b7b645e0e37cc7f0588f4c5ed8b744e9be7689aa78d23df8ec4c</File><File Path=\"/opt/tbootxm/mkinitrd_files/setup-measure_host.sh\">2791f12e447bbc88e25020ddbf5a2a8693443c5ca509c0f0020a8c7bed6c813cd62cb4c250c88491f5d540343032addc</File><Dir Exclude=\"\" Include=\".*\" Path=\"/opt/trustagent/bin\">3519466d871c395ce1f5b073a4a3847b6b8f0b3e495337daa0474f967aeecd48f699df29a4d106288f3b0d1705ecef75</Dir><File Path=\"/opt/trustagent/bin/tagent\">14de1f422595a231b4efc8c64a9fd5cfb7952182371b7856b4909864287f6eb62fed839f11b043948c39e238c61197cd</File><File Path=\"/opt/trustagent/bin/module_analysis.sh\">2327e72fa469bada099c5956f851817b0c8fa2d6c43089566cacd0f573bf62e7e8dd10a2c339205fb16c3956db6518a9</File><File Path=\"/opt/trustagent/bin/module_analysis_da.sh\">2a99c3e80e99d495a6b8cce8e7504af511201f05fcb40b766a41e6af52a54a34ea9fba985d2835aef929e636ad2a6f1d</File><File Path=\"/opt/trustagent/bin/module_analysis_da_tcg.sh\">0f47a757c86e91a3a175cd6ee597a67f84c6fec95936d7f2c9316b0944c27cb72f84e32c587adb456b94e64486d14242</File><CumulativeHash>1cb7f7d37adf57274620d44e687ffc9a184cd5ab5c5e434b30514241198b6ecbd029e2ab78072540b875f52d304bc042</CumulativeHash></Measurement>"
+  ]
+}

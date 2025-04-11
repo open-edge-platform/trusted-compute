@@ -1,0 +1,71 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.deploymentCommonSpec" . }}
+    spec:
+      {{- if .Values.global }}
+      {{- if .Values.image.svc.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.image.svc.imagePullSecret }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      initContainers:
+        - name: init-script
+          image: busybox:latest
+          command: ["sh", "-c", "cp /tmp/init-script.sh /writable/init-script.sh && chmod +x /writable/init-script.sh && /writable/init-script.sh /host/opt {{ .Values.securityContext.cms.runAsUser }}"]
+          volumeMounts:
+          - name: script-volume
+            mountPath: /tmp
+          - name: writable-volume
+            mountPath: /writable
+          - name: host-opt
+            mountPath: /host/opt
+        {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+        {{- if .Values.global }}
+        {{- if .Values.global.versionUpgrade }}
+        {{- include "factory.waitForUpgradeService" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+        {{- end}}
+        {{- else}}
+        {{- if .Values.versionUpgrade }}
+        {{- include "factory.waitForUpgradeService" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+        {{- end}}
+        {{- end}}
+      containers:
+        - name: {{ include "factory.name" . }}
+          {{ include "factory.imageContainer" . | nindent 10 | trim }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.service.cms.containerPort }}
+          readinessProbe:
+            httpGet:
+              path: /cms/v1/version
+              port: {{ .Values.service.cms.containerPort }}
+              scheme: HTTPS
+            initialDelaySeconds: 1
+            failureThreshold: 30
+            periodSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: {{ include "factory.name" . }}
+          volumeMounts:
+            {{- include "factory.volumeMountSvcConfig" . | nindent 12 }}
+            {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumeSvcConfig" . | nindent 8 }}
+        {{- include "factory.volumeSvcLogs" . | nindent 8 }}
+        {{- include "factory.volumesBasePV" . | nindent 8 }}
+        - name: script-volume
+          configMap:
+            name: {{ .Release.Name }}-init-script
+        - name: writable-volume
+          emptyDir: {}
+        - name: host-opt
+          hostPath:
+            path: /opt

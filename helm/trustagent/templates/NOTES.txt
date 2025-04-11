@@ -1,0 +1,23 @@
+Thank you for installing {{ include "factory.name" . }} of Intel® SecL-DC
+
+In the meantime the release gets up & running in the next few minutes, following information would be helpful
+
+  Release Name={{ .Release.Name }}
+  Release Namespace={{ .Release.Namespace }}
+
+To learn more about the chart, values, README, try:
+Note: If using a seprarate .kubeconfig file, ensure to provide the path using --kubeconfig
+
+  $ helm show chart {{ include "factory.name" . }}
+  $ helm show values {{ include "factory.name" . }}
+  $ helm show readme {{ include "factory.name" . }}
+  
+To learn more about the released charts, try:
+Note: If using a seprarate .kubeconfig file, ensure to provide the path using --kubeconfig
+
+  $ helm get values {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+  $ helm get manifest {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+  $ helm list --namespace {{ .Release.Namespace }}
+  
+To check the status of the different k8s objects deployed, try:
+  $ kubectl get all --namespace {{ .Release.Namespace }}

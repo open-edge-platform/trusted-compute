@@ -1,0 +1,113 @@
+---
+# The below section can be used to override additional values defined under each of the dependent charts
+cms:
+  image:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/cms # Certificate Management Service image name<br> (**REQUIRED**)
+
+aas:
+  image:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/authservice # KWT (didn't like aas) Authentication & Authorization Service image name<br> (**REQUIRED**)
+  secret:
+    dbUsername: aas # DB Username for AAS DB
+    dbPassword: aas # DB Password for AAS DB
+  config:
+    dbMaxConnections: 200 # Determines the maximum number of concurrent connections to the database server. Default is 200
+    dbSharedBuffers: 2GB # Determines how much memory is dedicated to PostgreSQL to use for caching data. Default is 2GB
+
+hvs:
+  image:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/hvs # Host Verification Service image name<br> (**REQUIRED**)
+  config:
+    requireEKCertForHostProvision: false # If set to true enforce ta hardening <br> (Allowed values: `true`\`false`)
+    verifyQuoteForHostRegistration: false # If set to true enforce ta hardening <br> (Allowed values: `true`\`false`)
+    dbMaxConnections: 200 # Determines the maximum number of concurrent connections to the database server. Default is 200
+    dbSharedBuffers: 2GB # Determines how much memory is dedicated to PostgreSQL to use for caching data. Default is 2GB Default is 2GB
+  secret:
+    dbUsername: hvs # postgres DB Username for HVS DB
+    dbPassword: hvs # postgres DB Password for HVS DB
+    installAdminUsername: installAdminUsername # Install Admin Username for HVS
+    installAdminPassword: installAdminPassword # Install Admin Password for HVS
+    serviceUsername: serviceUsername # Service Username for HVS
+    servicePassword: servicePassword # Service Password for HVS
+
+trustagent-aas-manager: # Provide values for trustagent-aas-manager if enabled, this is a job that creates service account for trustagent
+  createTAServiceAccount: true # Set this to true, only when trustagent is not deployed through helm
+  secret:
+    serviceUsername: serviceUsername # Service Username for Tagent
+    servicePassword: servicePassword # Service Password for Tagent
+
+nats:
+  clientPort: 30222
+
+nats-init:
+  image:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/nats-init # The image name of nats-init container
+  secret:
+    installAdminUsername: installAdminUsername # Install Admin Username for Nats init
+    installAdminPassword: installAdminPassword # Install Admin Password for Nats init
+
+global-admin-generator:
+  enable: true # Set this to true for generating global admin user account
+  secret:
+    globalAdminUsername: globalAdminUsername
+    globalAdminPassword: globalAdminPassword
+  services_list: # Services list for global admin token generation. Accepted values HVS, WLS, KBS, TA
+    - HVS
+
+global:
+  controlPlaneHostname: 127.0.0.1 # K8s control plane IP/Hostname<br> (**REQUIRED**)
+  versionUpgrade: false # Set this true when performing upgrading to next minor/major version
+  currentVersion: # Set the currently deployed version
+  dbVersionUpgrade: false # Set this to true when there is db version upgrade. Refer product guide for more information
+
+  hostAliasEnabled: false # Set this to true for using host aliases and also add entries accordingly in ip, hostname entries. hostalias is required when ingress is deployed and pods are not able to resolve the domain names
+  aliases:
+    hostAliases:
+      - ip: ""
+        hostnames:
+          - ""
+          - ""
+
+  image:
+    pullPolicy: Always # The pull policy for pulling from container registry<br> (Allowed values: `Always`/`IfNotPresent`)
+    imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
+    initName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait # The image name of init container
+    dbVersionUpgradeImage: # The name of PostgresDB version upgrade image. Can be left empty during helm installation without upgrades, might be required during upgrades, refer product guide for more information
+    aasManagerName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager # The image name of aas-manager image name
+
+  config:
+    dbhostSSLPodRange: 10.0.0.0/8 #192.168.0.0/16 # PostgreSQL DB Host Address(IP address/subnet-mask). IP range varies for different k8s network plugins(Ex: Flannel - 10.1.0.0/8 (default), Calico - 192.168.0.0/16).
+    nats:
+      enabled: true # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
+      servers:    # KWT NATS Server IP/Hostname<br>
+
+  storage:
+    hostPath:
+      reclaimPolicy: Retain # The reclaim policy for NFS<br> (Allowed values: `Retain`/)
+      accessModes:
+        - ReadWriteMany # The access modes for NFS<br> (Allowed values: `ReadWriteMany`)
+      path: /opt # The path for storing persistent data on NFS
+      dbSize: 1Gi # The DB size for storing DB data for AAS in NFS path
+      configSize: 10Mi # The configuration size for storing config for AAS in NFS path
+      logsSize: 1Gi # The logs size for storing logs for AAS in NFS path
+      baseSize: 2.1Gi # The base volume size (configSize + logSize + dbSize)
+        
+
+  service:
+    cms: 30445 # The service port for Certificate Management Service
+    aas: 30444 # The service port for Authentication Authorization Service
+    hvs: 30443 # The service port for Host Verification Service
+
+  ingress:
+    enable: true # Accept true or false to notify ingress rules are enable or disabled, Default value: false
+
+  aas:
+    secret:
+      adminUsername: adminUsername # Admin Username for AAS
+      adminPassword: adminPassword # Admin Password for AAS
+
+  proxyEnabled: false # Set to true when running deploying behind corporate proxy
+  httpProxy:  # Set http_proxy url
+  httpsProxy:  # Set https_proxy url
+  allProxy: # Set all_proxy url
+  noProxy: localhost,127.0.0.0/8,10.0.0.0/8,.intel.com # Set no_proxy

@@ -1,0 +1,4 @@
+<Measurement DigestAlg="SHA384" Label="ISL_Applications123" Uuid="834076cd-f733-4cca-a417-113fac90adc7">
+    <File xmlns="lib:wml:measurements:1.0" Path="/opt/trustagent/bin/module_analysis_da.sh">2a99c3e80e99d495a6b8cce8e7504af511201f05fcb40b766a41e6af52a54a34ea9fba985d2835aef929e636ad2a6f1d</File>
+    <CumulativeHash xmlns="lib:wml:measurements:1.0">17214eee0066d1938feef4d3dd68bc6ac5e1fb953d63e357145113f2de523baffac2f348b2e6bca439609018a789b9f1</CumulativeHash>
+</Measurement>

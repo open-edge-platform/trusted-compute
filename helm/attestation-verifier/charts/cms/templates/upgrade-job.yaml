@@ -1,0 +1,107 @@
+{{- if .Values.global }}
+{{- if .Values.global.versionUpgrade }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "factory.name" . }}-upgrade
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "factory.labelsChart" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "factory.labelsChart" . | nindent 8 }}
+    spec:
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        {{- include "factory.backupService" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+      containers:
+        - name: {{ include "factory.name" . }}-upgrade
+          {{- include "factory.imageContainer" . | indent 10 }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              if [ ! -f /{{ .Values.service.directoryName }}/{{.Chart.AppVersion }}/config/version ]; then /container_upgrade.sh; else echo 'skipping already upgraded to latest version' ; fi
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+          env:
+            - name: CONFIG_DIR
+              value: "/etc/{{ .Values.service.directoryName }}"
+            - name: COMPONENT_VERSION
+              value: {{ .Values.global.currentVersion }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "factory.name" . }}
+          volumeMounts:
+            - name: {{ include "factory.name" . }}-base
+              mountPath: /{{ .Values.service.directoryName }}/
+            {{- include "factory.volumeMountSvcConfig" . | nindent 12 }}
+            {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumeSvcConfig" . | nindent 8 }}
+        {{- include "factory.volumeSvcLogs" . | nindent 8 }}
+        {{- include "factory.volumesBasePV" . | nindent 8 }}
+{{- end}}
+{{- else}}
+{{- if .Values.versionUpgrade }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "factory.name" . }}-upgrade
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "factory.labelsChart" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "factory.labelsChart" . | nindent 8 }}
+    spec:
+      {{- if .Values.image.svc.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.svc.imagePullSecret }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      restartPolicy: Never
+      initContainers:
+        {{- include "factory.backupService" . | nindent 8 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+      containers:
+        - name: {{ include "factory.name" . }}-upgrade
+          {{- include "factory.imageContainer" . | indent 10 }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              if [ ! -f /{{ .Values.service.directoryName }}/{{.Chart.AppVersion }}/config/version ]; then /container_upgrade.sh; else echo 'skipping already upgraded to latest version' ; fi
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
+          env:
+            - name: CONFIG_DIR
+              value: "/etc/{{ .Values.service.directoryName }}"
+            - name: COMPONENT_VERSION
+              value: {{ .Values.currentVersion }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "factory.name" . }}
+          volumeMounts:
+            - name: {{ include "factory.name" . }}-base
+              mountPath: /{{ .Values.service.directoryName }}/
+            {{- include "factory.volumeMountSvcConfig" . | nindent 12 }}
+            {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+      volumes:
+        {{- include "factory.volumeSvcConfig" . | nindent 8 }}
+          {{- include "factory.volumeSvcLogs" . | nindent 8 }}
+          {{- include "factory.volumesBasePV" . | nindent 8 }}
+{{- end }}
+{{- end }}

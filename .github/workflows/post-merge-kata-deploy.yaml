@@ -1,0 +1,28 @@
+---
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: Post-Merge kata-deploy
+
+on:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'trusted-workload/kata-deploy/**'
+  workflow_dispatch:
+
+jobs:
+  post-merge-pipeline:
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@main
+    with:
+      run_security_scans: true
+      run_version_check: true
+      run_build: true
+      run_docker_build: true
+      run_docker_push: true
+      run_version_tag: true
+      prefix_tag_separator: "/"
+      project_folder: "trusted-workload/kata-deploy"
+    secrets: inherit

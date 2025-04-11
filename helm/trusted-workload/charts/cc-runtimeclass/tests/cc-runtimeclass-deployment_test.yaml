@@ -1,0 +1,122 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+suite: cc-runtimeclass-deployment
+templates:
+  - cc-runtimeclass-deployment.yaml
+
+tests:
+  - it: should create a Job to apply CcRuntime resource
+    asserts:
+      - isAPIVersion:
+          of: batch/v1
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.name
+          value: ccruntime-installer
+      - equal:
+          path: metadata.namespace
+          value: confidential-containers-system
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: cc-operator-controller-manager
+      - equal:
+          path: spec.template.spec.restartPolicy
+          value: OnFailure
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-dependencies
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: bitnami/kubectl:1.32.3
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value:
+            - /bin/sh
+            - -c
+      - equal:
+          path: spec.template.spec.initContainers[0].args[0]
+          value: |
+            echo "Waiting for CRD 'ccruntimes.confidentialcontainers.org' to be created..." &&
+            until kubectl get crd ccruntimes.confidentialcontainers.org; do
+              echo "CRD not yet created, retrying in 5 seconds..." &&
+              sleep 5
+            done &&
+            echo "CRD found, upgrading parent-chart with cc-runtimeclass enabled"
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.runAsUser
+          value: 0
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: apply-ccruntime
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: bitnami/kubectl:1.32.3
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value:
+            - /bin/sh
+            - -c
+      - equal:
+          path: spec.template.spec.containers[0].args[0]
+          value: |
+            echo "Applying CcRuntime resource..." &&
+            kubectl apply -f - <<EOF
+            apiVersion: confidentialcontainers.org/v1beta1
+            kind: CcRuntime
+            metadata:
+              name: ccruntime-sample
+            spec:
+              ccNodeSelector:
+                matchLabels:
+                  node-role.kubernetes.io/worker: "true"
+              config:
+                cleanupCmd:
+                  - /opt/kata-artifacts/scripts/kata-deploy.sh
+                  - reset
+                debug: false
+                environmentVariables:
+                  - name: INSTALL_OFFICIAL_CONTAINERD
+                    value: "false"
+                installCmd:
+                  - /opt/kata-artifacts/scripts/kata-deploy.sh
+                  - install
+                installDoneLabel:
+                  katacontainers.io/kata-runtime: "true"
+                installType: bundle
+                installerVolumeMounts:
+                  - mountPath: /etc/containerd/
+                    name: containerd-conf
+                  - mountPath: /usr/local/bin/
+                    name: local-bin
+                  - mountPath: /host/
+                    name: host
+                installerVolumes:
+                  - hostPath:
+                      path: /var/lib/rancher/rke2/agent/etc/containerd/
+                      type: ""
+                    name: containerd-conf
+                  - hostPath:
+                      path: /usr/local/bin/
+                      type: ""
+                    name: local-bin
+                  - hostPath:
+                      path: /
+                      type: ""
+                    name: host
+                payloadImage: "registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:1.2.0"
+                runtimeClasses:
+                  - name: kata-qemu
+                    pulltype: ""
+                    snapshotter: ""
+                uninstallCmd:
+                  - /opt/kata-artifacts/scripts/kata-deploy.sh
+                  - cleanup
+                uninstallDoneLabel:
+                  katacontainers.io/kata-runtime: cleanup
+              runtimeName: kata
+            EOF
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 0

@@ -1,0 +1,55 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.dependentServices.cms }}-init
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cms-init.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "cms-init.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.global }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- else }}
+      {{- if .Values.image.svc.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.svc.imagePullSecret }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      initContainers:
+        - name: wait-for-cms
+          {{ include "factory.imageInitContainer" . | nindent 10 | trim }}
+          env:
+            - name: URL
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1/version
+            - name: VERSION
+              value: {{.Chart.AppVersion }}
+            - name: DEPEDENT_SERVICE_NAME
+              value: {{ .Values.dependentServices.cms }}
+            - name: COMPONENT
+              value: {{ .Values.dependentServices.cms }}-init
+      containers:
+        - name: cms-tls-digest-aas-bootstrap-token
+          image: bitnami/kubectl:1.23
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              echo starting &&
+              POD_NAME=`kubectl get pod -l app.kubernetes.io/name={{ .Values.dependentServices.cms }} -n {{ .Release.Namespace }} -o name` &&
+              CMS_TLS_SHA384=`kubectl exec -n {{ .Release.Namespace }} --stdin $POD_NAME -- {{ .Values.dependentServices.cms }} tlscertsha384` &&
+              kubectl delete secret cms-tls-cert-sha384 aas-token -n {{ .Release.Namespace }} --ignore-not-found=true &&
+              kubectl create secret generic cms-tls-cert-sha384 -n {{ .Release.Namespace }} --from-literal=CMS_TLS_CERT_SHA384=$CMS_TLS_SHA384 &&
+              AAS_TOKEN=`kubectl exec -n {{ .Release.Namespace }} --stdin $POD_NAME -- {{ .Values.dependentServices.cms }} authtoken` &&
+              if [ -z "$AAS_TOKEN" ]; then exit 1; fi &&
+              kubectl create secret generic aas-token -n {{ .Release.Namespace }} --from-literal=BEARER_TOKEN=$AAS_TOKEN
+      restartPolicy: Never
+  backoffLimit: 4

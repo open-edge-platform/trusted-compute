@@ -1,0 +1,17 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "attestation-manager.fullname" . }}-test-connection"
+  labels:
+    {{- include "attestation-manager.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "attestation-manager.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

@@ -1,0 +1,43 @@
+{
+  {{- if .Values.aas.url }}
+  "aas_api_url": "{{ .Values.aas.url }}",
+  {{- else }}
+  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1",
+  {{- end}}
+  "aas_admin_username": "{{ required "A valid admin username is required!" .Values.aas.secret.adminUsername }}",
+  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.aas.secret.adminPassword }}",
+   "users_and_roles":[
+      {
+         "username": "{{ .Values.secret.installAdminUsername }}",
+         "password": "{{ .Values.secret.installAdminPassword }}",
+         "print_bearer_token":true,
+         "roles":[
+            {
+               "service": "CMS",
+               "name": "CertApprover",
+               "context":"CN=Trust Agent TLS Certificate;SAN=*;certType=TLS"
+            },
+            {
+               "service":"AAS",
+               "name":"CredentialCreator",
+               "context":"type=TA",
+               "permissions":[
+                  "credential:create:*",
+                  "custom_claims:create:*"
+               ]
+            },
+	    {
+		"service": "HVS",
+		"name": "AttestationRegister",
+		"permissions": [
+		"hosts:store:*",
+		"hosts:search:*",
+		"host_unique_flavors:create:*",
+		"flavors:search:*",
+		"host_aiks:certify:*"
+		]
+	   }
+         ]
+      }
+   ]
+}

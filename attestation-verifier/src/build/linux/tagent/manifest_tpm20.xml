@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest xmlns="lib:wml:manifests:1.0" Label="ISecL_Default_Application_Flavor_v" Uuid="" DigestAlg="SHA384">
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/tbootxm/bin"/>
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/tbootxm/dracut_files"/>
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/tbootxm/initrd_hooks"/>
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/tbootxm/lib"/>
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/tbootxm/mkinitrd_files"/>
+   <File Path="/opt/tbootxm/bin/.*" SearchType="regex"/>
+   <File Path="/opt/tbootxm/dracut_files/.*" SearchType="regex"/>
+   <File Path="/opt/tbootxm/initrd_hooks/tcb"/>
+   <File Path="/opt/tbootxm/lib/.*" SearchType="regex"/>
+   <File Path="/opt/tbootxm/mkinitrd_files/setup-measure_host.sh"/>
+   <Dir Exclude="" FilterType="regex" Include=".*" Path="/opt/trustagent/bin"/>
+   <File Path="/opt/trustagent/bin/tagent"/>
+   <File Path="/opt/trustagent/bin/.*\.sh" SearchType="regex"/>
+</Manifest>

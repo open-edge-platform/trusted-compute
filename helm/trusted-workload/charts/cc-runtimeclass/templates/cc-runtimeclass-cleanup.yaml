@@ -1,0 +1,93 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ccruntime-cleanup
+  namespace: confidential-containers-system
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: cc-operator-controller-manager
+      restartPolicy: OnFailure
+      containers:
+        - name: cleanup-ccruntime
+          image: bitnami/kubectl:1.32.3
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Checking if DaemonSet 'cc-operator-daemon-install' is running..." &&
+              if kubectl get daemonset cc-operator-daemon-install -n confidential-containers-system > /dev/null 2>&1; then
+                echo "DaemonSet 'cc-operator-daemon-install' is running. Proceeding with cleanup..." &&
+                kubectl delete -f - <<EOF
+              apiVersion: confidentialcontainers.org/v1beta1
+              kind: CcRuntime
+              metadata:
+                name: ccruntime-sample
+              spec:
+                ccNodeSelector:
+                  matchLabels:
+                    node-role.kubernetes.io/worker: "true"
+                config:
+                  cleanupCmd:
+                    - /opt/kata-artifacts/scripts/kata-deploy.sh
+                    - reset
+                  debug: false
+                  environmentVariables:
+                    - name: INSTALL_OFFICIAL_CONTAINERD
+                      value: "false"
+                  installCmd:
+                    - /opt/kata-artifacts/scripts/kata-deploy.sh
+                    - install
+                  installDoneLabel:
+                    katacontainers.io/kata-runtime: "true"
+                  installType: bundle
+                  installerVolumeMounts:
+                    - mountPath: /etc/containerd/
+                      name: containerd-conf
+                    - mountPath: /usr/local/bin/
+                      name: local-bin
+                    - mountPath: /host/
+                      name: host
+                  installerVolumes:
+                    - hostPath:
+                        path: /var/lib/rancher/rke2/agent/etc/containerd/
+                        type: ""
+                      name: containerd-conf
+                    - hostPath:
+                        path: /usr/local/bin/
+                        type: ""
+                      name: local-bin
+                    - hostPath:
+                        path: /
+                        type: ""
+                      name: host
+                  payloadImage: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  runtimeClasses:
+                    - name: kata-qemu
+                      pulltype: ""
+                      snapshotter: ""
+                  uninstallCmd:
+                    - /opt/kata-artifacts/scripts/kata-deploy.sh
+                    - cleanup
+                  uninstallDoneLabel:
+                    katacontainers.io/kata-runtime: cleanup
+                runtimeName: kata
+              EOF
+                while kubectl get daemonset cc-operator-daemon-install -n confidential-containers-system > /dev/null 2>&1; do
+                  echo "DaemonSet 'cc-operator-daemon-install' still exists. Retrying in 5 seconds..." &&
+                  sleep 5
+                done &&
+                echo "DaemonSet 'cc-operator-daemon-install' has been deleted."
+              else
+                echo "DaemonSet 'cc-operator-daemon-install' is not running. Skipping cleanup."
+              fi
+          securityContext:
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false

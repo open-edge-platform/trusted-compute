@@ -1,0 +1,7 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.serviceDbCommonSpec" . }}
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.service.aasdb.containerPort }}
+      targetPort: {{ .Values.service.aasdb.containerPort }}

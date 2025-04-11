@@ -1,0 +1,237 @@
+{{- include "factory.headers" . }}
+---
+{{- include "factory.daemonSetCommonHeaderSpec" . }}
+metadata:
+  name: {{ include "factory.name" . }}-suefi
+{{- include "factory.daemonSetCommonSpec" . }}
+    spec:
+      {{- if .Values.image.svc.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.image.svc.imagePullSecret }}
+      {{- end }}
+      serviceAccountName: {{ include "factory.name" . }}
+      initContainers:
+        - name: wait-for-hvs
+          {{ include "factory.imageInitContainer" . | nindent 10 | trim }}
+          env:
+            - name: URL
+              value: https://{{ .Values.dependentServices.hvs }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.hvs.containerPort }}/hvs/v2/version
+            - name: VERSION
+              value: {{ .Chart.AppVersion }}
+            - name: DEPEDENT_SERVICE_NAME
+              value: {{.Values.dependentServices.hvs }}
+            - name: COMPONENT
+              value: {{ .Values.dependentServices.hvs }}
+          volumeMounts:
+            {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
+            {{- if $file }}
+            - name: init-scanfiles-{{ $index }}
+              mountPath: /host{{ $file }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+        {{- if .Values.versionUpgrade }}
+        - name: {{ include "factory.name" . }}-backup
+          image: busybox:1.32
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              cp -r /opt/{{ .Values.service.directoryName }}/{{ .Values.currentVersion }}/* /opt/{{ .Values.service.directoryName }}/{{ .Chart.AppVersion }}/ &&
+              cp -r /opt/{{ .Values.service.directoryName }}/{{ .Values.currentVersion }}/.setup_done /opt/{{ .Values.service.directoryName }}/{{ .Chart.AppVersion }}/
+          volumeMounts:
+            {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+            - name: {{ include "factory.name" . }}-base
+              mountPath: /opt/{{ .Values.service.directoryName }}
+        - name: {{ include "factory.name" . }}-upgrade
+          {{- include "factory.imageContainer" . | indent 10 }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              if [ ! -f /opt/{{ .Values.service.directoryName }}/version ]; then /container_upgrade.sh; if [ $? -eq 0 ]; then echo {{ .Chart.AppVersion }} > /opt/{{ .Values.service.directoryName }}/version ; fi else echo 'skipping already upgraded to latest version' ; fi
+          env:
+            - name: CONFIG_DIR
+              value: "/opt/{{ .Values.service.directoryName }}"
+            - name: COMPONENT_VERSION
+              value: {{ .Values.currentVersion }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "factory.name" . }}
+          volumeMounts:
+          {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+            - name: {{ include "factory.name" . }}-config
+              mountPath: /opt/trustagent
+        {{- end }}
+      tolerations:
+        - key: "untrusted"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "untrusted"
+          operator: "Equal"
+          value: "true"
+          effect: "NoExecute"
+      {{- include "factory.hostAliases" . | nindent 6 | trim }}
+      containers:
+        - name: {{ include "factory.name" . }}
+          {{ include "factory.imageContainer" . | nindent 10 | trim}}
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: {{ .Values.service.ta.containerPort }}
+              hostPort: {{ .Values.service.ta.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "factory.name" . }}
+          env:
+            {{- include "factory.envBearerToken" . | nindent 12 }}
+            {{- include "factory.envCmsSha384" . | nindent 12 }}
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - /opt/trustagent/.setup_done
+            initialDelaySeconds: 5
+            failureThreshold: 60
+            periodSeconds: 15
+          volumeMounts:
+            {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
+            - name: {{ include "factory.name" . }}-config
+              mountPath: /opt/trustagent/
+            - name: {{ include "factory.name" . }}-hostname
+              mountPath: /opt/hostname
+              readOnly: true
+            - name: {{ include "factory.name" . }}-hosts
+              mountPath: /etc/hosts
+              readOnly: true
+            - name: {{ include "factory.name" . }}-host-os
+              mountPath: /etc/os-release
+              readOnly: true
+            - name: {{ include "factory.name" . }}-mem
+              mountPath: /dev/mem
+              readOnly: true
+            - name: {{ include "factory.name" . }}-acpi
+              mountPath: /sys/firmware/acpi/tables/TPM2
+              readOnly: true
+            - name: {{ include "factory.name" . }}-secrets
+              mountPath: /etc/secrets/
+              readOnly: true
+            - name: tpmrm
+              mountPath: /dev/tpmrm0
+            - name: ima-log
+              mountPath: /opt/ima/ascii_runtime_measurements
+              readOnly: true
+            - name: ima-policy
+              mountPath: /opt/ima/policy
+            - name: ima-configs
+              mountPath: /opt/ima/configs
+              readOnly: true
+            - name: uefi
+              mountPath: /sys/firmware/dmi/tables/DMI
+              readOnly: true
+            {{- if contains "Workload-Security" .Template.BasePath }}
+            - name: wla-config-volume
+              mountPath: /opt/workload-agent/
+            {{- end }}
+            - name: efi
+              mountPath: /sys/firmware/efi
+              readOnly: true
+        - name: {{ include "factory.name" . }}-ima-scan
+          image: debian:bullseye-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              while true; do
+                while read -r file; do
+                  if [ -f "/opt/scanfiles$file" ]; then
+                  exec 3<"/opt/scanfiles$file" && exec 3<&-;
+                  else
+                  echo "File not found: $file";
+                  fi;
+                done < /opt/trustagent/ima_allowlist;
+                sleep 30;
+              done
+          securityContext:
+            runAsUser: 504
+            runAsGroup: 500
+          volumeMounts:
+            - name: ima-configs
+              mountPath: /opt/trustagent/ima_allowlist
+              subPath: ima_allowlist
+              readOnly: true
+            {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
+            {{- if $file }}
+            - name: scanfiles-{{ $index }}
+              mountPath: /opt/scanfiles{{ $file }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+      volumes:
+        {{- include "factory.volumeSvcLogsDaemonset" . | nindent 8 }}
+        {{- include "factory.volumeSvcConfigDaemonset" . | nindent 8 }}
+        - name: {{ include "factory.name" . }}-base
+          hostPath:
+            path: /opt/trustagent/
+            type: DirectoryOrCreate
+        - name: {{ include "factory.name" . }}-hostname
+          hostPath:
+            path: /etc/hostname
+            type: File
+        - name: {{ include "factory.name" . }}-hosts
+          hostPath:
+            path: /etc/hosts
+            type: File
+        - name: {{ include "factory.name" . }}-host-os
+          hostPath:
+            path: /etc/os-release
+            type: File
+        - name: {{ include "factory.name" . }}-mem
+          hostPath:
+            path: /dev/mem
+        - name: {{ include "factory.name" . }}-acpi
+          hostPath:
+            path: /sys/firmware/acpi/tables/TPM2
+        - name: tpmrm
+          hostPath:
+            path: /dev/tpmrm0
+        - name: ima-log
+          hostPath:
+            path: /sys/kernel/security/ima/ascii_runtime_measurements
+        - name: ima-policy
+          hostPath:
+            path: /sys/kernel/security/ima/policy
+        - name: uefi
+          hostPath:
+            path: /sys/firmware/dmi/tables/DMI
+        {{- if contains "Workload-Security" .Template.BasePath }}
+        - name: wla-config-volume
+          hostPath:
+            path: /opt/workload-agent/{{ .Chart.AppVersion }}
+            type: DirectoryOrCreate
+        {{- end }}
+        - name: efi
+          hostPath:
+            path: /sys/firmware/efi
+        - name: ima-configs
+          configMap:
+            name: {{ include "factory.name" . }}-ima-configs
+        {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
+        {{- if $file }}
+        - name: scanfiles-{{ $index }}
+          hostPath:
+            path: {{ $file }}
+            type: FileOrCreate
+        {{- end }}
+        {{- end }}
+        {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
+        {{- if $file }}
+        - name: init-scanfiles-{{ $index }}
+          hostPath:
+            path: {{ $file }}
+            type: File
+        {{- end }}
+        {{- end }}
+        {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
+        {{- if .Values.config.tpmOwnerSecret }}
+          {{- include "factory.volumeCredentials" . | nindent 12 }}
+        {{- end }}
+        {{- include "factory.volumeAasBearerToken" . | nindent 12 }}

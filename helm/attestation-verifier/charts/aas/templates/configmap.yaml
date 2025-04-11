@@ -1,0 +1,20 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "factory.name" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+   CMS_BASE_URL: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1
+   AAS_DB_HOSTNAME: {{ include "factory.name" . }}db.{{ .Release.Namespace }}.svc.cluster.local
+   AAS_DB_PORT: {{ .Values.config.dbPort | quote }}
+   AAS_DB_NAME: {{ .Values.config.dbName }}
+   AAS_DB_SSLMODE: {{ .Values.config.dbSSLMode }}
+   AAS_DB_SSLCERT: {{ .Values.config.dbSSLCert }}
+   {{- if .Values.global }}
+   SAN_LIST: {{ .Values.global.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
+   {{- else }}
+   SAN_LIST: {{ .Values.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
+   {{- end }}
+   CREATE_CREDENTIALS: "{{ .Values.config.createCredentials }}"

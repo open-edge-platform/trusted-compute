@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Measurement xmlns='lib:wml:measurements:1.0' Label='application' Uuid='' DigestAlg='SHA384'>
+    <Symlink Path='/opt/trustagent/bin/tpm2_takeownership'>
+        edc2a5af930fb8df664506e8d73c1aeae21c7c148a2a7283a0b4f17d8a3ef0a9bb5992e1dfa506265510a82f812e7e20
+    </Symlink>
+    <Dir Path='/opt/trustagent/hypertext/WEB-INF' Include='.•' Exclude=''>
+        4401eb216d22c447951a631c36d2f1ab2e867d1d2312926eb787aadc2dfc8f57b13f574a0407a70f853227ea4deac47a
+    </Dir>
+    <File Path='/opt/trustagent/bin/module_analysis_da.sh'>
+        6766f97940d4dbb128141aa1045c5394ae250bd98fdd66e7b6220b89ce2eb85ce0b8459755c5d51f6d05a3bb479ea73b
+    </File>
+    <CumulativeHash>d093c2d6c21540defbfe5049cfb5ecc9f26b2b012980070dd2b877cd5c17319b4989c2675b18d827f774ef33ca76c0c9</CumulativeHash>
+</Measurement>

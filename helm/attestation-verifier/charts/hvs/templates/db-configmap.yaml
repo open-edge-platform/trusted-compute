@@ -1,0 +1,25 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "factory.name" . }}db
+  namespace: {{ .Release.Namespace }}
+data:
+  pg_hba.conf: |
+    local all postgres peer
+    local all all md5
+    {{- if .Values.global }}
+    hostssl {{ .Values.config.dbName }} {{ .Values.secret.dbUsername }} {{ .Values.global.config.dbhostSSLPodRange }} md5
+    {{- else }}
+    hostssl {{ .Values.config.dbName }} {{ .Values.secret.dbUsername }} {{ .Values.config.dbhostSSLPodRange }} md5
+    {{- end }}
+  postgresql.conf: |
+    listen_addresses = '{{ .Values.config.dbListenAddresses }}'
+    port = {{ .Values.config.dbPort }}
+    ssl = {{ .Values.config.dbSSL }}
+    ssl_cert_file = '{{ .Values.config.dbSSLCert }}'
+    ssl_key_file = '{{ .Values.config.dbSSLKey }}'
+    ssl_ciphers = '{{ .Values.config.dbSSLCiphers }}'
+    max_connections = {{ .Values.config.dbMaxConnections }}
+    shared_buffers = {{ .Values.config.dbSharedBuffers }}

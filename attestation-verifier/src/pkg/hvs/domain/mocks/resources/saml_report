@@ -1,0 +1,100 @@
+<Assertion>
+    <Subject>
+        <SubjectConfirmation>
+            <SubjectConfirmationData NotBefore="2020-06-21T14:14:48.264Z" NotOnOrAfter="2020-06-22T14:14:48.264Z"></SubjectConfirmationData>
+        </SubjectConfirmation>
+    </Subject>
+    <AttributeStatement>
+        <Attribute Name="biosVersion">
+            <AttributeValue>SE5C620.86B.00.01.0015.110720180833</AttributeValue>
+        </Attribute>
+        <Attribute Name="hostName">
+            <AttributeValue>computepurley</AttributeValue>
+        </Attribute>
+        <Attribute Name="tpmVersion">
+            <AttributeValue>2.0</AttributeValue>
+        </Attribute>
+        <Attribute Name="processorInfo">
+            <AttributeValue>54 06 05 00 FF FB EB BF</AttributeValue>
+        </Attribute>
+        <Attribute Name="vmmName">
+            <AttributeValue>Virsh</AttributeValue>
+        </Attribute>
+        <Attribute Name="hardwareUuid">
+            <AttributeValue>00ECD3AB-9AF4-E711-906E-001560A04062</AttributeValue>
+        </Attribute>
+        <Attribute Name="errorCode">
+            <AttributeValue>0</AttributeValue>
+        </Attribute>
+        <Attribute Name="vmmVersion">
+            <AttributeValue>4.5.0</AttributeValue>
+        </Attribute>
+        <Attribute Name="osName">
+            <AttributeValue>RedHatEnterprise</AttributeValue>
+        </Attribute>
+        <Attribute Name="noOfSockets">
+            <AttributeValue>2</AttributeValue>
+        </Attribute>
+        <Attribute Name="tpmEnabled">
+            <AttributeValue>true</AttributeValue>
+        </Attribute>
+        <Attribute Name="biosName">
+            <AttributeValue>Intel Corporation</AttributeValue>
+        </Attribute>
+        <Attribute Name="osVersion">
+            <AttributeValue>8.1</AttributeValue>
+        </Attribute>
+        <Attribute Name="installedComponents">
+            <AttributeValue>[tagent, wlagent]</AttributeValue>
+        </Attribute>
+        <Attribute Name="tbootInstalled">
+            <AttributeValue>true</AttributeValue>
+        </Attribute>
+        <Attribute Name="txtEnabled">
+            <AttributeValue>true</AttributeValue>
+        </Attribute>
+        <Attribute Name="pcrBanks">
+            <AttributeValue>[SHA1, SHA256]</AttributeValue>
+        </Attribute>
+        <Attribute Name="isDockerEnv">
+            <AttributeValue>false</AttributeValue>
+        </Attribute>
+        <Attribute Name="FEATURE_TPM">
+            <AttributeValue>true</AttributeValue>
+        </Attribute>
+        <Attribute Name="FEATURE_TXT">
+            <AttributeValue>true</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_PLATFORM">
+            <AttributeValue>false</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_OS">
+            <AttributeValue>false</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_HOST_UNIQUE">
+            <AttributeValue>NA</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_ASSET_TAG">
+            <AttributeValue>NA</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_SOFTWARE">
+            <AttributeValue>false</AttributeValue>
+        </Attribute>
+        <Attribute Name="TRUST_OVERALL">
+            <AttributeValue>false</AttributeValue>
+        </Attribute>
+        <Attribute Name="Binding_Key_Certificate">
+            <AttributeValue>-----BEGIN CERTIFICATE-----&#xD;&#xA;MIIFITCCA4mgAwIBAgIJAMo7vj4sCUcIMA0GCSqGSIb3DQEBDAUAMBsxGTAXBgNVBAMTEG10d2ls&#xD;&#xA;c29uLXBjYS1haWswHhcNMjAwNjA3MTYxMTU4WhcNMzAwNjA1MTYxMTU4WjAlMSMwIQYDVQQDDBpD&#xD;&#xA;Tj1CaW5kaW5nX0tleV9DZXJ0aWZpY2F0ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB&#xD;&#xA;AJOTmOnH1E+YrwPqk4iCPC0rwsqT5XcrmMbCjJCvCm9ypDNQa7UUu9kLuZTZGmVA4pUPtxYrZk6n&#xD;&#xA;OkNWPe9edPVwxzzcDodmOGQdJUnS58Wj0vJjtgpujCFsBw4OXZ+qOvQMDU/cir4+d50PzkyjtyyW&#xD;&#xA;pbGesNpEKQzHtugsaL0TGQSFceF+hnvphf9G1IFKszPYCBzqynUMEkXmh/2GnoHI9X2ubYs73dCG&#xD;&#xA;kA5AcwdNMylBXHXXM4D5MNE5ZrzCMDyuazAZ8Qi9H5h7KRnYatK6NUr5y/f2i/O2LVDIrdKoujfn&#xD;&#xA;vNgVsyV2abpk+KEfIpdbMW6yhubrauGzEIU4WPcCAwEAAaOCAdwwggHYMA4GA1UdDwEB/wQEAwIF&#xD;&#xA;IDCBnQYHVQSBBQMCKQSBkf9UQ0eAFwAiAAvjl3xEMWxkQHT6ovOp7TgmSsG8qnD4lubgzvxQ/oYI&#xD;&#xA;5QAEAP9VqgAAAAAAAwzYAAAABQAAAAEAAAcAKAAIMgAAIgALCtn+QuWKA/BWXE2bpm+bgky5sSFX&#xD;&#xA;OAcg1jeLrb2eMUcAIgALysIaaiKd+1j5uqEuUOr5WuI5whkLP5Pv5T83udairMwwggEUBghVBIEF&#xD;&#xA;AwIpAQSCAQYAFAALAQBCaIGRxpykmhgnmGQAdU32U0Jq0chGU8Dy5MFhUMAHE1IQs0txIhv37F/y&#xD;&#xA;7P+qwZwa7csIuxM1ggN79N1RczRcvwQI1RTAD6oppDsJM0FuxGu3FZJ0aHAUrMfl7+cgIhUM1nbR&#xD;&#xA;KP7vA6OrkRJ4t/lttnR4kfkoNyUox+br+s0L1ZqgOXsKMaNzhOr94YzSofxPy/wphFYjNHWFjfH+&#xD;&#xA;JG1XGOnbiw8EuigQmh71bSC/aTOa4DoAI/dhPJQ9iNG1+azFVy+tdRiNMZsipwJy3syV765XVCPk&#xD;&#xA;9wLZKKksXKmCz85YiMyAaciEybvfDlLb7EdHEjNnA1evhuBftsAU6PGJMA4GCFUEgQUDAikCBAIA&#xD;&#xA;ADANBgkqhkiG9w0BAQwFAAOCAYEAD4K+/SW8tkzKlXgGI+BMcaaPk9NnEwY8urOuCwkuvtd0aVND&#xD;&#xA;+pjW6PDyrkmCdhQ70HGH+jv5hOnQTrHNWaoY+X7Rz+dr4rBwrZBwbweIvd5Va4DpT90XChZDEAHC&#xD;&#xA;ftuwkO0SRZSkjzDEpclAMYXxSO2gBVSxq7IPPSt6tBWHNL1eXLmy/arTslIiofUMf0wUyFnUdDXb&#xD;&#xA;+8gc/hBeHpKsotX1wNecf2VfBk5Q1KIb0rrO+qp9UCWfNtZ8orpXSY5CBoirbe04JghdqsgnKXTY&#xD;&#xA;Y5nMbc1hysAuHCeGOLjxUegoSIwxUjYiOCd0W0+9tDjEBzFMGjzCLsq6t4o1quPbAQsjjVXcOGJB&#xD;&#xA;c73sigZrKUl6fMDXtGKF/bCOdFSRKS7UsbayNP074wnO6QO2hsH85iPviWjx8Z4IuBjeq+wMfpd+&#xD;&#xA;m5lUXrOF1E4FZIxjhyIjyAJeMTah3T2VvZlY0bkIWA5O1HvlAQpUPmHme3OhHeDZImdHq1B+pLTf&#xD;&#xA;JLFDbzeW&#xD;&#xA;-----END CERTIFICATE-----</AttributeValue>
+        </Attribute>
+        <Attribute Name="AIK_Certificate">
+            <AttributeValue>-----BEGIN CERTIFICATE-----&#xD;&#xA;MIIDTjCCAbagAwIBAgIGAXLXOprpMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNVBAMTEG10d2lsc29u&#xD;&#xA;LXBjYS1haWswHhcNMjAwNjIxMTQxNDAxWhcNMzAwNjIxMTQxNDAxWjAAMIIBIjANBgkqhkiG9w0B&#xD;&#xA;AQEFAAOCAQ8AMIIBCgKCAQEAmWNtAX/cz44QCZKWG/SmRBq6beoR0CmaQ9im542dZXMleyrZjfAK&#xD;&#xA;8tNFtG1r2UjA6fQyv1foAr99d9KCtL+qKzgulrQJ9XGMDYj5j8+BDnXVWmbJWxA8SJ+HWU6GUYI7&#xD;&#xA;awh6Xr0/8/o0tJn92tHIW7oQNOLuKr5Mofz20ckZ6BWnfM3SrUNMKqC/Udkuo0jcNbElX89vps7x&#xD;&#xA;idxqwLYCTgILWwhipIW38JZ0XwmafOhh1oPfjkw01nYfNMwIl9RtbJlmhS2o2/EHqk6fzxGPHklr&#xD;&#xA;12czckGbVj5Mm8cgLERXFV0DKEKJRT0A2gIsrAoQW+QwegmNlzkSsH4EPrNjZwIDAQABozMwMTAv&#xD;&#xA;BgNVHREBAf8EJTAjgSEAC/0kVmQPLv1/Ev39/VtlE/0d/SJV/QpO/TP9/W39ZBgwDQYJKoZIhvcN&#xD;&#xA;AQELBQADggGBAHMzIyqflG7CKYewnC7ee1Vz9ncLEVURkt8Gg2dhvQPER5a0U3GqAeRXe4sll0N/&#xD;&#xA;QLQE9eRiEyKS4ZB1a6KZrqj/L6I5tfFIhmm0vbCruYWpHDxYCS3o6cOWENpqmduHNyw81TtrcGua&#xD;&#xA;bn8rX1ANqRU5NeBKFkbsxP8XgceQYTbNTZJ32zH1nFJqxiNWzYiqH6f5LlPIVs5ROiFScHzJQAVZ&#xD;&#xA;dLNW7BSANfRWgKqS/aoASZ/8yHf508/Q2fOxoB3pqU2D0anLzbxHK6uOyl2Fce1uR4yspPPlVQ/P&#xD;&#xA;Rnaje7Ym1VBYQG+xBF8mhpDewenr057noslL4JysmTcoHUqHjx7K+Rm87dx3YLCIbAMWmNtrtTtD&#xD;&#xA;E9BAn42Kg1zqUkLM7Kw4JR7qoZ7zJGSC67U/xKAJ90/MJbVrU0xVXqXBxf0Ac3a+psnDN7JCY9bt&#xD;&#xA;mNl3dB4z76ilkstXZ4u1CVY0LacMzvi/lvGSrwSbCpx42ZmaL2QVl7crMML7PWgM+i7sDg==&#xD;&#xA;-----END CERTIFICATE-----</AttributeValue>
+        </Attribute>
+    </AttributeStatement>
+    <Signature>
+        <KeyInfo>
+            <X509Data>
+                <X509Certificate>MIID9TCCAl2gAwIBAgIBCTANBgkqhkiG9w0BAQwFADBQMQswCQYDVQQGEwJVUzELMAkGA1UECBMC&#xA;U0YxCzAJBgNVBAcTAlNDMQ4wDAYDVQQKEwVJTlRFTDEXMBUGA1UEAxMOQ01TIFNpZ25pbmcgQ0Ew&#xA;HhcNMjAwNTEyMDQxODM2WhcNMjEwNTEyMDQxODM2WjAYMRYwFAYDVQQDEw1tdHdpbHNvbi1zYW1s&#xA;MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAvCBkjhSE4/4b98xGE7AsjAEDYH94Zp1h&#xA;8VHIMh20c5jkF5RbENjKwUs7VSBMS/5Hona35cUKzh3aW5jXsVrxQObvhDEbqvsbwC1c986Y1TxT&#xA;KLZdayAQUvk180Ri78LubeWzYPER7QibfCioFJ+fggJl5H8wUTelX2/5uI8NZNijeXA4zXkc75aV&#xA;xMWN61pNjtHU/Rg+w2iGPCSyzmGQLu4Bxhaskeeq+bHj7Ai/BGLQKndXV/GyfMSf5Pf/khCBk4ko&#xA;eDpOhJFqhahqEQSNrC5ubKWBH7refSMrHM3n7RvLp8C/heCmJW7gg11Byo8YJMokpDMpvgUFp1/v&#xA;iK1JDtbRfDZFX6pGC6jhx/whMAJ5yO6O6jkDY4XW5oeEYe5StOtOrVUDqMjyF8EMOaWvOo/ibWQt&#xA;OSC9p0P+LExvboIIbdcikUOhXSFIWWtkx4xc3PKF8wpzsrZNtLdOqe952XMDwor1ZVBRamdkywZY&#xA;OPU7WVCWiW91IaKkqv+osVFHAgMBAAGjEjAQMA4GA1UdDwEB/wQEAwIGwDANBgkqhkiG9w0BAQwF&#xA;AAOCAYEAGhMphLMVryTint5FGe11pmYBdVX8WCHUT5S1X/1T8Hm9PS6346bPgBnzYDdE+yWFh1KG&#xA;8nmX4/svClIeyVRL3RLNXFUAW/b8E7ElG3D5A1e8KKCNFYOUOjoZLkH7X5Tzq1xKGgPzxZ4CnRIx&#xA;r1XtSpNxeA/yUqi78Yt3Q3ybhAB2lTJkIWe7PH22A1YVH1xlDWnRWHwFm0BlE3SJPxnm4nN7XrLX&#xA;bhQ2MYGQYZrSvh+HDnNRpiht0hryT8G8oENj49V1JZ8OXW6Fjt8Thx3mlQ+1iAu06dPNjwYbVXAy&#xA;STpGS+72ADahCXrUmyxhC8gZC7XeNklcA1Tv+/tZmqj7FdQ+eWc2WhI8rxHctZD+VJkV0uEbhZOE&#xA;no2lPEX+UtDtte0XvbrZro5y1FX5dyW3mTaWcW+q8c/0qCszyRqwplTgwfsdSJBwyP5LqM12zHq7&#xA;7YK53hhjJ8k7Hb5LvWmBs13G9FpCEgpsNzUKcYscrJLxx+Y3rfIxzJvsQ0/ZjgGC</X509Certificate>
+            </X509Data>
+        </KeyInfo>
+    </Signature>
+</Assertion>

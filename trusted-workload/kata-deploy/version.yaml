@@ -1,0 +1,28 @@
+#
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+description: |
+  This file provides version details for the Kata-deploy container image
+  along with its associated components.
+
+kata-deploy:
+    description: "Kata-deploy container image"
+    name: "kata-deploy"
+
+kernel:
+    description: "Edge Microvisor kernel image"
+    name : "vmlinuz-6.12.20-1.emt3"
+    version: 6.12.20-1.emt3
+    config: "config-6.12.20-1.emt3"
+
+rootfs:
+    description: "Edge Microvisor initrd image"
+    name : "trusted-vm.img"
+
+kata-containers:
+    description: "Kata Containers github repo"
+    url: "https://github.com/kata-containers/kata-containers.git"
+    name: "kata-containers"
+    version: 3.15.0

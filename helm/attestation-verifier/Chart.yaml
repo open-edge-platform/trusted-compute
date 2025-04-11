@@ -1,0 +1,34 @@
+apiVersion: v2
+appVersion: 0.0.8
+dependencies:
+  - name: factory
+    repository: file://./charts/factory/
+    version: 0.0.8
+  - name: aasdb-cert-generator
+    repository: file://./charts/aasdb-cert-generator/
+    version: 0.0.8
+  - name: hvsdb-cert-generator
+    repository: file://./charts/hvsdb-cert-generator/
+    version: 0.0.8
+  - name: cms
+    repository: file://./charts/cms/
+    version: 0.0.8
+  - name: aas
+    repository: file://./charts/aas/
+    version: 0.0.8
+  - name: hvs
+    repository: file://./charts/hvs/
+    version: 0.0.8
+  - name: nats-init
+    repository: file://./charts/nats-init/
+    version: 0.0.8
+  - name: nats
+    repository: file://./charts/nats/
+    version: 0.0.8
+  - name: global-admin-generator
+    repository: file://./charts/global-admin-generator/
+    version: 0.0.8
+description: A Helm chart for Deploying Attestation Verifier
+name: attestation-verifier
+type: application
+version: 0.0.8

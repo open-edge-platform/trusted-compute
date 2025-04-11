@@ -1,0 +1,15 @@
+# Default values for aasdb-cert-generator.
+
+nameOverride: "" # The name for AASDB-CERT-GENERATOR chart (Default: .Chart.Name)
+controlPlaneHostname: <user input> # K8s control plane IP/Hostname
+
+securityContext:
+  aasdbCertGeneratorInit: # The fsGroup id for init containers for AAS DB
+    fsGroup: 500
+  aasdbCertGenerator: # The security content for AAS DB Service Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false

@@ -1,0 +1,169 @@
+From 6c6d4513ee762e0063faa4f049c95d9ff557825f Mon Sep 17 00:00:00 2001
+From: "Kumar, Anand" <anand.kumar@intel.com>
+Date: Thu, 27 Feb 2025 15:20:32 +0000
+Subject: [PATCH 1/1] ccruntime config customization
+
+Signed-off-by: Kumar, Anand <anand.kumar@intel.com>
+---
+ config/samples/ccruntime/base/ccruntime.yaml  | 78 +------------------
+ .../ccruntime/default/kustomization.yaml      | 20 -----
+ 2 files changed, 2 insertions(+), 96 deletions(-)
+
+diff --git a/config/samples/ccruntime/base/ccruntime.yaml b/config/samples/ccruntime/base/ccruntime.yaml
+index cf17853..040e1ea 100644
+--- a/config/samples/ccruntime/base/ccruntime.yaml
++++ b/config/samples/ccruntime/base/ccruntime.yaml
+@@ -16,8 +16,6 @@ spec:
+     uninstallDoneLabel:
+       katacontainers.io/kata-runtime: "cleanup"
+     installerVolumeMounts:
+-      - mountPath: /etc/crio/
+-        name: crio-conf
+       - mountPath: /etc/containerd/
+         name: containerd-conf
+       - mountPath: /usr/local/bin/
+@@ -25,10 +23,6 @@ spec:
+       - mountPath: /host/
+         name: host
+     installerVolumes:
+-      - hostPath:
+-          path: /etc/crio/
+-          type: ""
+-        name: crio-conf
+       - hostPath:
+           path: /etc/containerd/
+           type: ""
+@@ -48,74 +42,6 @@ spec:
+     # If this is commented, then the operator creates 3 default runtimeclasses "kata", "kata-clh", "kata-qemu"
+     runtimeClasses: 
+       []
+-    postUninstall:
+-      image: quay.io/confidential-containers/reqs-payload
+-      volumeMounts:
+-        - mountPath: /opt/confidential-containers/
+-          name: confidential-containers-artifacts
+-        - mountPath: /etc/systemd/system/
+-          name: etc-systemd-system
+-        - mountPath: /etc/containerd/
+-          name: containerd-conf
+-        - mountPath: /usr/local/bin/
+-          name: local-bin
+-        - mountPath: /var/lib/containerd-nydus/
+-          name: containerd-nydus
+-      volumes:
+-        - hostPath:
+-            path: /opt/confidential-containers/
+-            type: DirectoryOrCreate
+-          name: confidential-containers-artifacts
+-        - hostPath:
+-            path: /etc/systemd/system/
+-            type: ""
+-          name: etc-systemd-system
+-        - hostPath:
+-            path: /etc/containerd/
+-            type: ""
+-          name: containerd-conf
+-        - hostPath:
+-            path: /usr/local/bin/
+-            type: ""
+-          name: local-bin
+-        - hostPath:
+-            path: /var/lib/containerd-nydus/
+-            type: ""
+-          name: containerd-nydus
+-    preInstall:
+-      image: quay.io/confidential-containers/reqs-payload
+-      volumeMounts:
+-        - mountPath: /opt/confidential-containers/
+-          name: confidential-containers-artifacts
+-        - mountPath: /etc/systemd/system/
+-          name: etc-systemd-system
+-        - mountPath: /etc/containerd/
+-          name: containerd-conf
+-        - mountPath: /usr/local/bin/
+-          name: local-bin
+-        - mountPath: /var/lib/containerd-nydus/
+-          name: containerd-nydus
+-      volumes:
+-        - hostPath:
+-            path: /opt/confidential-containers/
+-            type: DirectoryOrCreate
+-          name: confidential-containers-artifacts
+-        - hostPath:
+-            path: /etc/systemd/system/
+-            type: ""
+-          name: etc-systemd-system
+-        - hostPath:
+-            path: /etc/containerd/
+-            type: ""
+-          name: containerd-conf
+-        - hostPath:
+-            path: /usr/local/bin/
+-            type: ""
+-          name: local-bin
+-        - hostPath:
+-            path: /var/lib/containerd-nydus/
+-            type: ""
+-          name: containerd-nydus
+     environmentVariables:
+       - name: NODE_NAME
+         valueFrom:
+@@ -135,7 +61,7 @@ spec:
+       # If set to true, this will install the v1.7.0 release of containerd on the node.
+       # default: false
+       - name: "INSTALL_OFFICIAL_CONTAINERD"
+-        value: "true"
++        value: "false"
+       # If set to true, this will install the CoCo fork of the containerd,
+       # the one that has patches for handling GPU / VFIO, on the node
+       # default: false
+@@ -145,4 +71,4 @@ spec:
+       # on the node
+       # default: false
+       - name: "INSTALL_NYDUS_SNAPSHOTTER"
+-        value: "true"
++        value: "false"
+diff --git a/config/samples/ccruntime/default/kustomization.yaml b/config/samples/ccruntime/default/kustomization.yaml
+index 84893dd..c88e3fe 100644
+--- a/config/samples/ccruntime/default/kustomization.yaml
++++ b/config/samples/ccruntime/default/kustomization.yaml
+@@ -7,8 +7,6 @@ resources:
+ - ../base
+ 
+ images:
+-- name: quay.io/confidential-containers/reqs-payload
+-  newTag: b495f450fbcd5c199b8635a7dfefe1b5d763c378
+ - name: quay.io/kata-containers/kata-deploy
+   newTag: 3.13.0
+ 
+@@ -17,27 +15,9 @@ patches:
+     - op: replace
+       path: /spec/config/runtimeClasses
+       value:
+-      - name: "kata-clh"
+-        snapshotter: ""
+-        pulltype: ""
+       - name: "kata-qemu"
+         snapshotter: ""
+         pulltype: ""
+-      - name: "kata-qemu-coco-dev"
+-        snapshotter: "nydus"
+-        pulltype: "guest-pull"
+-      - name: "kata-qemu-tdx"
+-        snapshotter: "nydus"
+-        pulltype: "guest-pull"
+-      - name: "kata-qemu-sev"
+-        snapshotter: "nydus"
+-        pulltype: "guest-pull"
+-      - name: "kata-qemu-snp"
+-        snapshotter: "nydus"
+-        pulltype: "guest-pull"
+-    - op: add
+-      path: /spec/config/defaultRuntimeClassName
+-      value: "kata-qemu"
+     - op: add
+       path: /spec/config/debug
+       value: false
+-- 
+2.34.1
+

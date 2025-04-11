@@ -1,0 +1,25 @@
+Thank you for installing {{ .Chart.Name }} use case of Intel® SecL-DC
+
+In the meantime the release gets up & running in the next few minutes, following information would be helpful
+
+  Release Name={{ .Release.Name }}
+  Release Namespace={{ .Release.Namespace }}
+
+To learn more about the chart, values, README, try:
+Note: If using a seprarate .kubeconfig file, ensure to provide the path using --kubeconfig
+
+  $ helm show chart {{ .Chart.Name }}
+  $ helm show values {{ .Chart.Name }}
+  $ helm show readme {{ .Chart.Name }}
+  
+To learn more about the released charts, try:
+Note: If using a seprarate .kubeconfig file, ensure to provide the path using --kubeconfig
+
+  $ helm get values {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+  $ helm get manifest {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+  $ helm list --namespace {{ .Release.Namespace }}
+  
+To check the status of the different k8s objects deployed, try:
+  $ kubectl get all --namespace {{ .Release.Namespace }}
+
+Once deployment is complete, below endpoints can be hit to check on the services & Agents of {{ .Chart.Name }} use case
