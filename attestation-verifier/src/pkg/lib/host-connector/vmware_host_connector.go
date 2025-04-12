@@ -14,10 +14,11 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/clients/vmware"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
@@ -31,6 +32,14 @@ import (
 
 type VmwareConnector struct {
 	client vmware.VMWareClient
+}
+
+func byteSliceToIntArray(byteSlice []byte) []int {
+	intArray := make([]int, len(byteSlice))
+	for i, b := range byteSlice {
+		intArray[i] = int(b)
+	}
+	return intArray
 }
 
 func (vc *VmwareConnector) GetTPMQuoteResponse(nonce string, pcrList []int) ([]byte, []byte, *x509.Certificate, *pem.Block, taModel.TpmQuoteResponse, error) {
@@ -149,19 +158,19 @@ func createPCRManifest(hostTpmAttestationReport *vim25Types.HostTpmAttestationRe
 		if strings.EqualFold(pcrDetails.DigestMethod, constants.SHA256) {
 			pcrManifest.Sha256Pcrs = append(pcrManifest.Sha256Pcrs, hvs.HostManifestPcrs{
 				Index:   pcrIndex,
-				Value:   intArrayToHexString(pcrDetails.DigestValue),
+				Value:   intArrayToHexString(byteSliceToIntArray(pcrDetails.DigestValue)),
 				PcrBank: shaAlgorithm,
 			})
 		} else if strings.EqualFold(pcrDetails.DigestMethod, constants.SHA1) {
 			pcrManifest.Sha1Pcrs = append(pcrManifest.Sha1Pcrs, hvs.HostManifestPcrs{
 				Index:   pcrIndex,
-				Value:   intArrayToHexString(pcrDetails.DigestValue),
+				Value:   intArrayToHexString(byteSliceToIntArray(pcrDetails.DigestValue)),
 				PcrBank: shaAlgorithm,
 			})
 		} else if strings.EqualFold(pcrDetails.DigestMethod, constants.SHA384) {
 			pcrManifest.Sha384Pcrs = append(pcrManifest.Sha384Pcrs, hvs.HostManifestPcrs{
 				Index:   pcrIndex,
-				Value:   intArrayToHexString(pcrDetails.DigestValue),
+				Value:   intArrayToHexString(byteSliceToIntArray(pcrDetails.DigestValue)),
 				PcrBank: shaAlgorithm,
 			})
 		} else {
@@ -306,7 +315,7 @@ func intArrayToHexString(pcrDigestArray []int) string {
 	return pcrDigestString
 }
 
-//It checks the type of TPM event and accordingly updates the event log entry values
+// It checks the type of TPM event and accordingly updates the event log entry values
 func getEventLogInfo(parsedEventLogEntry types.TpmEvent) hvs.EventLog {
 
 	log.Trace("vmware_host_connector:getEventLogInfo() Entering")
