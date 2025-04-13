@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 0.0.9-dev
+dependencies:
+- name: factory
+  repository: file://../../charts/factory/
+  version: 0.0.9-dev
+description: A Helm chart for creating Trust agent service account
+name: trustagent-aas-manager
+type: application
+version: 0.0.9-dev
