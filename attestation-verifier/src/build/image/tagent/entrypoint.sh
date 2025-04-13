@@ -83,9 +83,6 @@ done
 
 tagent init
 
-# TODO: Implement a more robust solution for ensuring the policy file is available after an edge node reboot.
-sleep 60
-
 # Load the IMA policy
 tagent ima-load-policy
 

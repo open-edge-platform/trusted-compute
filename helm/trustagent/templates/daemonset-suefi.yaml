@@ -22,6 +22,22 @@ metadata:
               value: {{.Values.dependentServices.hvs }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.hvs }}
+        - name: set-permissions
+          image: debian:bullseye-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              chown -R 503:500 /opt/verifier && chmod -R 751 /opt/verifier
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: ima-configs
+              mountPath: /opt/trustagent/ima_allowlist
+              subPath: ima_allowlist
+            {{- range $index, $folder := .Values.imaAllowlistFolders }}
+            - name: scanfiles-folder-{{ $index }}
+              mountPath: {{ $folder }}
+            {{- end }}
         - name: wait-for-ima-allowlist-files
           image: debian:bullseye-slim
           command: ["/bin/sh", "-c"]
@@ -40,6 +56,9 @@ metadata:
                 fi;
                 sleep 5;
               done;
+          securityContext:
+            runAsUser: 504
+            runAsGroup: 500
           volumeMounts:
             - name: ima-configs
               mountPath: /opt/trustagent/ima_allowlist
@@ -137,13 +156,10 @@ metadata:
               readOnly: true
             - name: tpmrm
               mountPath: /dev/tpmrm0
-            - name: ima-log
-              mountPath: /opt/ima/ascii_runtime_measurements
-              readOnly: true
-            - name: ima-policy
-              mountPath: /opt/ima/policy
+            - name: ima
+              mountPath: /opt/ima
             - name: ima-configs
-              mountPath: /opt/ima/configs
+              mountPath: /opt/ima-configs
               readOnly: true
             - name: uefi
               mountPath: /sys/firmware/dmi/tables/DMI
@@ -161,12 +177,14 @@ metadata:
           args:
             - >
               while true; do
+                echo "Scanning files in /opt/trustagent/ima_allowlist";
                 while read -r file; do
                   if [ -f "$file" ]; then
-                  exec 3<"$file" && exec 3<&-;
+                    exec 3<"$file" && exec 3<&-;
                   else
-                  echo "File not found: $file";
-                  fi;
+                    echo "$file" >> /tmp/.allowlist_filenotfound
+                    echo "File not found: $file";
+                  fi
                 done < /opt/trustagent/ima_allowlist;
                 sleep 30;
               done
@@ -211,12 +229,9 @@ metadata:
         - name: tpmrm
           hostPath:
             path: /dev/tpmrm0
-        - name: ima-log
+        - name: ima
           hostPath:
-            path: /sys/kernel/security/ima/ascii_runtime_measurements
-        - name: ima-policy
-          hostPath:
-            path: /sys/kernel/security/ima/policy
+            path: /sys/kernel/security/ima
         - name: uefi
           hostPath:
             path: /sys/firmware/dmi/tables/DMI
