@@ -129,7 +129,7 @@ spec:
             volumes:
               - name: {{ include "factory.name" . }}-aas-json
                 secret:
-                  secretName: {{ include "factory.name" . }}-aas-json
+                  secretName: {{ include "factory.name" . }}-aas-manager-aas-json
 {{- end -}}
 
 {{/*
