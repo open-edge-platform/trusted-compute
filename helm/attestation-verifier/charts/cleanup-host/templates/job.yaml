@@ -28,7 +28,7 @@ spec:
           args:
             - >
               echo deleting &&
-              rm -rf /tmp/verifier
+              rm -rf /tmp/verifier/*
           volumeMounts:
           - name: host-volume-verifier
             mountPath: /tmp/verifier
