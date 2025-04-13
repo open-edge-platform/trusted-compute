@@ -13,20 +13,37 @@
   {{- end }}
    "users_and_roles":[
       {
-         "username": "{{ .Values.secret.installAdminUsername }}",
-         "password": "{{ randAlphaNum 16 }}",
-         "print_bearer_token":true,
-         "roles":[
-            {
-               "service": "CMS",
-               "name": "CertApprover",
-               {{- if .Values.global }}
-               "context":"CN=NATS TLS Certificate;SAN=nats.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.global.controlPlaneHostname }};certType=TLS"
-               {{- else }}
-	       "context":"CN=NATS TLS Certificate;SAN=nats.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.controlPlaneHostname }};certType=TLS"
-               {{- end }}
-            }
-         ]
-      }
+            "username": "{{ .Values.secret.serviceUsername }}",
+            "password": "{{ randAlphaNum 16 }}",
+            "print_bearer_token": true,
+            "roles":[
+                {
+                   "service": "CMS",
+                   "name": "CertApprover",
+                   "context":"CN=Trust Agent TLS Certificate;SAN=*;certType=TLS"
+                },
+                {
+                   "service":"AAS",
+                   "name":"CredentialCreator",
+                   "context":"type=TA",
+                   "permissions":[
+                      "credential:create:*",
+                      "custom_claims:create:*"
+                   ]
+                },
+                {
+                    "service": "HVS",
+                    "name": "AttestationRegister",
+                    "permissions": [
+                        "hosts:store:*",
+                        "hosts:search:*",
+                        "host_unique_flavors:create:*",
+                        "flavors:search:*",
+                        "host_aiks:certify:*"
+                    ]
+                }
+            ]
+       }
+
    ]
 }

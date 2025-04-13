@@ -9,7 +9,7 @@ aas:
     name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/authservice # KWT (didn't like aas) Authentication & Authorization Service image name<br> (**REQUIRED**)
   secret:
     dbUsername: aas # DB Username for AAS DB
-    dbPassword: aas # DB Password for AAS DB
+    dbPassword:  # DB Password for AAS DB
   config:
     dbMaxConnections: 200 # Determines the maximum number of concurrent connections to the database server. Default is 200
     dbSharedBuffers: 2GB # Determines how much memory is dedicated to PostgreSQL to use for caching data. Default is 2GB
@@ -24,17 +24,17 @@ hvs:
     dbSharedBuffers: 2GB # Determines how much memory is dedicated to PostgreSQL to use for caching data. Default is 2GB Default is 2GB
   secret:
     dbUsername: hvs # postgres DB Username for HVS DB
-    dbPassword: hvs # postgres DB Password for HVS DB
+    dbPassword:  # postgres DB Password for HVS DB
     installAdminUsername: installAdminUsername # Install Admin Username for HVS
-    installAdminPassword: installAdminPassword # Install Admin Password for HVS
+    installAdminPassword:  # Install Admin Password for HVS
     serviceUsername: serviceUsername # Service Username for HVS
-    servicePassword: servicePassword # Service Password for HVS
+    servicePassword:  # Service Password for HVS
 
 trustagent-aas-manager: # Provide values for trustagent-aas-manager if enabled, this is a job that creates service account for trustagent
   createTAServiceAccount: true # Set this to true, only when trustagent is not deployed through helm
   secret:
-    serviceUsername: serviceUsername # Service Username for Tagent
-    servicePassword: servicePassword # Service Password for Tagent
+    serviceUsername: installAdminUsernameTa # Service Username for Tagent
+    servicePassword:  # Service Password for Tagent
 
 nats:
   clientPort: 30222
@@ -43,14 +43,14 @@ nats-init:
   image:
     name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/nats-init # The image name of nats-init container
   secret:
-    installAdminUsername: installAdminUsername # Install Admin Username for Nats init
-    installAdminPassword: installAdminPassword # Install Admin Password for Nats init
+    installAdminUsername: installAdminUsernameNats # Install Admin Username for Nats init
+    installAdminPassword:  # Install Admin Password for Nats init
 
 global-admin-generator:
   enable: true # Set this to true for generating global admin user account
   secret:
     globalAdminUsername: globalAdminUsername
-    globalAdminPassword: globalAdminPassword
+    globalAdminPassword:
   services_list: # Services list for global admin token generation. Accepted values HVS, WLS, KBS, TA
     - HVS
 
@@ -104,7 +104,7 @@ global:
   aas:
     secret:
       adminUsername: adminUsername # Admin Username for AAS
-      adminPassword: adminPassword # Admin Password for AAS
+      adminPassword:  # Admin Password for AAS
 
   proxyEnabled: false # Set to true when running deploying behind corporate proxy
   httpProxy:  # Set http_proxy url

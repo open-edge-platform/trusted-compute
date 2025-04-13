@@ -6,15 +6,15 @@
   {{- end }}
   {{- if .Values.global }}
   "aas_admin_username": "{{ required "A valid admin username is required!" .Values.global.aas.secret.adminUsername }}",
-  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.global.aas.secret.adminPassword }}",
+  "aas_admin_password": "{{- if .Values.global.aas.secret.adminPassword -}}{{ .Values.global.aas.secret.adminPassword }}{{- else -}}{{ $aas_admin_password := randAlphaNum 16 }}{{ $aas_admin_password }}{{- $_ := set .Values.global.aas.secret "adminPassword" $aas_admin_password }}{{- end -}}",
   {{- else }}
   "aas_admin_username": "{{ required "A valid admin username is required!" .Values.aas.secret.adminUsername }}",
-  "aas_admin_password": "{{ required "A valid admin password is required!" .Values.aas.secret.adminPassword }}",
+  "aas_admin_password": "{{- if .Values.aas.secret.adminPassword -}}{{ .Values.aas.secret.adminPassword }}{{- else -}}{{ $aas_admin_password := randAlphaNum 16 }}{{ $aas_admin_password }}{{- $_ := set .Values.aas.secret "adminPassword" $aas_admin_password }}{{- end -}}",
   {{- end }}
    "users_and_roles":[
       {
          "username": "{{ .Values.secret.globalAdminUsername }}",
-         "password": "{{ .Values.secret.globalAdminPassword }}",
+         "password": "{{- if .Values.secret.globalAdminPassword -}}{{ .Values.secret.globalAdminPassword }}{{- else -}}{{ $password := randAlphaNum 16 }}{{ $password }}{{- $_ := set .Values.aas.secret "globalAdminPassword" $password}}{{- end -}}",
          "print_bearer_token": true,
          "roles": [
           {{- $size := len .Values.services_list }}
