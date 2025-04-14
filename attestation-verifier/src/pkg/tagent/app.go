@@ -527,13 +527,34 @@ func (a *App) Run(args []string) error {
 			os.Exit(1)
 		}
 
-		err = os.WriteFile("/opt/ima/policy", imaPolicy, 0644)
+		retryCount := 5
+		for i := 0; i < retryCount; i++ {
+			err = os.WriteFile("/opt/ima/policy", imaPolicy, 0644)
+			if err == nil {
+				fmt.Println("IMA policy loaded successfully")
+				return nil
+			}
+			log.Tracef("Retrying to write IMA policy to /sys/kernel/security/ima/policy (%d/%d)", i+1, retryCount)
+			time.Sleep(2 * time.Second)
+		}
+
+		searchString := "/opt/verifier/"
+
+		fileContent, err := os.ReadFile(constants.AsciiRuntimeMeasurementFilePath)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error writing IMA policy to /sys/kernel/security/ima/policy: %+v", err)
+			fmt.Fprintf(os.Stderr, "Error reading file %s: %+v\n", constants.AsciiRuntimeMeasurementFilePath, err)
 			os.Exit(1)
 		}
 
-		fmt.Println("IMA policy loaded successfully")
+		if strings.Contains(string(fileContent), searchString) {
+			fmt.Printf("The file %s contains the entry: %s\n", constants.AsciiRuntimeMeasurementFilePath, searchString)
+			fmt.Println("IMA policy already loaded successfully")
+		} else {
+			fmt.Printf("The file %s does not contain the entry: %s\n", constants.AsciiRuntimeMeasurementFilePath, searchString)
+			os.Exit(1)
+		}
+
+		return nil
 
 	case "help", "-h", "--help":
 		a.printUsage()

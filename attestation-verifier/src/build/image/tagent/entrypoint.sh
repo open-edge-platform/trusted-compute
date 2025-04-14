@@ -83,23 +83,8 @@ done
 
 tagent init
 
-# TODO: Implement a more robust solution for ensuring the policy file is available after an edge node reboot.
-sleep 60
-
-# Retry mechanism for writing IMA policy
-MAX_RETRIES=5
-RETRY_DELAY=5
-retry_count=0
-
-while [ $retry_count -lt $MAX_RETRIES ]; do
-  tagent ima-load-policy
-  if [ $? -eq 0 ]; then
-    break
-  fi
-  echo "Error writing IMA policy, retrying in $RETRY_DELAY seconds..."
-  sleep $RETRY_DELAY
-  retry_count=$((retry_count + 1))
-done
+# Load the IMA policy
+tagent ima-load-policy
 
 # TODO: Implement a more robust solution for Wait until the IMA first measurements of all allowlist entries are completed.
 sleep 60

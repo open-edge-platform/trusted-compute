@@ -75,7 +75,7 @@ const (
 	DefaultApiTokenExpiration       = 31536000
 	DefaultAsyncReportRetryInterval = 5
 	VerificationServiceName         = "HVS"
-	ImaConfigsDir                   = "/opt/ima/configs/"
+	ImaConfigsDir                   = "/opt/ima-configs/"
 	ImaPolicyPath                   = ImaConfigsDir + "ima_policy"
 	ImaAllowlistPath                = ImaConfigsDir + "ima_allowlist"
 )

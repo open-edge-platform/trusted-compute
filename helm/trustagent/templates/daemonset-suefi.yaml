@@ -22,14 +22,53 @@ metadata:
               value: {{.Values.dependentServices.hvs }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.hvs }}
+        - name: set-permissions
+          image: debian:bullseye-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              chown -R 503:500 /opt/verifier && chmod -R 751 /opt/verifier
+          securityContext:
+            privileged: true
           volumeMounts:
-            {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-            {{- if $file }}
-            - name: init-scanfiles-{{ $index }}
-              mountPath: /host{{ $file }}
+            - name: ima-configs
+              mountPath: /opt/trustagent/ima_allowlist
+              subPath: ima_allowlist
+            {{- range $index, $folder := .Values.imaAllowlistFolders }}
+            - name: scanfiles-folder-{{ $index }}
+              mountPath: {{ $folder }}
+            {{- end }}
+        - name: wait-for-ima-allowlist-files
+          image: debian:bullseye-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              while true; do
+                all_files_present=true;
+                while read -r file; do
+                  if [ ! -f "$file" ]; then
+                    echo "File not found: $file";
+                    all_files_present=false;
+                  fi;
+                done < /opt/trustagent/ima_allowlist;
+                if [ "$all_files_present" = true ]; then
+                  break;
+                fi;
+                sleep 5;
+              done;
+          securityContext:
+            runAsUser: 504
+            runAsGroup: 500
+          volumeMounts:
+            - name: ima-configs
+              mountPath: /opt/trustagent/ima_allowlist
+              subPath: ima_allowlist
+            {{- range $index, $folder := .Values.imaAllowlistFolders }}
+            - name: scanfiles-folder-{{ $index }}
+              mountPath: {{ $folder }}
               readOnly: true
             {{- end }}
-            {{- end }}
+
         {{- if .Values.versionUpgrade }}
         - name: {{ include "factory.name" . }}-backup
           image: busybox:1.32
@@ -117,13 +156,10 @@ metadata:
               readOnly: true
             - name: tpmrm
               mountPath: /dev/tpmrm0
-            - name: ima-log
-              mountPath: /opt/ima/ascii_runtime_measurements
-              readOnly: true
-            - name: ima-policy
-              mountPath: /opt/ima/policy
+            - name: ima
+              mountPath: /opt/ima
             - name: ima-configs
-              mountPath: /opt/ima/configs
+              mountPath: /opt/ima-configs
               readOnly: true
             - name: uefi
               mountPath: /sys/firmware/dmi/tables/DMI
@@ -141,12 +177,14 @@ metadata:
           args:
             - >
               while true; do
+                echo "Scanning files in /opt/trustagent/ima_allowlist";
                 while read -r file; do
-                  if [ -f "/opt/scanfiles$file" ]; then
-                  exec 3<"/opt/scanfiles$file" && exec 3<&-;
+                  if [ -f "$file" ]; then
+                    exec 3<"$file" && exec 3<&-;
                   else
-                  echo "File not found: $file";
-                  fi;
+                    echo "$file" >> /tmp/.allowlist_filenotfound
+                    echo "File not found: $file";
+                  fi
                 done < /opt/trustagent/ima_allowlist;
                 sleep 30;
               done
@@ -158,12 +196,10 @@ metadata:
               mountPath: /opt/trustagent/ima_allowlist
               subPath: ima_allowlist
               readOnly: true
-            {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-            {{- if $file }}
-            - name: scanfiles-{{ $index }}
-              mountPath: /opt/scanfiles{{ $file }}
+            {{- range $index, $folder := .Values.imaAllowlistFolders }}
+            - name: scanfiles-folder-{{ $index }}
+              mountPath: {{ $folder }}
               readOnly: true
-            {{- end }}
             {{- end }}
       volumes:
         {{- include "factory.volumeSvcLogsDaemonset" . | nindent 8 }}
@@ -193,12 +229,9 @@ metadata:
         - name: tpmrm
           hostPath:
             path: /dev/tpmrm0
-        - name: ima-log
+        - name: ima
           hostPath:
-            path: /sys/kernel/security/ima/ascii_runtime_measurements
-        - name: ima-policy
-          hostPath:
-            path: /sys/kernel/security/ima/policy
+            path: /sys/kernel/security/ima
         - name: uefi
           hostPath:
             path: /sys/firmware/dmi/tables/DMI
@@ -214,21 +247,11 @@ metadata:
         - name: ima-configs
           configMap:
             name: {{ include "factory.name" . }}-ima-configs
-        {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-        {{- if $file }}
-        - name: scanfiles-{{ $index }}
+        {{- range $index, $folder := .Values.imaAllowlistFolders }}
+        - name: scanfiles-folder-{{ $index }}
           hostPath:
-            path: {{ $file }}
-            type: FileOrCreate
-        {{- end }}
-        {{- end }}
-        {{- range $index, $file := (splitList "\n" .Values.config.imaAllowlist) }}
-        {{- if $file }}
-        - name: init-scanfiles-{{ $index }}
-          hostPath:
-            path: {{ $file }}
-            type: File
-        {{- end }}
+            path: {{ $folder }}
+            type: Directory
         {{- end }}
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
         {{- if .Values.config.tpmOwnerSecret }}
