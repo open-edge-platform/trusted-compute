@@ -75,7 +75,7 @@ config:
     # /opt/kata/bin/qemu-system-x86_64
     # /opt/kata/libexec/virtiofsd
     # /opt/kata/share/defaults/kata-containers/configuration-qemu.toml
-    # /opt/kata/share/kata-containers/vmlinuz-6.12.19-1.emt3
+    # /opt/kata/share/kata-containers/vmlinuz-6.12.20-1.emt3
     # /opt/kata/share/kata-containers/trusted-vm.img
     # /opt/kata/share/kata-qemu/qemu/bios-256k.bin
     # /opt/kata/share/kata-qemu/qemu/efi-virtio.rom

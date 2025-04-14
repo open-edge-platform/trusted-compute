@@ -36,7 +36,7 @@ path = [
     "**.zip",
     ".gitattributes",
     "**.tar.gz",
-    "kata_keeplist.txt"
+    "**/kata_keeplist.txt"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
