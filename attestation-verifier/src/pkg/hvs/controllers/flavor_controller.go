@@ -416,7 +416,7 @@ func (fcon *FlavorController) findTemplatesToApply(flavorgroups []hvs.FlavorGrou
 	for _, flavorTemplate := range flavorTemplates {
 		conditionEval := true
 		for _, condition := range flavorTemplate.Condition {
-			expectedData, _ := jsonquery.Query(hostManifestJSON, condition)
+			expectedData := jsonquery.FindOne(hostManifestJSON, condition)
 			if expectedData == nil {
 				conditionEval = false
 				break
