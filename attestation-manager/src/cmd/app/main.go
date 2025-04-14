@@ -28,8 +28,6 @@ func main() {
 	pollduration := cfg.POLLDURATION
 	logging.Info("**********Attestation Manager Starts***********")
 
-	var informedAMServer bool = false
-
 	// Fetching the Bearer token
 	getAttestTokenOperation := func() (bool, interface{}) {
 		return api.GetAttestToken(cfg)
@@ -175,9 +173,9 @@ func main() {
 			} else {
 				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
 			}
-		}
-		if !parseSuccess {
-
+			logging.Info("Step 7: SecureBoot Disabled, cordoning the node")
+			cordonDrainNode()
+		} else if !parseSuccess {
 			// var attestationDetails string = "Attestation Fail"
 			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestStatus)
 			if err != nil {
@@ -188,16 +186,12 @@ func main() {
 			cordonDrainNode()
 		} else {
 			logging.Info("Step 7: Trust report parsed successfully")
-
-			if !informedAMServer {
-				// Inform Attestation  Manager Server Server on successful attestation first time
-				message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(1), hardwareGuid, attestStatus)
-				if err != nil {
-					logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
-				} else {
-					logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
-					informedAMServer = true
-				}
+			// Inform Attestation  Manager Server Server on successful attestation first time
+			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(1), hardwareGuid, attestStatus)
+			if err != nil {
+				logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+			} else {
+				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
 			}
 		}
 
