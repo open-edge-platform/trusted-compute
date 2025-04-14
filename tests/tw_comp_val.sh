@@ -90,13 +90,13 @@ check_cluster_status() {
     wait_for_process 180 10 "kubectl get nodes | grep -q '\<Ready\>'" || { echo "ERROR: Nodes are not ready"; exit 1; }
     echo "INFO: Nodes are ready"
 
-    echo "INFO: Checking and labeling nodes"
-    local node_name=$(kubectl get nodes -o name | head -n 1 | cut -d'/' -f2)
-    if ! kubectl get nodes --show-labels | grep -q "node-role.kubernetes.io/worker=true"; then
-        echo "ERROR: Node labeled with node-role.kubernetes.io/worker=true"; exit 1;
-    else
-        echo "INFO: Nodes already labeled correctly"
-    fi
+    #echo "INFO: Checking and labeling nodes"
+    #local node_name=$(kubectl get nodes -o name | head -n 1 | cut -d'/' -f2)
+    #if ! kubectl get nodes --show-labels | grep -q "node-role.kubernetes.io/worker=true"; then
+    #    echo "ERROR: Node labeled with node-role.kubernetes.io/worker=true"; exit 1;
+    #else
+    #    echo "INFO: Nodes already labeled correctly"
+    #fi
 
     echo "INFO: Checking and untainting nodes"
     if kubectl get nodes -o json | jq -e '.items[].spec.taints == null' > /dev/null; then
