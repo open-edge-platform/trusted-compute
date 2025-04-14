@@ -33,17 +33,7 @@ KATA_ARTIFACT_NEW_NAME="kata-static.tar.xz"
 KATA_PATCH_DIR="patch/${KATA_CONTAINERS_TAG}"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
-KATA_ARTIFACT_TOOTFS_NAME="kata-containers.img"
-
-
-KATA_KEEPLIST_FILE_LIST=( "VERSION" "containerd-shim-kata-v2" "kata-agent-ctl" "kata-collect-data.sh" "kata-ctl" "kata-manager" 
-	"kata-manager.sh" "kata-monitor" "kata-runtime" "kata-trace-forwarder" "qemu-system-x86_64" "stratovirt" "fdt.h" "libfdt.h" 
-	"libfdt_env.h" "libfdt.a" "libfdt.pc" "virtiofsd" "oci_config.json" "configuration.toml" "configuration-qemu.toml" 
-	"genpolicy-settings.json" "rules.rego" "root_hash.txt" "bios-256k.bin" "efi-virtio.rom" "kvmvapic.bin" "linuxboot_dma.bin" 
-	"pvh.bin" "versions.yaml" )
-
-KATA_DELETE_FILE_LIST=("runtime-rs" "share/defaults/kata-containers/runtime-rs" "share/kata-qemu/qemu/firmware" "share/kata-qemu-snp-experimental" 
-	"lib/kata-qemu-snp-experimental" "share/ovmf" )
+KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
 check_file_exists() {
     local file="${1}"
@@ -82,25 +72,11 @@ echo "INFO: Extracting Kata artifacts"
 mkdir -p "${KATA_ARTIFACT_DIR}"
 tar -xf "${KATA_ARTIFACT_FILE_NAME}" -C "${KATA_ARTIFACT_DIR}"
 
-# Iterate over files and symlinks in the directory and remove the files not in the keeplist
-find "${KATA_ARTIFACT_DIR}" -type f -o -type l | while read -r item; do
-  	base_item=$(basename "$item")
-  	if [[ ! " ${KATA_KEEPLIST_FILE_LIST[@]} " =~ " ${base_item} " ]]; then
-		#echo "INFO: Deleting: $item (not in keeplist)"
-		rm -rf "$item"
-  	fi
-done
-
-#iterate over the delete file list and remove the files
-pushd "${KATA_ARTIFACT_DIR}/opt/kata"
-for file in "${KATA_DELETE_FILE_LIST[@]}"; do
-	echo "INFO: Removing ${file}"
-	rm -rf "${file}"
-done
-popd
-
 #check if the boot component directory exists
 check_dir_exists "${KATA_BOOT_COMPONENT_DIR}"
+
+#create bm-agents group if it does not exist
+getent group bm-agents > /dev/null || groupadd -g 500 bm-agents
 
 #copy edge microvisor kernel to the kata artifacts
 echo "INFO: Copying edge microvisor kernel to the Kata artifacts"
@@ -117,7 +93,29 @@ cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR
 #change symlink to point to the new kernel and rootfs
 echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
-ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_TOOTFS_NAME}"
+ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
+
+# Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
+chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
+chown root:bm-agents "${KATA_ARTIFACT_DIR}/opt/kata"
+
+pushd "${KATA_ARTIFACT_DIR}/opt/kata"
+for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
+	match=$(awk -v search="$file" '$0 ~ search { print $0; found=1; exit } END { if (!found) print ""; exit }' ../../../kata_keeplist.txt)
+    if [[ -n "$match" ]]; then
+		chown $(echo "$match" | awk '{print $2}') "$file"
+		chmod $(echo "$match" | awk '{print $3}') "$file"
+	else
+		if [[ "$file" == *"$EDGE_MICROVISOR_KERNEL"* ]]; then
+			chown root:bm-agents "$file" && chmod 640 "$file"
+		elif [[ "$file" == *"$EDGE_MICROVISOR_KERNEL_CONFIG"* ]]; then
+			chown root:root "$file" && chmod 600 "$file"
+		else
+			rm -rf "$file"
+		fi
+	fi
+done
+popd
 
 #retar the artifacts
 echo "INFO: Retar the artifacts"
