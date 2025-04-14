@@ -41,8 +41,7 @@ spec:
                 name: ccruntime-sample
               spec:
                 ccNodeSelector:
-                  matchLabels:
-                    node-role.kubernetes.io/worker: "true"
+                  matchLabels: {}
                 config:
                   cleanupCmd:
                     - /opt/kata-artifacts/scripts/kata-deploy.sh
