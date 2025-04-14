@@ -55,12 +55,12 @@ image:
     pullPolicy: Always # The pull policy for pulling from container registry for PostgreSQL image
     dbVersionUpgradeImage: # The image name of PostgresDB version upgrade
   svc:
-    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/hvs # The image name with which HVS image is pushed to registry<br> (**REQUIRED**)
+    name:  # The image name with which HVS image is pushed to registry<br> (**REQUIRED**)
     pullPolicy: Always # The pull policy for pulling from container registry for HVS<br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
-    initName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait
+    initName:
   aasManager:
-    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
+    name:  # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
     pullPolicy: Always # The pull policy for pulling from container registry for AAS Manager <br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
 

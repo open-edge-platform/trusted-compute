@@ -83,13 +83,13 @@ spec:
             - name: AAS_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: am-aas-credentials
-                  key: username
+                  name: global-admin-generator-credentials
+                  key: GLOBAL_ADMIN_USERNAME
             - name: AAS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: am-aas-credentials
-                  key: password
+                  name: global-admin-generator-credentials
+                  key: GLOBAL_ADMIN_PASSWORD
             - name: NODE_NAME
               valueFrom:
                 fieldRef:

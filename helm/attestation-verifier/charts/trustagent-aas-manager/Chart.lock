@@ -1,0 +1,6 @@
+dependencies:
+- name: factory
+  repository: file://../../lib/factory/
+  version: 5.1.0
+digest: sha256:3b4bd625d523e35f813165a8a0f2edf12e51140d125a5eaae44b7305625203db
+generated: "2022-12-23T03:50:40.49815356-08:00"
