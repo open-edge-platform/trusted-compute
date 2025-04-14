@@ -33,7 +33,7 @@ KATA_ARTIFACT_NEW_NAME="kata-static.tar.xz"
 KATA_PATCH_DIR="patch/${KATA_CONTAINERS_TAG}"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
-KATA_ARTIFACT_TOOTFS_NAME="kata-containers.img"
+KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
 check_file_exists() {
     local file="${1}"
@@ -75,6 +75,9 @@ tar -xf "${KATA_ARTIFACT_FILE_NAME}" -C "${KATA_ARTIFACT_DIR}"
 #check if the boot component directory exists
 check_dir_exists "${KATA_BOOT_COMPONENT_DIR}"
 
+#create bm-agents group if it does not exist
+getent group bm-agents > /dev/null || groupadd -g 500 bm-agents
+
 #copy edge microvisor kernel to the kata artifacts
 echo "INFO: Copying edge microvisor kernel to the Kata artifacts"
 cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}"
@@ -90,19 +93,27 @@ cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR
 #change symlink to point to the new kernel and rootfs
 echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
-ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_TOOTFS_NAME}"
+ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
+chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
+chown root:bm-agents "${KATA_ARTIFACT_DIR}/opt/kata"
+
 pushd "${KATA_ARTIFACT_DIR}/opt/kata"
 for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
 	match=$(awk -v search="$file" '$0 ~ search { print $0; found=1; exit } END { if (!found) print ""; exit }' ../../../kata_keeplist.txt)
     if [[ -n "$match" ]]; then
-		echo "INFO: Processing $file"
-        chown $(echo "$match" | awk '{print $2}') "$file"
+		chown $(echo "$match" | awk '{print $2}') "$file"
 		chmod $(echo "$match" | awk '{print $3}') "$file"
 	else
-		[[ "$file" == *"$EDGE_MICROVISOR_KERNEL"* ]] && chown root:root "$file" && chmod 600 "$file" || rm -rf "$file"
-    fi
+		if [[ "$file" == *"$EDGE_MICROVISOR_KERNEL"* ]]; then
+			chown root:bm-agents "$file" && chmod 640 "$file"
+		elif [[ "$file" == *"$EDGE_MICROVISOR_KERNEL_CONFIG"* ]]; then
+			chown root:root "$file" && chmod 600 "$file"
+		else
+			rm -rf "$file"
+		fi
+	fi
 done
 popd
 
