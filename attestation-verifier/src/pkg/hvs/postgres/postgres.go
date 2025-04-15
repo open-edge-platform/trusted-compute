@@ -97,6 +97,7 @@ func New(cfg *Config) (*DataStore, error) {
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
+			FullSaveAssociations: true,
 		})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to DB, retrying attempt %d/%d", i, numAttempts)

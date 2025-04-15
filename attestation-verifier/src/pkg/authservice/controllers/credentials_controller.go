@@ -125,10 +125,15 @@ func (controller CredentialsController) CreateCredentials(w http.ResponseWriter,
 }
 
 func validateComponentType(r *http.Request, componentType string) bool {
+	defaultLog.Trace("CredentialController-validateComponentType Enter")
+	defer defaultLog.Trace("CredentialController-validateComponentType Exit")
+
 	roles, err := context.GetUserRoles(r)
 	if err != nil {
 		return false
 	}
+
+	defaultLog.Debugf("controllers/credentials_controller -> ComponentType: %s, Retrieved role: %+v\n", componentType, roles)
 
 	requiredRole := aas.RoleInfo{
 		Service: constants.ServiceName,

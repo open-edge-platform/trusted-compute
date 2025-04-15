@@ -91,13 +91,15 @@ func addDBUser(db domain.AASDatabase, username string, password string, roles []
 		defaultLog.WithError(err).Error("failed to generate hash from password")
 		return err
 	}
+
 	var uuid string
 	if userExist && userInDB != nil {
 		uuid = userInDB.ID
+		err = db.UserStore().Update(types.User{ID: uuid, Name: username, PasswordHash: hash, PasswordCost: bcrypt.DefaultCost, Roles: roles})
 	} else {
-		uuid, _ = postgres.UUID()
+		_, err = db.UserStore().Create(types.User{Name: username, PasswordHash: hash, PasswordCost: bcrypt.DefaultCost, Roles: roles})
 	}
-	err = db.UserStore().Update(types.User{ID: uuid, Name: username, PasswordHash: hash, PasswordCost: bcrypt.DefaultCost, Roles: roles})
+
 	if err != nil {
 		defaultLog.WithError(err).Error("failed to create or update register host user in db")
 		return err
