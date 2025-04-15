@@ -1,0 +1,23 @@
+# templates/cleanup-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-job-trustagent
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": hook-succeeded
+  template:
+    spec:
+      containers:
+      - name: cleanup-trustagent
+        image: debian:bullseye-slim
+        command: ["sh", "-c", "rm -rf /tmp/trustagent/*"]
+        volumeMounts:
+        - name: host-volume
+          mountPath: /tmp/trustagent
+      restartPolicy: Never
+      volumes:
+      - name: host-volume
+        hostPath:
+          path: /opt/trustagent
