@@ -1,10 +1,10 @@
 apiVersion: v2
-appVersion: 0.1.0
+appVersion: 0.0.8
 dependencies:
 - name: factory
   repository: file://../../charts/factory/
-  version: 0.1.0
+  version: 0.0.8
 description: A Helm chart for cleaning up jobs before upgrade
 name: cleanup-jobs
 type: application
-version: 0.1.0
+version: 0.0.8
