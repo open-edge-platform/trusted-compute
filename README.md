@@ -7,7 +7,7 @@ Trusted Compute is an execution framework at the edge that provides isolated exe
 
 ## Get Started
 
-See the \[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) to get started
+See the [Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) to get started
 using Trusted Compute.
 
 ## Develop
@@ -27,21 +27,21 @@ To develop Trusted Compute, the following development prerequisites are required
 
 ## Contribute
 
-trusted compute github code.
-\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)
+trusted compute contribution details can be found on following documentaion.
+[Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)
 
 ## Community and Support
 
 To learn more about the project, its community, and governance, visit
-the \[Edge Orchestrator Community\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)).
+the [Edge Orchestrator Community](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
 
-For support, start with \[Troubleshooting\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)) or
-\[contact us\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)).
+For support, start with [Troubleshooting](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) or
+[contact us](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
 
 ## License
 
-Trusted Compute is licensed under \[Apache-2.0
-\](https://www.apache.org/licenses/LICENSE-2.0).
+Trusted Compute is licensed under [Apache-2.0
+](https://www.apache.org/licenses/LICENSE-2.0).
 
 
 
