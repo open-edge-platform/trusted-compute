@@ -7,7 +7,7 @@ Trusted Compute is an execution framework at the edge that provides isolated exe
 
 ## Get Started
 
-See the \[Documentation\](https://d3qfwz1yce38tw.cloudfront.net/edge-manage-docs/main/developer_guide/trusted_compute/arch/architecture.html) to get started
+See the \[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) to get started
 using Trusted Compute.
 
 ## Develop
@@ -28,15 +28,15 @@ To develop Trusted Compute, the following development prerequisites are required
 ## Contribute
 
 trusted compute github code.
-\[https://d3qfwz1yce38tw.cloudfront.net/edge-manage-docs/main/developer_guide/contributor_guide/index.htmll
+\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)
 
 ## Community and Support
 
 To learn more about the project, its community, and governance, visit
-the \[Edge Orchestrator Community\](https://d3qfwz1yce38tw.cloudfront.net/edge-manage-docs/main/developer_guide/contributor_guide/index.html).
+the \[Edge Orchestrator Community\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)).
 
-For support, start with \[Troubleshooting\](https://website-name.com) or
-\[contact us\](https://d3qfwz1yce38tw.cloudfront.net/edge-manage-docs/main/developer_guide/contributor_guide/index.html).
+For support, start with \[Troubleshooting\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)) or
+\[contact us\](\[Documentation\](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html)).
 
 ## License
 
