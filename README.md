@@ -40,7 +40,7 @@ For support, start with [Troubleshooting](https://docs.openedgeplatform.intel.co
 
 ## License
 
-Trusted Compute is licensed under [Apache-2.0
+Trusted Compute is licensed under [Apache
 ](https://www.apache.org/licenses/LICENSE-2.0).
 
 
