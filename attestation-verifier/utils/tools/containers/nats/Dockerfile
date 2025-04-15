@@ -6,7 +6,7 @@
 FROM debian:bookworm
 
 RUN apt-get update && \
-    apt-get -yq install curl wget && \
+    apt-get -yq install --no-install-recommends curl ca-certificates wget && \
     curl -LO https://storage.googleapis.com/kubernetes-release/release/`\
     curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
     chmod +x kubectl
@@ -22,5 +22,8 @@ COPY nats/download-tls-certs.sh /download-tls-certs.sh
 COPY nats/entrypoint.sh /entrypoint.sh
 
 RUN touch /.container-env && chmod +x /entrypoint.sh && chmod +x /download-tls-certs.sh
+
+# Add a user and switch to it
+USER tc-agnet
 
 ENTRYPOINT [ "/entrypoint.sh"]

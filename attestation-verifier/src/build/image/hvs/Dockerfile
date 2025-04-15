@@ -35,4 +35,7 @@ COPY upgrades/hvs/db/out/* /database/
 
 RUN touch /.container-env && chmod -R +x /entrypoint.sh /container_upgrade.sh /config_upgrade.sh /config /database
 
+# Add a non-root user and switch to it
+USER tc-agnet
+
 ENTRYPOINT ["/entrypoint.sh"]
