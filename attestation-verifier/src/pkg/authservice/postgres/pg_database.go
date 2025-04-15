@@ -131,7 +131,7 @@ func New(cfg *Config) (*PostgresDatabase, error) {
 	for i := 0; i < numAttempts; i = i + 1 {
 		retryTime := time.Duration(cfg.ConnRetryTime)
 
-		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{FullSaveAssociations: true,})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("postgres/postgres:New() Failed to connect to DB, retrying attempt %d/%d", i, numAttempts)
 		} else {
@@ -238,7 +238,7 @@ func Open(host string, port int, dbname, user, password, sslMode, sslCert string
 	for i := 0; i < numAttempts; i = i + 1 {
 		const retryTime = 1
 
-		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		db, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{FullSaveAssociations: true,})
 		if dbErr != nil {
 			defaultLog.WithError(dbErr).Infof("Failed to connect to DB, retrying attempt %d/%d", i+1, numAttempts)
 		} else {

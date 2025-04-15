@@ -35,7 +35,6 @@ func (controller UsersController) CreateUser(w http.ResponseWriter, r *http.Requ
 
 	defaultLog.Trace("call to createUser")
 	defer defaultLog.Trace("createUser return")
-
 	var uc aasModel.UserCreate
 
 	if r.ContentLength == 0 {
@@ -319,6 +318,7 @@ func (controller UsersController) AddUserRoles(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return nil, http.StatusBadRequest, &commErr.ResourceError{Message: err.Error()}
 	}
+
 	secLog.WithField("user", u).Infof("%s: Roles added by: %s", commLogMsg.PrivilegeModified, r.RemoteAddr)
 
 	return nil, http.StatusCreated, nil

@@ -37,11 +37,12 @@ func (r *PostgresUserStore) Retrieve(u types.User) (*types.User, error) {
 	defaultLog.Trace("user Retrieve")
 	defer defaultLog.Trace("user Retrieve done")
 
-	err := r.db.Where(&u).First(&u).Error
+	var user types.User
+	err := r.db.Preload("Roles").Where(&u).First(&user).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "user retrieve: failed")
 	}
-	return &u, nil
+	return &user, nil
 }
 
 func (r *PostgresUserStore) RetrieveAll(u types.User) (types.Users, error) {
@@ -49,7 +50,7 @@ func (r *PostgresUserStore) RetrieveAll(u types.User) (types.Users, error) {
 	defer defaultLog.Trace("user RetrieveAll done")
 
 	var users types.Users
-	err := r.db.Where(&u).Find(&users).Error
+	err := r.db.Preload("Roles").Where(&u).Find(&users).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "user retrieve: failed")
 	}
@@ -58,16 +59,27 @@ func (r *PostgresUserStore) RetrieveAll(u types.User) (types.Users, error) {
 }
 
 func (r *PostgresUserStore) Update(u types.User) error {
-	err := r.db.Save(&u).Error
+	defaultLog.Trace("user Update")
+	defer defaultLog.Trace("user Update done")
+
+	// Ensure the primary key is set to avoid undefined behavior
+	if u.ID == "" {
+	        return errors.New("user update: primary key (ID) is not set")
+	}
+
+	// Use Updates instead of Save to avoid undefined behavior w/ Models
+	err := r.db.Model(&types.User{}).Where("id = ?", u.ID).Updates(&u).Error
 	if err != nil {
 		return errors.Wrap(err, "user update: failed")
 	}
+
 	return nil
 }
 
 func (r *PostgresUserStore) Delete(u types.User) error {
 	defaultLog.Trace("user Delete")
 	defer defaultLog.Trace("user Delete done")
+
 	if err := r.db.Model(&u).Association("Roles").Clear().Error; err != nil {
 		return errors.Wrap(errors.New(err()), "user delete: failed to clear user-role mapping")
 	}
@@ -87,7 +99,15 @@ func (r *PostgresUserStore) GetRoles(u types.User, rs *types.RoleSearch, include
 		cols = "roles.id, "
 	}
 	cols = cols + "roles.service, roles.name, roles.context"
-	tx := r.db.Joins("INNER JOIN user_roles on user_roles.role_id = roles.id INNER JOIN users on user_roles.user_id = users.id").Where(&u)
+
+	tx := r.db.Joins("INNER JOIN user_roles on user_roles.role_id = roles.id").
+		Joins("INNER JOIN users on user_roles.user_id = users.id")
+
+	if u.Name != "" {
+		tx = tx.Where("users.name = ?", u.Name)
+	} else if u.ID != "" {
+		tx = tx.Where("users.id = ?", u.ID)
+	}
 
 	if rs != nil {
 		tx = buildRoleSearchQuery(tx, rs)
@@ -159,9 +179,30 @@ func (r *PostgresUserStore) AddRoles(u types.User, roles types.Roles, mustAddAll
 	defaultLog.Trace("user AddRoles")
 	defer defaultLog.Trace("user AddRoles done")
 
-	if err := r.db.Model(&u).Association("Roles").Append(roles).Error; err != nil {
-		return errors.Wrap(errors.New(err()), "user add roles: failed")
+	if err := r.db.Model(&u).Association("Roles").Append(roles); err != nil {
+		return errors.Wrap(err, "user add roles: failed")
 	}
+
+	var updatedUser types.User
+	err := r.db.Preload("Roles").First(&updatedUser, "id = ?", u.ID).Error
+	if err != nil {
+		return errors.Wrap(err, "Addroles verification  user retrieve: failed")
+	}
+
+	// Check if roles were appended
+	for _, role := range roles {
+		found := false
+		for _, userRole := range updatedUser.Roles {
+			if userRole.ID == role.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return errors.Wrap(err, "Failed in verification of role appended to user")
+		}
+	}
+
 	return nil
 }
 
@@ -194,6 +235,7 @@ func (r *PostgresUserStore) DeleteRole(u types.User, roleID string, svcFltr []st
 	if err != nil {
 		return errors.Wrapf(err, "user delete roles: could not find role id %s in database", roleID)
 	}
+
 	if err = r.db.Model(&u).Association("Roles").Delete(role); err != nil {
 		return errors.Wrap(err, "user delete role: failed")
 	}
