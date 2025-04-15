@@ -107,7 +107,7 @@ spec:
             - name: ca-certificates
               mountPath: "/mnt/orch-ca.crt"
               readOnly: true
-            - name: flavor_addition_check
+            - name: flavor-addition-check
               mountPath: /temp/attestation_mgr/
       volumes:
         - name: attestation-manager-token
@@ -116,9 +116,9 @@ spec:
         - name: ca-certificates
           hostPath:
             path: /etc/intel_edge_node/orch-ca-cert/orch-ca.crt
-        - name: flavor_addition_check
+        - name: flavor-addition-check
           hostPath:
-            path: /tmp/attestation_manager/
+            path: /tmp/attestation-manager/
             type: DirectoryOrCreate
       {{- with .Values.nodeSelector }}
       nodeSelector:
