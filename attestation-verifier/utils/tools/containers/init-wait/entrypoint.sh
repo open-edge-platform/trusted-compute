@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 export WAIT_INTERVAL=${WAIT_INTERVAL:-2}
-export ITERATIONS=${ITERATIONS:-30}
+export ITERATIONS=${ITERATIONS:-100}
 i=0
 
 # Waits for $ITERATIONS * $WAIT_INTERVAL for any service with given API with $URL
