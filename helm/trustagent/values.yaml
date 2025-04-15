@@ -53,6 +53,17 @@ config:
     /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/privacy-ca.key
     /opt/verifier/hvs/0.1.1-dev/config/trusted-keys/tag-ca.key
     /opt/verifier/hvs/0.1.1-dev/config/tls.key
+    /opt/kata/bin/containerd-shim-kata-v2
+    /opt/kata/bin/qemu-system-x86_64
+    /opt/kata/libexec/virtiofsd
+    /opt/kata/share/defaults/kata-containers/configuration-qemu.toml
+    /opt/kata/share/kata-containers/vmlinuz-6.12.20-1.emt3
+    /opt/kata/share/kata-containers/trusted-vm.img
+    /opt/kata/share/kata-qemu/qemu/bios-256k.bin
+    /opt/kata/share/kata-qemu/qemu/efi-virtio.rom
+    /opt/kata/share/kata-qemu/qemu/linuxboot_dma.bin
+    /opt/kata/share/kata-qemu/qemu/pvh.bin
+    /opt/kata/share/kata-qemu/qemu/kvmvapic.bin
 
 # TODO: use {VERSION} for the versions in verifier paths
 # Disabled due to issues in github actions
@@ -69,24 +80,11 @@ config:
     # /opt/verifier/hvs/{VERSION}/config/trusted-keys/tag-ca.key
     # /opt/verifier/hvs/{VERSION}/config/tls.key
 
-# TODO: Enable Trusted workload in allowlist
-# Add the following paths to the allowlist for Trusted workload
-    # /opt/kata/bin/containerd-shim-kata-v2
-    # /opt/kata/bin/qemu-system-x86_64
-    # /opt/kata/libexec/virtiofsd
-    # /opt/kata/share/defaults/kata-containers/configuration-qemu.toml
-    # /opt/kata/share/kata-containers/vmlinuz-6.12.20-1.emt3
-    # /opt/kata/share/kata-containers/trusted-vm.img
-    # /opt/kata/share/kata-qemu/qemu/bios-256k.bin
-    # /opt/kata/share/kata-qemu/qemu/efi-virtio.rom
-    # /opt/kata/share/kata-qemu/qemu/linuxboot_dma.bin
-    # /opt/kata/share/kata-qemu/qemu/pvh.bin
-    # /opt/kata/share/kata-qemu/qemu/kvmvapic.bin
-
 imaAllowlistFolders:
     - /opt/verifier/cms
     - /opt/verifier/authservice
     - /opt/verifier/hvs
+    - /opt/kata
 
 aas:
 # Please update the url section if aas is exposed via ingress
