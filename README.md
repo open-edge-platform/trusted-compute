@@ -7,7 +7,7 @@ Trusted Compute is an execution framework at the edge that provides isolated exe
 
 ## Get Started
 
-See the [Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) to get started
+See the [Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/trusted_compute/index.html) to get started
 using Trusted Compute.
 
 ## Develop
