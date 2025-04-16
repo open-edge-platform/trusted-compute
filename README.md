@@ -29,7 +29,7 @@ To develop Trusted Compute, the following development prerequisites are required
 ## Contribute
 
 trusted compute contribution details can be found on following documentaion.
-[Documentation](<https://github.com/open-edge-platform/orch-docs/tree/main/docs/developer_guide/contributor_guide/index.html>)
+[Documentation](<https://github.com/open-edge-platform/orch-docs/tree/main/docs/developer_guide/contributor_guide/index.rst>)
 
 ## Community and Support
 
