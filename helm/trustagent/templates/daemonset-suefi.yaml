@@ -22,6 +22,9 @@ metadata:
               value: {{.Values.dependentServices.hvs }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.hvs }}
+          securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
         - name: set-permissions
           image: debian:bullseye-slim
           command: ["/bin/sh", "-c"]
@@ -30,6 +33,7 @@ metadata:
               chown -R 503:500 /opt/verifier && chmod -R 751 /opt/verifier
           securityContext:
             privileged: true
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: ima-configs
               mountPath: /opt/trustagent/ima_allowlist
@@ -59,6 +63,7 @@ metadata:
           securityContext:
             runAsUser: 504
             runAsGroup: 500
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: ima-configs
               mountPath: /opt/trustagent/ima_allowlist
@@ -115,9 +120,7 @@ metadata:
           {{ include "factory.imageContainer" . | nindent 10 | trim}}
           securityContext:
             privileged: true
-          ports:
-            - containerPort: {{ .Values.service.ta.containerPort }}
-              hostPort: {{ .Values.service.ta.port }}
+            readOnlyRootFilesystem: true
           envFrom:
             - configMapRef:
                 name: {{ include "factory.name" . }}
@@ -191,6 +194,7 @@ metadata:
           securityContext:
             runAsUser: 504
             runAsGroup: 500
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: ima-configs
               mountPath: /opt/trustagent/ima_allowlist

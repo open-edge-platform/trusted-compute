@@ -103,6 +103,8 @@ spec:
                       value: {{ .Values.dependentServices.aas }}
                     - name: COMPONENT
                       value: {{ include "factory.name" . }}
+                securityContext:
+                  {{- toYaml .Values.securityContext.aasManagerInit | nindent 18 }}
             {{- end }}
             containers:
               - name: {{ include "factory.name" . }}-aas-manager
