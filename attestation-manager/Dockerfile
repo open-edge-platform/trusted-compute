@@ -4,8 +4,6 @@
 # Start from the latest Debian bookworm image
 FROM debian:bookworm
 
-RUN apt-get update
-
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
@@ -13,6 +11,10 @@ WORKDIR /app
 COPY src/cmd/app/main ./main
 
 RUN chmod +x ./main
+
+# Add a user and switch to it
+RUN useradd -m 503
+USER 503
 
 # Run the executable
 CMD ["/app/main"]
