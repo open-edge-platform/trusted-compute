@@ -42,6 +42,8 @@ spec:
       containers:
         - name: cms-tls-digest-aas-bootstrap-token
           image: bitnami/kubectl:1.23
+          securityContext:
+            {{- toYaml .Values.securityContext.aas | nindent 12 }}
           command: ["/bin/sh", "-c"]
           args:
             - >

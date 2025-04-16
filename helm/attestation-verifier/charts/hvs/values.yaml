@@ -84,7 +84,7 @@ securityContext:
     runAsUser: 503
     runAsGroup: 500
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: false
   hvsInit: # The fsGroup id for init containers for HVS
     fsGroup: 500
   hvs: # The security content for HVS Pod

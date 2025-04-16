@@ -40,6 +40,8 @@ spec:
               value: {{ .Values.dependentServices.aas }}
             - name: COMPONENT
               value: {{ include "nats.name" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext.nats | nindent 12 }}
       containers:
         - name: nats
           image: {{ .Values.image.name }}:{{.Chart.AppVersion }}
@@ -56,6 +58,8 @@ spec:
             - name: NATS_ACCOUNT_NAME
               value: {{ .Values.config.accountName }}
             {{- include "factory.envBearerToken" . | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.nats | nindent 12 }}
       volumes:
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
         {{- include "factory.volumeAasBearerToken" . | nindent 12 }}

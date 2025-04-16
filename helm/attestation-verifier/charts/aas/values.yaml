@@ -62,7 +62,7 @@ securityContext:
     runAsUser: 503
     runAsGroup: 500
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: false
   aasInit: # The fsGroup id for init containers for AAS
     fsGroup: 500
   aas: # The security content for AAS Pod
