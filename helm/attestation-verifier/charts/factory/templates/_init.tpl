@@ -4,6 +4,8 @@ Wait for Database bootstrap
 {{- define "factory.initWaitForDb" -}}
 - name: wait-for-{{ include "factory.name" . }}db
   image: {{ .Values.image.db.name }}
+  securityContext:
+    {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
   command: ["/bin/sh", "-c"]
   args:
   - >
@@ -19,6 +21,8 @@ Wait for CMS-TLS-SHA384, BEARER-TOKEN
 {{- define "factory.initWaitForCmsSha384BearerToken" -}}
 - name: wait-for-cms-sha384-bearer-token
   image: busybox:1.32
+  securityContext:
+    {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
   command: ["/bin/sh", "-c"]
   args:
   - >
