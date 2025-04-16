@@ -12,5 +12,9 @@ COPY src/cmd/app/main ./main
 
 RUN chmod +x ./main
 
+# Add a user and switch to it
+RUN useradd -m 503
+USER 503
+
 # Run the executable
 CMD ["/app/main"]
