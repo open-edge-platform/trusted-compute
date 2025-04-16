@@ -83,6 +83,8 @@ securityContext:
   hvsdb: # The security content for HVS DB Service Pod
     runAsUser: 503
     runAsGroup: 500
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   hvsInit: # The fsGroup id for init containers for HVS
     fsGroup: 500
   hvs: # The security content for HVS Pod
@@ -103,6 +105,8 @@ securityContext:
     readOnlyRootFilesystem: true
   aasManagerInit: # The fsGroup id for init containers for AAS DB
     fsGroup: 500
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
       
 service:
   directoryName: hvs

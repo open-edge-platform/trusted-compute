@@ -20,6 +20,8 @@ securityContext:
     readOnlyRootFilesystem: true
   aasManagerInit: # The fsGroup id for init containers for AAS DB
     fsGroup: 500
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
 aas:
   # Please update the url section if aas is exposed via ingress

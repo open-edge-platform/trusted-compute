@@ -20,6 +20,8 @@
             mountPath: /writable
           - name: host-opt
             mountPath: /host/opt
+          securityContext:
+            {{- toYaml .Values.securityContext.cms | nindent 12 }}
         {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
           securityContext:
             {{- toYaml .Values.securityContext.cms | nindent 12 }}
