@@ -36,6 +36,11 @@ spec:
               value: {{ .Values.dependentServices.aas }}
             - name: COMPONENT
               value: {{ include "factory.name" . }}
+          securityContext:
+            runAsUser: 503
+            runAsGroup: 500
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       {{- end }}
       containers:
         - name: {{ include "factory.name" . }}-aas-manager
@@ -104,7 +109,7 @@ spec:
                     - name: COMPONENT
                       value: {{ include "factory.name" . }}
                 securityContext:
-                  {{- toYaml .Values.securityContext.aasManagerInit | nindent 18 }}
+                  {{- toYaml .Values.securityContext.aasManager | nindent 18 }}
             {{- end }}
             containers:
               - name: {{ include "factory.name" . }}-aas-manager
