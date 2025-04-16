@@ -5,8 +5,6 @@ nameOverride: "" # The name for HVS DB chart (Default: .Chart.Name)
 securityContext:
   hvsdbCertGeneratorInit: # The fsGroup id for init containers for HVS DB Secret generator job
     fsGroup: 500
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
   hvsdbCertGenerator: # The security content for HVS DB Secret generator job
     runAsUser: 503
     runAsGroup: 500

@@ -5,7 +5,8 @@ Wait for Database bootstrap
 - name: wait-for-{{ include "factory.name" . }}db
   image: {{ .Values.image.db.name }}
   securityContext:
-    {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
   command: ["/bin/sh", "-c"]
   args:
   - >
@@ -22,7 +23,8 @@ Wait for CMS-TLS-SHA384, BEARER-TOKEN
 - name: wait-for-cms-sha384-bearer-token
   image: busybox:1.32
   securityContext:
-    {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
   command: ["/bin/sh", "-c"]
   args:
   - >

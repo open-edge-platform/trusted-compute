@@ -58,8 +58,6 @@ storage:
 securityContext:
   aasdbInit: # The fsGroup id for init containers for AAS DB
     fsGroup: 500
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
   aasdb: # The security content for AAS DB Service Pod
     runAsUser: 503
     runAsGroup: 500
@@ -67,8 +65,6 @@ securityContext:
     readOnlyRootFilesystem: true
   aasInit: # The fsGroup id for init containers for AAS
     fsGroup: 500
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
   aas: # The security content for AAS Pod
     runAsUser: 503
     runAsGroup: 500

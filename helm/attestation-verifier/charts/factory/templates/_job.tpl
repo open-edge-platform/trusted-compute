@@ -53,7 +53,8 @@ spec:
             - name: COMPONENT
               value: {{ include "factory.name" . }}
           securityContext:
-            {{- toYaml .Values.securityContext.aasManagerInit | nindent 12 }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       {{- end }}
       {{- include "factory.hostAliases" . | nindent 6 | trim}}
       containers:
