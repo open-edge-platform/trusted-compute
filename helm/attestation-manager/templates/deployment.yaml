@@ -63,7 +63,7 @@ spec:
             - name: http
               containerPort: 50051
               protocol: TCP
-          env:          
+          env:
             - name: AAS_URL
               value: "https://aas.{{ .Release.Namespace }}.svc.cluster.local"
             - name: AAS_PORT
