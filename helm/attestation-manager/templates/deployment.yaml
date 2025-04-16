@@ -61,7 +61,6 @@ spec:
             - name: http
               containerPort: 50051
               protocol: TCP
-          env:
             - name: AAS_URL
               value: "https://aas.{{ .Release.Namespace }}.svc.cluster.local"
             - name: AAS_PORT
@@ -98,6 +97,8 @@ spec:
               value: "{{ .Values.env.amServerAddress }}"
             - name: Attestation_Manager_SERVER_PORT
               value: "{{ .Values.env.amServerPort }}"
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
