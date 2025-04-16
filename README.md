@@ -1,14 +1,16 @@
-# Trusted Compute 
+# Trusted Compute
 
 ## Overview
-Trusted Compute is an execution framework at the edge that provides isolated execution of workloads and platform abstraction for hardware-based security technologies following thwith following objectives.
-1) **Continuous Monitoring:** Ensure the integrity of platform firmware, OS kernel, critical system components, and runtime environment through ongoing measurement and attestation.
-2) **Isolated Execution:** Securely execute workloads to prevent unauthorized access or interference, and protect the trusted host from the workloads.
+Trusted Compute is a set of software defined security extensions that utilize hardware security capabilities of the Edge Node within the Open Edge Manageability Framework.
+
+A user can select and deploy trusted compute extensions on a node to achieve higher security assurances for their workloads. This extension enhances edge node protection through:
+
+- **Continuous Monitoring** &
+- **Workload Protection through Isolated Execution**
 
 ## Get Started
 
-See the [Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/trusted_compute/index.html) to get started
-using Trusted Compute.
+See the [Documentation](https://github.com/open-edge-platform/trusted-compute/docs/developer_guide/trusted_compute/arch/architecture.rst) to get started using Trusted Compute.
 
 ## Develop
 
@@ -24,26 +26,17 @@ To develop Trusted Compute, the following development prerequisites are required
 - 4-8GB RAM
 - 8 core or better CPU
   
-
 ## Contribute
 
 trusted compute contribution details can be found on following documentaion.
-[Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html)
+[Documentation](<https://github.com/open-edge-platform/orch-docs/tree/main/docs/developer_guide/contributor_guide/index.html>)
 
 ## Community and Support
 
 To learn more about the project, its community, and governance, visit
-the [Edge Orchestrator Community](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
-
-For support, start with [Troubleshooting](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html) or
-[contact us](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
+the [Edge Orchestrator Community](https://github.com/open-edge-platform/orch-docs/tree/main).
 
 ## License
 
 Trusted Compute is licensed under [Apache
 ](https://www.apache.org/licenses/LICENSE-2.0).
-
-
-
-
-  
