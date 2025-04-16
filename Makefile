@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #/
 
-SUBPROJECTS := helm attestation-verifier attestation-manager trusted-workload build-trusted-vm
+SUBPROJECTS := helm attestation-verifier attestation-manager trusted-workload trusted-vm
 
 VENV_NAME	 := venv
 
