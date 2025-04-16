@@ -4,8 +4,6 @@
 # Start from the latest Debian bookworm image
 FROM debian:bookworm
 
-RUN apt-get update
-
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
