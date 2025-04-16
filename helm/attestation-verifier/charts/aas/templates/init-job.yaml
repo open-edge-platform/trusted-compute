@@ -37,6 +37,8 @@ spec:
               value: {{ .Values.dependentServices.cms }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.cms }}-init
+          securityContext:
+            {{- toYaml .Values.securityContext.aas | nindent 12 }}
       containers:
         - name: cms-tls-digest-aas-bootstrap-token
           image: bitnami/kubectl:1.23

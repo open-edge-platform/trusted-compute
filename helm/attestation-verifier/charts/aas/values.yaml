@@ -61,6 +61,7 @@ securityContext:
   aasdb: # The security content for AAS DB Service Pod
     runAsUser: 503
     runAsGroup: 500
+    readOnlyRootFilesystem: true
   aasInit: # The fsGroup id for init containers for AAS
     fsGroup: 500
   aas: # The security content for AAS Pod
