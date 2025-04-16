@@ -22,4 +22,7 @@ COPY build/image/cms/entrypoint.sh /entrypoint.sh
 
 RUN touch /.container-env && chmod +x /entrypoint.sh /container_upgrade.sh /config_upgrade.sh /config
 
+# Add a user and switch to it
+USER tc-agnet
+
 ENTRYPOINT [ "/entrypoint.sh"]
