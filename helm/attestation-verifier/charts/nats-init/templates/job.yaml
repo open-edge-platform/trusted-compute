@@ -64,7 +64,7 @@ spec:
               drop:
                 - all
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
       volumes:
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
         {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
