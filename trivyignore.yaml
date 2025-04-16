@@ -1,4 +1,6 @@
-vulnerabilities:
-  - id: CVE-2025-0395
-    statement: libc-bin │ CVE-2025-0395 │ MEDIUM   │ fixed  │ 2.36-9+deb12u9    │ 2.36-9+deb12u10 │ glibc: buffer overflow in the GNU C Library's assert() | securityContext.readOnlyRootFilesystem | securityContext.runAsNonRoot | securityContext.capabilities.drop | securityContext.allowPrivilegeEscalation
+misconfigurations:
   - id: AVD-KSV-0017
+  - id: AVD-KSV-0118 
+    paths:
+      - "trustagent/templates/daemonset-suefi.yaml"
+    statement: The containers needs root privileges
