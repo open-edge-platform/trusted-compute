@@ -53,6 +53,7 @@ spec:
             - name: COMPONENT
               value: {{ include "factory.name" . }}
           securityContext:
+            runAsUser: 0
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       {{- end }}

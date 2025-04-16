@@ -59,6 +59,9 @@ Associate db volume with appropriate version
   args:
     - >
       cd {{ .Values.service.directoryName }} && ln -sfT {{.Chart.AppVersion }}/db db
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
   volumeMounts:
     - name: {{ include "factory.name" . }}-base
       mountPath: /{{ .Values.service.directoryName }}/

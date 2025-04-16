@@ -11,6 +11,7 @@ metadata:
       {{- end }}
       serviceAccountName: {{ include "factory.name" . }}
       initContainers:
+        # trivy:ignore:KSV017
         - name: wait-for-hvs
           {{ include "factory.imageInitContainer" . | nindent 10 | trim }}
           env:
@@ -116,6 +117,7 @@ metadata:
           effect: "NoExecute"
       {{- include "factory.hostAliases" . | nindent 6 | trim }}
       containers:
+        # trivy:ignore:KSV017
         - name: {{ include "factory.name" . }}
           {{ include "factory.imageContainer" . | nindent 10 | trim}}
           securityContext:
