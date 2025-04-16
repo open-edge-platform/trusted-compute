@@ -59,7 +59,12 @@ spec:
               value: {{ .Values.config.accountName }}
             {{- include "factory.envBearerToken" . | nindent 12 }}
           securityContext:
-            {{- toYaml .Values.securityContext.nats | nindent 12 }}
+            runAsUser: 0
+            capabilities:
+              drop:
+                - all
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
       volumes:
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
         {{- include "factory.volumeAasBearerToken" . | nindent 12 }}

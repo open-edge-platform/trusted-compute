@@ -35,7 +35,16 @@ securityContext:
         - all
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
-
+  aasManager: # The security content for AAS-MANAGER Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+  aasManagerInit: # The fsGroup id for init containers for AAS DB
+    fsGroup: 500
 aas:
   # Please update the url section if aas is exposed via ingress
   url:
