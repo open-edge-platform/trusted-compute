@@ -13,3 +13,4 @@ securityContext:
       drop:
         - all
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true

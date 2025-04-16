@@ -92,6 +92,7 @@ securityContext:
       drop:
         - all
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   aasManager: # The security content for AAS-MANAGER Pod
     runAsUser: 503
     runAsGroup: 500
@@ -99,6 +100,7 @@ securityContext:
       drop:
         - all
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   aasManagerInit: # The fsGroup id for init containers for AAS DB
     fsGroup: 500
       
