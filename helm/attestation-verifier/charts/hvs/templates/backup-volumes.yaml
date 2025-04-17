@@ -32,10 +32,10 @@ spec:
       initContainers:
         {{- include "factory.backupService" . | nindent 8 }}
           securityContext:
-          {{- toYaml .Values.securityContext.hvs | nindent 12 }}
+          {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
         {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
           securityContext:
-          {{- toYaml .Values.securityContext.hvs | nindent 12 }}
+          {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
       containers:
         {{- include "factory.initCommonSpecLinkDBVolumes" . | nindent 8 }}
           securityContext:

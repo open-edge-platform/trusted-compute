@@ -85,9 +85,9 @@ securityContext:
     runAsGroup: 500
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: false
-  hvsInit: # The fsGroup id for init containers for HVS
+  hvsInitFs: # The fsGroup id for init containers for HVS
     fsGroup: 500
-  hvs: # The security content for HVS Pod
+  hvsInit: # The security content for init containers
     runAsUser: 503
     runAsGroup: 500
     capabilities:
@@ -95,6 +95,14 @@ securityContext:
         - all
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
+  hvs: # The security content for HVS Pod
+    runAsUser: 503
+    runAsGroup: 500
+    capabilities:
+      drop:
+        - all
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
   aasManager: # The security content for AAS-MANAGER Pod
     runAsUser: 503
     runAsGroup: 500
