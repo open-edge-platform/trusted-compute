@@ -5,7 +5,6 @@
 package jwtauth
 
 import (
-	"bytes"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rsa"
@@ -13,14 +12,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -67,18 +66,23 @@ type JwtFactory struct {
 	keyId         string
 }
 
-type StandardClaims jwt.StandardClaims
+type RegisteredClaims jwt.RegisteredClaims
 type CustomClaims interface{}
 
 type claims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	customClaims interface{}
 }
 
+// GetAudience implements the jwt.Claims interface for the claims struct.
+func (c claims) GetAudience() (jwt.ClaimStrings, error) {
+	return c.RegisteredClaims.Audience, nil
+}
+
 type Token struct {
-	jwtToken       *jwt.Token
-	standardClaims *jwt.StandardClaims
-	customClaims   interface{}
+	jwtToken         *jwt.Token
+	RegisteredClaims *jwt.RegisteredClaims
+	customClaims     interface{}
 }
 
 func (t *Token) GetClaims() interface{} {
@@ -92,11 +96,11 @@ func (t *Token) GetAllClaims() interface{} {
 	return t.jwtToken.Claims
 }
 
-func (t *Token) GetStandardClaims() interface{} {
+func (t *Token) GetRegisteredClaims() interface{} {
 	if t.jwtToken == nil {
 		return nil
 	}
-	return t.standardClaims
+	return t.RegisteredClaims
 }
 
 func (t *Token) GetHeader() *map[string]interface{} {
@@ -107,10 +111,10 @@ func (t *Token) GetHeader() *map[string]interface{} {
 }
 
 func (t *Token) GetSubject() string {
-	if t.standardClaims == nil {
+	if t.RegisteredClaims == nil {
 		return ""
 	}
-	return t.standardClaims.Subject
+	return t.RegisteredClaims.Subject
 }
 
 type verifierKey struct {
@@ -202,7 +206,7 @@ func (c claims) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	slice2, err := json.Marshal(c.StandardClaims)
+	slice2, err := json.Marshal(c.RegisteredClaims)
 	if err != nil {
 		return nil, err
 	}
@@ -222,11 +226,11 @@ func (f *JwtFactory) Create(clms interface{}, subject string, validity time.Dura
 
 	jwtclaim := claims{}
 	// allow for a clock skew as issuing server time might be ahead of services validating the token
-	jwtclaim.StandardClaims.IssuedAt = now.Add(-1 * gracePeriodForClockSkew).Unix()
-	jwtclaim.StandardClaims.NotBefore = jwtclaim.StandardClaims.IssuedAt
-	jwtclaim.StandardClaims.ExpiresAt = now.Add(validity).Unix()
-	jwtclaim.StandardClaims.Issuer = f.issuer
-	jwtclaim.StandardClaims.Subject = subject
+	jwtclaim.RegisteredClaims.IssuedAt = jwt.NewNumericDate(now.Add(-1 * gracePeriodForClockSkew))
+	jwtclaim.RegisteredClaims.NotBefore = jwtclaim.RegisteredClaims.IssuedAt
+	jwtclaim.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(now.Add(validity))
+	jwtclaim.RegisteredClaims.Issuer = f.issuer
+	jwtclaim.RegisteredClaims.Subject = subject
 
 	jwtclaim.customClaims = clms
 	token := jwt.NewWithClaims(f.signingMethod, jwtclaim)
@@ -245,8 +249,8 @@ func (v *verifierPrivate) ValidateTokenAndGetClaims(tokenString string, customCl
 	// let us check if the verifier is already expired. If it is just return verifier expired error
 	// The caller has to re-initialize the verifier.
 	token := Token{}
-	token.standardClaims = &jwt.StandardClaims{}
-	parsedToken, err := jwt.ParseWithClaims(tokenString, token.standardClaims, func(token *jwt.Token) (interface{}, error) {
+	token.RegisteredClaims = &jwt.RegisteredClaims{}
+	parsedToken, err := jwt.ParseWithClaims(tokenString, token.RegisteredClaims, func(token *jwt.Token) (interface{}, error) {
 
 		if keyIDValue, keyIDExists := token.Header["kid"]; keyIDExists {
 
@@ -279,19 +283,22 @@ func (v *verifierPrivate) ValidateTokenAndGetClaims(tokenString string, customCl
 	})
 
 	if err != nil {
-		if jwtErr, ok := err.(*jwt.ValidationError); ok {
-			switch e := jwtErr.Inner.(type) {
-			case *MatchingCertNotFoundError, *VerifierExpiredError, *MatchingCertJustExpired:
-				return nil, e
+		if errors.Is(err, jwt.ErrTokenMalformed) || errors.Is(err, jwt.ErrTokenUnverifiable) {
+			var innerErr error
+			if errors.As(err, &innerErr) {
+				switch e := innerErr.(type) {
+				case *MatchingCertNotFoundError, *VerifierExpiredError, *MatchingCertJustExpired:
+					return nil, e
+				}
 			}
-			return nil, jwtErr
+			return nil, err
 		}
 		return nil, err
 	}
 	token.jwtToken = parsedToken
-	// so far we have only got the standardClaims parsed. We need to now fill the customClaims
+	// so far we have only got the RegisteredClaims parsed. We need to now fill the customClaims
 
-	parts := strings.Split(tokenString, ".")
+	// Removed unused variable 'parts'
 	// no need check for the number of segments since the previous ParseWithClaims has already done this check.
 	// therefor the following is redundant. If we change the implementation, will need to revisit
 	//if len(parts) != 3 {
@@ -299,13 +306,14 @@ func (v *verifierPrivate) ValidateTokenAndGetClaims(tokenString string, customCl
 	//}
 
 	// parse Claims
-	var claimBytes []byte
+	// Removed unused variable 'claimBytes'
 
-	if claimBytes, err = jwt.DecodeSegment(parts[1]); err != nil {
-		return nil, fmt.Errorf("could not decode claims part of the jwt token")
+	parser := jwt.NewParser()
+	_, _, err = parser.ParseUnverified(tokenString, jwt.MapClaims(customClaims.(map[string]interface{})))
+	if err != nil {
+		return nil, fmt.Errorf("could not parse claims part of the jwt token: %v", err)
 	}
-	dec := json.NewDecoder(bytes.NewBuffer(claimBytes))
-	err = dec.Decode(customClaims)
+	token.customClaims = customClaims
 	token.customClaims = customClaims
 
 	return &token, nil
