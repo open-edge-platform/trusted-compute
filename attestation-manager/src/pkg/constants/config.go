@@ -42,7 +42,7 @@ func LoadConfig() (*Config, error) {
 		NodeAgentCertPath:    "/mnt/access_token",
 		CMSCertPath:          "/mnt/cms-ca-cert.pem",
 		OrchestratorCertPath: "/mnt/orch-ca.crt",
-		FlavorUpdateFilePath: "/temp/attestation_mgr/flavor_update",
+		FlavorUpdateFilePath: "/mnt/attestation_mgr/flavor_update",
 	}
 
 	// Map environment variables to config fields

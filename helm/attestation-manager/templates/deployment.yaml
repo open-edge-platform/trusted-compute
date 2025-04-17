@@ -34,7 +34,7 @@ spec:
         - name: wait-for-verifier
           image: bitnami/kubectl:latest
           securityContext:
-            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           command: ["/bin/sh", "-c"]
           args:
             - >
@@ -101,7 +101,7 @@ spec:
             - name: Attestation_Manager_SERVER_PORT
               value: "{{ .Values.env.amServerPort }}"
           securityContext:
-            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -112,7 +112,7 @@ spec:
               mountPath: "/mnt/orch-ca.crt"
               readOnly: true
             - name: flavor-addition-check
-              mountPath: /temp/attestation_mgr/
+              mountPath: /mnt/attestation_mgr/
       volumes:
         - name: attestation-manager-token
           hostPath:

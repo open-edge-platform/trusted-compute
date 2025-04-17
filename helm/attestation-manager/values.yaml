@@ -48,21 +48,12 @@ podSecurityContext:
   runAsUser: 503
 
 securityContext:
-   capabilities:
+    runAsUser: 0
+    capabilities:
      drop:
      - ALL
-   readOnlyRootFilesystem: true
-   allowPrivilegeEscalation: false
-   runAsNonRoot: true
-   runAsUser: 503
-   aasManager: # The security content for AAS-MANAGER Pod
-    runAsUser: 503
-    runAsGroup: 500
-    capabilities:
-      drop:
-        - all
-   aasManagerInit: # The fsGroup id for init containers for AAS DB
-       fsGroup: 500
+    allowPrivilegeEscalation: false
+
 service:
   type: ClusterIP
   port: 80

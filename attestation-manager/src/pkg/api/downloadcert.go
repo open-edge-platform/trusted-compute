@@ -103,7 +103,8 @@ func initHTTPClient() {
 	if err != nil {
 		logging.Error(fmt.Sprintf("Error loading configuration: %v", err))
 	}
-	caCertPath := "/app/ca-certificate.pem"
+	// caCertPath := "/app/ca-certificate.pem"
+	caCertPath := cfg.CMSCertPath
 	caCertURL := fmt.Sprintf("%s:%s/cms/v1/ca-certificates", cfg.CMSURL, cfg.CMSPort)
 
 	if err := downloadCACertificate(caCertURL, caCertPath); err != nil {
