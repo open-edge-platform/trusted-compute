@@ -28,13 +28,9 @@ To develop Trusted Compute, the following development prerequisites are required
   
 ## Contribute
 
-trusted compute contribution details can be found on following documentation.
-[Documentation](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html>)
+Trusted Compute contribution details can be found in following 
+[documentation](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html>).
 
-## Community and Support
-
-To learn more about the project, its community, and governance, visit
-the [Edge Orchestrator Community](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
 
 ## License
 
