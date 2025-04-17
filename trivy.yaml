@@ -7,4 +7,3 @@ scan:
     - attestation-verifier/charts/nats/templates/statefulset.yaml
     - attestation-verifier/charts/nats-init/templates/job.yaml
     - attestation-manager/templates/deployment.yaml
-    
