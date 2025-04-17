@@ -5,9 +5,10 @@
 package model
 
 import (
-	"github.com/Waterdrips/jwt-go"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 // HostResponse Response on getting hosts from kubernetes

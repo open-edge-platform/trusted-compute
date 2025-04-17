@@ -4,11 +4,11 @@ go 1.23.7
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/Waterdrips/jwt-go v3.2.0+incompatible
 	github.com/antchfx/jsonquery v1.3.6
 	github.com/beevik/etree v1.5.0
 	github.com/cloudflare/cfssl v1.6.5
 	github.com/davecgh/go-spew v1.1.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
@@ -39,7 +39,6 @@ require (
 
 require (
 	github.com/antchfx/xpath v1.3.2 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
