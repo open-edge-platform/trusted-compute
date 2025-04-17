@@ -6,22 +6,8 @@ templates:
     - cc-operator-deployment.yaml
 
 tests:
-  - it: should create a Namespace for confidential-containers-system
-    documentIndex: 0
-    asserts:
-        - isKind:
-            of: Namespace
-        - isAPIVersion:
-            of: v1
-        - equal:
-            path: metadata.name
-            value: confidential-containers-system
-        - equal:
-            path: metadata.labels.control-plane
-            value: controller-manager
-
   - it: should create a CustomResourceDefinition for ccruntimes.confidentialcontainers.org
-    documentIndex: 1
+    documentIndex: 0
     asserts:
         - isKind:
             of: CustomResourceDefinition
@@ -56,7 +42,7 @@ tests:
             value: Cluster
 
   - it: should create a ServiceAccount for cc-operator-controller-manager
-    documentIndex: 2
+    documentIndex: 1
     asserts:
         - isKind:
             of: ServiceAccount
@@ -70,7 +56,7 @@ tests:
             value: confidential-containers-system
 
   - it: should create a Role for cc-operator-leader-election-role
-    documentIndex: 3
+    documentIndex: 2
     asserts:
         - isKind:
             of: Role
@@ -102,7 +88,7 @@ tests:
                 verbs: ["create", "patch"]
 
   - it: should create a ClusterRole for cc-operator-manager-role
-    documentIndex: 4
+    documentIndex: 3
     asserts:
         - isKind:
             of: ClusterRole
@@ -154,7 +140,7 @@ tests:
                 resources: ["runtimeclasses"]
                 verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
   - it: should create a ClusterRole for cc-operator-metrics-auth-role
-    documentIndex: 5
+    documentIndex: 4
     asserts:
         - isKind:
             of: ClusterRole
@@ -176,7 +162,7 @@ tests:
                 resources: ["subjectaccessreviews"]
                 verbs: ["create"]
   - it: should create a ClusterRole for cc-operator-metrics-reader
-    documentIndex: 6
+    documentIndex: 5
     asserts:
         - isKind:
             of: ClusterRole
@@ -192,7 +178,7 @@ tests:
                 verbs: ["get"]
 
   - it: should create a RoleBinding for cc-operator-leader-election-rolebinding
-    documentIndex: 7
+    documentIndex: 6
     asserts:
         - isKind:
             of: RoleBinding
@@ -221,7 +207,7 @@ tests:
                 namespace: confidential-containers-system
 
   - it: should create a ClusterRoleBinding for cc-operator-manager-rolebinding
-    documentIndex: 8
+    documentIndex: 7
     asserts:
         - isKind:
             of: ClusterRoleBinding
@@ -247,7 +233,7 @@ tests:
                 namespace: confidential-containers-system
 
   - it: should create a ClusterRoleBinding for cc-operator-metrics-auth-rolebinding
-    documentIndex: 9
+    documentIndex: 8
     asserts:
         - isKind:
             of: ClusterRoleBinding
@@ -273,7 +259,7 @@ tests:
                 namespace: confidential-containers-system
 
   - it: should create a ConfigMap for cc-operator-manager-config
-    documentIndex: 10
+    documentIndex: 9
     asserts:
         - isKind:
             of: ConfigMap
@@ -287,7 +273,7 @@ tests:
             value: confidential-containers-system
 
   - it: should create a Service for cc-operator-controller-manager-metrics-service
-    documentIndex: 11
+    documentIndex: 10
     asserts:
         - isKind:
             of: Service
@@ -314,7 +300,7 @@ tests:
             value: controller-manager
 
   - it: should create a Deployment for cc-operator-controller-manager
-    documentIndex: 12
+    documentIndex: 11
     asserts:
         - isKind:
             of: Deployment
