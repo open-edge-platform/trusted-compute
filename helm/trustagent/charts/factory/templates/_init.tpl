@@ -19,6 +19,9 @@ Wait for CMS-TLS-SHA384, BEARER-TOKEN
 {{- define "factory.initWaitForCmsSha384BearerToken" -}}
 - name: wait-for-cms-sha384-bearer-token
   image: busybox:1.32
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
   command: ["/bin/sh", "-c"]
   args:
   - >

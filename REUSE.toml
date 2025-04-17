@@ -4,6 +4,8 @@ version = 1
 path = [
     "REUSE.toml",
     "trivyignore.yaml",
+    ".trivyignore.yaml",
+    "trivy.yaml",
     "ci/**",
     "trusted-vm/config-6.12.8-142",
     "attestation-verifier/src/upgrades/manifest/supported_versions",

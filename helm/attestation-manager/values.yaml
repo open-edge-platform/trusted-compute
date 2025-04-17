@@ -39,6 +39,13 @@ podSecurityContext:
   seccompProfile:
     type: RuntimeDefault
   fsGroup: 500
+  capabilities:
+     drop:
+     - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 503
 
 securityContext:
    capabilities:

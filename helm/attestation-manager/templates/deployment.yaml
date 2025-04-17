@@ -33,6 +33,8 @@ spec:
       initContainers:
         - name: wait-for-verifier
           image: bitnami/kubectl:latest
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
           command: ["/bin/sh", "-c"]
           args:
             - >
@@ -98,6 +100,8 @@ spec:
               value: "{{ .Values.env.amServerAddress }}"
             - name: Attestation_Manager_SERVER_PORT
               value: "{{ .Values.env.amServerPort }}"
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

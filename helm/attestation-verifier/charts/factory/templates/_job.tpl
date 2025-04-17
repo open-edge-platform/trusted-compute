@@ -52,6 +52,10 @@ spec:
               value: {{ .Values.dependentServices.aas }}
             - name: COMPONENT
               value: {{ include "factory.name" . }}
+          securityContext:
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       {{- end }}
       {{- include "factory.hostAliases" . | nindent 6 | trim}}
       containers:

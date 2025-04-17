@@ -108,9 +108,9 @@ securityContext:
         - all
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
-  aasManagerInit: # The fsGroup id for init containers for AAS DB
+  aasManagerInit: # The fsGroup id for init containers
     fsGroup: 500
-      
+
 hostAliasEnabled: false # Set this to true for using host aliases and also add entries accordingly in ip, hostname entries. hostalias is required when ingress is deployed and pods are not able to resolve the domain names
 aliases:
   hostAliases:
@@ -129,6 +129,6 @@ service:
     containerPort: 8443 # The containerPort on which HVS can listen
     port: 30443
   ta:
-    containerPort: 1443 # The containerPort on which TA can listen
-    port: 31443 # The externally exposed NodePort on which TA can listen to external traffic
+    containerPort:  # The containerPort on which TA can listen
+    port:  # The externally exposed NodePort on which TA can listen to external traffic
 

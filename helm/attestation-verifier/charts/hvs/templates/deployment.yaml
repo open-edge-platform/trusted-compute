@@ -14,25 +14,25 @@
       {{- end }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.securityContext.hvsInit | nindent 8 }}
+        {{- toYaml .Values.securityContext.hvsInitFs | nindent 8 }}
       serviceAccountName: {{ include "factory.name" . }}
       initContainers:
         {{- include "factory.initWaitForDb" . | nindent 8 }}
         {{- include "factory.initWaitForCmsSha384BearerToken" . | nindent 8 }}
         {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
           securityContext:
-            {{- toYaml .Values.securityContext.hvs | nindent 12 }}
+            {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
         {{- if .Values.global }}
         {{- if .Values.global.versionUpgrade }}
         {{- include "factory.waitForUpgradeService" . | nindent 8 }}
           securityContext:
-            {{- toYaml .Values.securityContext.hvs | nindent 12 }}
+            {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
         {{- end}}
         {{- else}}
         {{- if .Values.versionUpgrade }}
         {{- include "factory.waitForUpgradeService" . | nindent 8 }}
           securityContext:
-            {{- toYaml .Values.securityContext.hvs | nindent 12 }}
+            {{- toYaml .Values.securityContext.hvsInit | nindent 12 }}
         {{- end }}
         {{- end }}
       containers:
