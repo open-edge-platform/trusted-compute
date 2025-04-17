@@ -11,7 +11,7 @@ The Attestation Manager is a tool designed to manage and verify attestations in 
 To install the Attestation Manager, clone the repository and install the dependencies(go,docker):
 
 ```sh
-git clone https://github.com/intel/trusted-compute.git
+git clone  https://github.com/open-edge-platform/trusted-compute.git
 cd attestation-manager
 
 ## to build AM binary 

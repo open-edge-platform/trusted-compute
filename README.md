@@ -10,7 +10,7 @@ A user can select and deploy trusted compute extensions on a node to achieve hig
 
 ## Get Started
 
-See the [Documentation](https://github.com/open-edge-platform/trusted-compute/docs/developer_guide/trusted_compute/arch/architecture.rst) to get started using Trusted Compute.
+See the [Documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/trusted_compute/index.html) to get started using Trusted Compute.
 
 ## Develop
 
@@ -28,13 +28,13 @@ To develop Trusted Compute, the following development prerequisites are required
   
 ## Contribute
 
-trusted compute contribution details can be found on following documentaion.
-[Documentation](<https://github.com/open-edge-platform/orch-docs/tree/main/docs/developer_guide/contributor_guide/index.rst>)
+trusted compute contribution details can be found on following documentation.
+[Documentation](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html>)
 
 ## Community and Support
 
 To learn more about the project, its community, and governance, visit
-the [Edge Orchestrator Community](https://github.com/open-edge-platform/orch-docs/tree/main).
+the [Edge Orchestrator Community](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html).
 
 ## License
 

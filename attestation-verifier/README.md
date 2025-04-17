@@ -12,7 +12,7 @@ The Attestation Verifier is component which performs attestation and mainatins s
 To install the Attestation Verifier, clone the repository and run the buidl script:
 
 ```sh
-git clone https://github.com/intel/trusted-compute.git
+git clone https://github.com/open-edge-platform/trusted-compute.git 
 cd attestation-verifier
 
 ## to build verifier and trust agent docker images
