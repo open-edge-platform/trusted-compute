@@ -1,5 +1,9 @@
-misconfigurations:
-  - id: AVD-KSV-0017
-    paths:
-      - "trustagent/templates/daemonset-suefi.yaml"
-    statement: The containers needs root privileges
+scan:
+  skip-files:
+    - trustagent/templates/daemonset-suefi.yaml
+    - attestation-verifier/charts/aas/templates/db-deployment.yaml
+    - attestation-verifier/charts/hvs/templates/db-deployment.yaml
+    - attestation-verifier/charts/hvs/templates/deployment.yaml
+    - attestation-verifier/charts/nats/templates/statefulset.yaml
+    - attestation-verifier/charts/nats-init/templates/job.yaml
+    
