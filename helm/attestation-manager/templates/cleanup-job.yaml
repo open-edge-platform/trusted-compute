@@ -1,0 +1,24 @@
+# templates/cleanup-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-job-am
+  namespace: {{ .Release.Namespace }}  
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      containers:
+      - name: cleanup-am
+        image: debian:bullseye-slim
+        command: ["sh", "-c", "rm -rf /tmp/attestation-manager/*"]
+        volumeMounts:
+        - name: host-volume
+          mountPath: /tmp/attestation-manager
+      restartPolicy: Never
+      volumes:
+      - name: host-volume
+        hostPath:
+          path: /tmp/attestation-manager
