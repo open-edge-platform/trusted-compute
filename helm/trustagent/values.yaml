@@ -41,18 +41,18 @@ config:
     measure uid=504 template=ima-ng
     dont_measure fsmagic=0x794c7630
   imaAllowlist: |
-    /opt/verifier/cms/1.3.1-dev/config/root-ca.key
-    /opt/verifier/cms/1.3.1-dev/config/tls.key
-    /opt/verifier/cms/1.3.1-dev/config/intermediate-ca/signing-ca.key
-    /opt/verifier/cms/1.3.1-dev/config/intermediate-ca/tls-client-ca.key
-    /opt/verifier/cms/1.3.1-dev/config/jwt/cms-jwt.key
-    /opt/verifier/authservice/1.3.1-dev/config/certs/tokensign/jwt.key
-    /opt/verifier/authservice/1.3.1-dev/config/tls.key
-    /opt/verifier/hvs/1.3.1-dev/config/trusted-keys/endorsement-ca.key
-    /opt/verifier/hvs/1.3.1-dev/config/trusted-keys/flavor-signing.key
-    /opt/verifier/hvs/1.3.1-dev/config/trusted-keys/privacy-ca.key
-    /opt/verifier/hvs/1.3.1-dev/config/trusted-keys/tag-ca.key
-    /opt/verifier/hvs/1.3.1-dev/config/tls.key
+    /opt/verifier/cms/1.4.0/config/root-ca.key
+    /opt/verifier/cms/1.4.0/config/tls.key
+    /opt/verifier/cms/1.4.0/config/intermediate-ca/signing-ca.key
+    /opt/verifier/cms/1.4.0/config/intermediate-ca/tls-client-ca.key
+    /opt/verifier/cms/1.4.0/config/jwt/cms-jwt.key
+    /opt/verifier/authservice/1.4.0/config/certs/tokensign/jwt.key
+    /opt/verifier/authservice/1.4.0/config/tls.key
+    /opt/verifier/hvs/1.4.0/config/trusted-keys/endorsement-ca.key
+    /opt/verifier/hvs/1.4.0/config/trusted-keys/flavor-signing.key
+    /opt/verifier/hvs/1.4.0/config/trusted-keys/privacy-ca.key
+    /opt/verifier/hvs/1.4.0/config/trusted-keys/tag-ca.key
+    /opt/verifier/hvs/1.4.0/config/tls.key
     /opt/kata/bin/containerd-shim-kata-v2
     /opt/kata/bin/qemu-system-x86_64
     /opt/kata/libexec/virtiofsd
