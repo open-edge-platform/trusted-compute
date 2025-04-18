@@ -127,6 +127,7 @@ metadata:
           {{ include "factory.imageContainer" . | nindent 10 | trim}}
           securityContext:
             privileged: true
+            runAsUser: 0
             readOnlyRootFilesystem: false
           envFrom:
             - configMapRef:
