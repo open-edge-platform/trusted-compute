@@ -44,17 +44,6 @@ spec:
                 sleep 10
               done &&
               echo "{{ .Values.dependentServices.hvs }} is ready."
-        # - name: wait-for-trustagent
-        #   image: bitnami/kubectl:latest
-        #   command: ["/bin/sh", "-c"]
-        #   args:
-        #     - >
-        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} to be ready..." &&
-        #       until kubectl get pod -l app.kubernetes.io/name={{ .Values.dependentServices.trustagent }} -n {{ .Release.Namespace }} -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
-        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} pod to be ready..."
-        #       sleep 10
-        #       done &&
-        #       echo "{{ .Values.dependentServices.trustagent }} is ready."
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
