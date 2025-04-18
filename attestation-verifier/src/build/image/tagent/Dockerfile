@@ -27,6 +27,6 @@ COPY pkg/lib/common/upgrades/config-upgrade /config-upgrade
 RUN touch /.container-env && chmod +x -R /entrypoint.sh /container_upgrade.sh /config_upgrade.sh /config /config-upgrade
 
 # Add a user and switch to it
-USER tc-agnet
+USER 503
 
 CMD ["/entrypoint.sh"]

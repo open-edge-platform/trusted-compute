@@ -5,6 +5,6 @@ FROM debian:bookworm-slim
 COPY init-wait/entrypoint.sh /entrypoint.sh
 
 # Add a user and switch to it
-USER tc-agnet
+USER 503
 
 CMD ["/entrypoint.sh"]

@@ -4,11 +4,12 @@ go 1.23.7
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/Waterdrips/jwt-go v3.2.0+incompatible
 	github.com/antchfx/jsonquery v1.3.6
 	github.com/beevik/etree v1.5.0
 	github.com/cloudflare/cfssl v1.6.5
 	github.com/davecgh/go-spew v1.1.1
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
