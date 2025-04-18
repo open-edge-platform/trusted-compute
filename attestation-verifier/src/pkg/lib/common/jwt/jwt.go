@@ -14,12 +14,13 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Waterdrips/jwt-go"
+	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
@@ -195,7 +196,6 @@ func NewTokenFactory(pkcs8der []byte, includeKeyIdInToken bool, signingCertPem [
 
 // We are doing custom marshalling here to combine the standard attributes of a JWT and the claims
 // that we want to add. Everything would be at the top level. For instance, if we want to carry
-//
 func (c claims) MarshalJSON() ([]byte, error) {
 
 	slice1, err := json.Marshal(c.customClaims)
@@ -239,7 +239,7 @@ func (f *JwtFactory) Create(clms interface{}, subject string, validity time.Dura
 
 //TODO: move to common crypto
 
-//TODO - implement this to parse the claims
+// TODO - implement this to parse the claims
 func (v *verifierPrivate) ValidateTokenAndGetClaims(tokenString string, customClaims interface{}) (*Token, error) {
 
 	// let us check if the verifier is already expired. If it is just return verifier expired error

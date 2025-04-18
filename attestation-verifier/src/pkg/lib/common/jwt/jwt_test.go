@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Waterdrips/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func TestMatchingCertNotFoundError_Error(t *testing.T) {
