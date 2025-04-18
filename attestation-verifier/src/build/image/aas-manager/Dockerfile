@@ -17,4 +17,4 @@ COPY tools/aas-manager/populate-users /usr/bin/populate-users
 RUN chmod +x kubectl /usr/bin/populate-users
 
 # Add a user and switch to it
-USER tc-agnet
+USER 503
