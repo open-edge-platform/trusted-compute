@@ -7,7 +7,7 @@ package model
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 

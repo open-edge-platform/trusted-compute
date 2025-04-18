@@ -8,7 +8,7 @@ require (
 	github.com/beevik/etree v1.5.0
 	github.com/cloudflare/cfssl v1.6.5
 	github.com/davecgh/go-spew v1.1.1
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
