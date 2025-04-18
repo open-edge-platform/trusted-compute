@@ -34,7 +34,7 @@ spec:
         - name: wait-for-verifier
           image: bitnami/kubectl:latest
           securityContext:
-            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           command: ["/bin/sh", "-c"]
           args:
             - >
@@ -44,17 +44,6 @@ spec:
                 sleep 10
               done &&
               echo "{{ .Values.dependentServices.hvs }} is ready."
-        # - name: wait-for-trustagent
-        #   image: bitnami/kubectl:latest
-        #   command: ["/bin/sh", "-c"]
-        #   args:
-        #     - >
-        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} to be ready..." &&
-        #       until kubectl get pod -l app.kubernetes.io/name={{ .Values.dependentServices.trustagent }} -n {{ .Release.Namespace }} -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
-        #       echo "Waiting for {{ .Values.dependentServices.trustagent }} pod to be ready..."
-        #       sleep 10
-        #       done &&
-        #       echo "{{ .Values.dependentServices.trustagent }} is ready."
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -101,7 +90,7 @@ spec:
             - name: Attestation_Manager_SERVER_PORT
               value: "{{ .Values.env.amServerPort }}"
           securityContext:
-            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -112,7 +101,7 @@ spec:
               mountPath: "/mnt/orch-ca.crt"
               readOnly: true
             - name: flavor-addition-check
-              mountPath: /temp/attestation_mgr/
+              mountPath: /mnt/attestation_mgr/
       volumes:
         - name: attestation-manager-token
           hostPath:

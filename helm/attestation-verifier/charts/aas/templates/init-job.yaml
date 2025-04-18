@@ -33,7 +33,7 @@ spec:
               value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}
-            - name: DEPEDENT_SERVICE_NAME
+            - name: DEPENDENT_SERVICE_NAME
               value: {{ .Values.dependentServices.cms }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.cms }}-init

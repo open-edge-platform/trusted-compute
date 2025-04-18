@@ -16,6 +16,8 @@ metadata:
         volumeMounts:
         - name: host-volume
           mountPath: /tmp/trustagent
+        securityContext:
+          runAsUser: 0
       restartPolicy: Never
       volumes:
       - name: host-volume
