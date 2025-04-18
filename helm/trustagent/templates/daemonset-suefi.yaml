@@ -18,7 +18,7 @@ metadata:
               value: https://{{ .Values.dependentServices.hvs }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.hvs.containerPort }}/hvs/v2/version
             - name: VERSION
               value: {{ .Chart.AppVersion }}
-            - name: DEPEDENT_SERVICE_NAME
+            - name: DEPENDENT_SERVICE_NAME
               value: {{.Values.dependentServices.hvs }}
             - name: COMPONENT
               value: {{ .Values.dependentServices.hvs }}

@@ -32,7 +32,7 @@ spec:
               value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}         
-            - name: DEPEDENT_SERVICE_NAME
+            - name: DEPENDENT_SERVICE_NAME
               value: {{ .Values.dependentServices.aas }}
             - name: COMPONENT
               value: {{ include "factory.name" . }}
@@ -104,7 +104,7 @@ spec:
                       value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
                     - name: VERSION
                       value: {{.Chart.AppVersion }}
-                    - name: DEPEDENT_SERVICE_NAME
+                    - name: DEPENDENT_SERVICE_NAME
                       value: {{ .Values.dependentServices.aas }}
                     - name: COMPONENT
                       value: {{ include "factory.name" . }}

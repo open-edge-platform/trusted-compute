@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # SPDX-FileCopyrightText: 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -17,15 +17,15 @@ while [[ $i -lt $ITERATIONS ]]; do
     echo "VERSION" $VERSION
     VERSION=${VERSION%%-*}
     if [[ "$version" == "$VERSION" ]]; then
-      echo "$DEPEDENT_SERVICE_NAME $version is running"
+      echo "$DEPENDENT_SERVICE_NAME $version is running"
       exit 0
     fi
   fi
   sleep $WAIT_INTERVAL
   i=$((i + 1))
-  echo "Waiting for $DEPEDENT_SERVICE_NAME connection, attempt: $i"
+  echo "Waiting for $DEPENDENT_SERVICE_NAME connection, attempt: $i"
 done
-if [ $i -eq $ITERATIONS ]; then
+if [[ $i -eq $ITERATIONS ]]; then
   echo "Error: timeout exceeded for job/container: $COMPONENT"
   exit 1
 fi
