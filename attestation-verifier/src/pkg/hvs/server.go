@@ -17,7 +17,6 @@ import (
 	"time"
 
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/services/vcss"
 
 	"github.com/pkg/errors"
 
@@ -96,17 +95,6 @@ func (a *App) startServer() error {
 
 	// Initialize Host controller config
 	hostControllerConfig := initHostControllerConfig(c, certStore)
-
-	//Create an instance of VCSS and start the service
-	vcenterClusterSyncer, err := vcss.NewVCenterClusterSyncer(c.VCSS, hostControllerConfig, dataStore, hostTrustManager)
-	if err != nil {
-		return errors.Wrap(err, "An error occurred while initializing VCSS")
-	}
-
-	err = vcenterClusterSyncer.Run()
-	if err != nil {
-		return errors.Wrap(err, "An error occurred while initializing vCenter Cluster Syncer")
-	}
 
 	// Initialize routes
 	routes, err := router.InitRoutes(c, dataStore, fgs, certStore, hostTrustManager, hostControllerConfig)
