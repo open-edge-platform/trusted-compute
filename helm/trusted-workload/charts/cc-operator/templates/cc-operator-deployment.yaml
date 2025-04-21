@@ -1,6 +1,13 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: confidential-containers-system
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
