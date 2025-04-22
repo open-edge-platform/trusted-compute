@@ -352,11 +352,14 @@ func buildReportSearchQuery(tx *gorm.DB, hostHardwareID, hostID uuid.UUID, hostN
 	}
 	if latestPerHost {
 		entity := "auj"
-		txSubQuery := tx.Table("audit_log_entry auj").Select("data -> 'Columns' -> 1 ->> 'Value' AS host_id, max(auj.created) AS max_date ")
+		txSubQuery := tx.Table("audit_log_entry auj").
+			Select("data -> 'Columns' -> 1 ->> 'Value' AS host_id, max(auj.created) AS max_date")
+
 		txSubQuery = buildReportSearchQueryWithCriteria(txSubQuery, hostHardwareID, hostID, entity, hostName, hostState, fromDate, toDate)
 		txSubQuery = txSubQuery.Group("host_id")
+
 		subQuery := txSubQuery
-		tx = tx.Table("audit_log_entry au").Select("au.*").Joins("INNER JOIN ? a ON a.host_id = au.data -> 'Columns' -> 1 ->> 'Value' AND a.max_date = au.created", subQuery)
+		tx = tx.Table("audit_log_entry au").Select("au.*").Joins("INNER JOIN (?) a ON a.host_id = au.data -> 'Columns' -> 1 ->> 'Value' AND a.max_date = au.created", subQuery)
 	} else {
 		entity := "au"
 		tx = tx.Table("audit_log_entry au").Select("au.*")
