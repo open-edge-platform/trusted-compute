@@ -226,42 +226,42 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	// add bios query to sub query
 	if biosQuery != nil {
 		biosSubQuery := biosQuery
-		subQuery = subQuery.Where("f.id IN ?", biosSubQuery)
+		subQuery = subQuery.Where("f.id IN (?)", biosSubQuery)
 	}
 	// add OS query string to sub query
 	if osQuery != nil {
 		osSubQuery := osQuery
 		if biosQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", osSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", osSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", osSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", osSubQuery)
 		}
 	}
 	// add software query to sub query
 	if softwareQuery != nil {
 		softwareSubQuery := softwareQuery
 		if biosQuery != nil || osQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", softwareSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", softwareSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", softwareSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", softwareSubQuery)
 		}
 	}
 	// add asset tag query to sub query
 	if aTagQuery != nil {
 		aTagSubQuery := aTagQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", aTagSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", aTagSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", aTagSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", aTagSubQuery)
 		}
 	}
 	// add host-unique query to sub query
 	if hostUniqueQuery != nil {
 		hostUniqueSubQuery := hostUniqueQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", hostUniqueSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", hostUniqueSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", hostUniqueSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", hostUniqueSubQuery)
 		}
 	}
 
@@ -269,9 +269,9 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	if imaQuery != nil {
 		imaSubQuery := imaQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil || hostUniqueQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", imaSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", imaSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", imaSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", imaSubQuery)
 		}
 	}
 
@@ -280,7 +280,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 		tx = subQuery
 	} else if fgId != uuid.Nil {
 		fgSubQuery := buildFlavorPartQueryStringWithFlavorgroup(fgId.String(), tx)
-		tx = tx.Where("f.id IN ?", fgSubQuery)
+		tx = tx.Where("f.id IN (?)", fgSubQuery)
 	}
 	return tx
 }
