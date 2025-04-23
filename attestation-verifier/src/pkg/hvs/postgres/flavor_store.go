@@ -140,7 +140,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build biosQuery with all the platform flavor query attributes from host manifest
 				pfQueryAttributes := flavorMetaInfo[hvs.FlavorPartPlatform]
 				for _, pfQueryAttribute := range pfQueryAttributes {
-					biosQuery = biosQuery.Where(convertToPgJsonqueryString("f.content", pfQueryAttribute.Key)+" = ?", pfQueryAttribute.Value)
+					biosQuery = biosQuery.Where(convertToPgJsonqueryString("f.content", pfQueryAttribute.Key)+" = ?", convertBoolToString(pfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartPlatform] {
@@ -153,7 +153,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build osQuery with all the OS flavor query attributes from host manifest
 				osfQueryAttributes := flavorMetaInfo[hvs.FlavorPartOs]
 				for _, osfQueryAttribute := range osfQueryAttributes {
-					osQuery = osQuery.Where(convertToPgJsonqueryString("f.content", osfQueryAttribute.Key)+" = ?", osfQueryAttribute.Value)
+					osQuery = osQuery.Where(convertToPgJsonqueryString("f.content", osfQueryAttribute.Key)+" = ?", convertBoolToString(osfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartOs] {
@@ -168,7 +168,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build host unique Query with all the host unique flavor query attributes from host manifest
 				hufQueryAttributes := flavorMetaInfo[hvs.FlavorPartHostUnique]
 				for _, hufQueryAttribute := range hufQueryAttributes {
-					hostUniqueQuery = hostUniqueQuery.Where(convertToPgJsonqueryString("f.content", hufQueryAttribute.Key)+" = ?", hufQueryAttribute.Value)
+					hostUniqueQuery = hostUniqueQuery.Where(convertToPgJsonqueryString("f.content", hufQueryAttribute.Key)+" = ?", convertBoolToString(hufQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartHostUnique] {
@@ -195,7 +195,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build assetTag Query with all the assetTag flavor query attributes from host manifest
 				atfQueryAttributes := flavorMetaInfo[hvs.FlavorPartAssetTag]
 				for _, atfQueryAttribute := range atfQueryAttributes {
-					aTagQuery = aTagQuery.Where(convertToPgJsonqueryString("f.content", atfQueryAttribute.Key)+" = ?", atfQueryAttribute.Value)
+					aTagQuery = aTagQuery.Where(convertToPgJsonqueryString("f.content", atfQueryAttribute.Key)+" = ?", convertBoolToString(atfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartAssetTag] {
@@ -208,7 +208,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build biosQuery with all the ima flavor query attributes from host manifest
 				imaFlavorQueryAttributes := flavorMetaInfo[hvs.FlavorPartIma]
 				for _, imaFlavorQueryAttribute := range imaFlavorQueryAttributes {
-					imaQuery = imaQuery.Where(convertToPgJsonqueryString("f.content", imaFlavorQueryAttribute.Key)+" = ?", imaFlavorQueryAttribute.Value)
+					imaQuery = imaQuery.Where(convertToPgJsonqueryString("f.content", imaFlavorQueryAttribute.Key)+" = ?", convertBoolToString(imaFlavorQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartIma] {
@@ -283,6 +283,15 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 		tx = tx.Where("f.id IN (?)", fgSubQuery)
 	}
 	return tx
+}
+
+// Checks if the value is a boolean and converts it to a string representation.
+func convertBoolToString(value interface{}) string {
+	if boolValue, ok := value.(bool); ok {
+		return fmt.Sprintf("%t", boolValue)
+	}
+	// return the value as is since it's likely already string
+	return fmt.Sprintf("%v", value)
 }
 
 func convertToPgJsonqueryString(queryHead string, jsonKeyPath string) string {
