@@ -13,7 +13,7 @@ spec:
       restartPolicy: OnFailure
       initContainers:
         - name: wait-for-dependencies
-          image: bitnami/kubectl:1.32.3
+          image: bitnami/kubectl:1.33.0
           command: ["/bin/sh", "-c"]
           args:
             - |
