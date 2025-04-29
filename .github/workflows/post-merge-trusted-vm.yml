@@ -23,7 +23,7 @@ jobs:
       id-token: write
     uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@791c0c74ac05e6d972fa6de8c979e854336e9a41  # 0.1.10
     with:
-      run_version_check: false
+      run_version_check: true
       run_build: true
       run_docker_build: false
       run_docker_push: false

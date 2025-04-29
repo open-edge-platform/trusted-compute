@@ -58,7 +58,7 @@ jobs:
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@22ab71cdab7d8ec7972bdf8ad827696c20f44285  # 0.1.10
     with:
       run_security_scans: true
-      run_version_check: false
+      run_version_check: true
       run_build: true
       run_lint: true
       run_test: true
