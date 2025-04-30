@@ -218,7 +218,7 @@ func retryOperation(operation func() (bool, interface{}), retryCount int, retryI
 	return false, nil
 }
 
-func handleErrorDetails(cfg *constants.Config, attestToken string) {
+func DumpReportAndFlavorDetails(cfg *constants.Config, attestToken string) {
 	logging.Info("Handling error: logging flavor templates and trust report")
 
 	logging.Info("Fetching flavors...")
@@ -240,7 +240,7 @@ func handleErrorDetails(cfg *constants.Config, attestToken string) {
 
 func cordonDrainNode(cfg *constants.Config, attestToken string) {
 
-	handleErrorDetails(cfg, attestToken) // Error Handler called on failure
+	DumpReportAndFlavorDetails(cfg, attestToken) // Error Handler called on failure
 	logging.Info("Attestation failure, cordoning the node")
 	logging.Debug("Sleeping for 30 seconds and calling drainNode()")
 	time.Sleep(30 * time.Second)
