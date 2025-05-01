@@ -71,7 +71,6 @@ func AddHostToVerifier(cfg *constants.Config, token string, hostname string) (bo
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	logging.Debug("Request Headers:", req.Header)
 	logging.Debug("Request Body:", req.Body)
 	// logging.Debug("Request URL:", req.URL)
 	resp, err := client.Do(req)
