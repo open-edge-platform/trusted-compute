@@ -8,7 +8,7 @@ BUILD_DIR := $(shell pwd)/build
 
 EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
 EDGE_MICROVISOR_BRANCH?=3.0
-EDGE_MICROVISOR_COMMIT?="96eb3660c58a48ada021e2c0eaa0510cad6dc119"
+EDGE_MICROVISOR_COMMIT?="3.0.20250411"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
@@ -32,9 +32,7 @@ clone-microvisor:
 	@# Help: Runs clone microvisor and checks out to a specific commit ID
 	mkdir -p $(BUILD_DIR)
 	rm -rf "$(EDGE_MICROVISOR_SRC_DIR)"
-	git lfs install
 	git clone -b $(EDGE_MICROVISOR_BRANCH) $(EDGE_MICROVISOR_SRC) $(EDGE_MICROVISOR_SRC_DIR)
-	git lfs pull
 	cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
 
 clone-kata:
@@ -49,9 +47,7 @@ build: clone build-microvisor-image build-tvm-image
 build-microvisor-image:
 	@# Help: Runs build image phase only
 	sudo true  # Prompt for password once
-	#cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=y
-	mkdir -p $(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os
-	cp $(MAKEFILE_DIR)Trusted-Compute-3.0.20250408.0913.tar.gz $(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os
+	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 
 build-tvm-image: build-tvm-agent
 	@# Help: Runs build Trusted VM image
