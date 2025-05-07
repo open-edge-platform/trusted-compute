@@ -46,9 +46,6 @@ func (htcFactory *HostConnectorFactory) NewHostConnector(connectionString string
 	case constants.VendorIntel, constants.VendorMicrosoft:
 		log.Debug("host_connector/host_connector_factory:NewHostConnector() Connector type for provided connection string is INTEL")
 		connectorFactory = &IntelConnectorFactory{htcFactory.natsServers}
-	case constants.VendorVMware:
-		log.Debug("host_connector/host_connector_factory:NewHostConnector() Connector type for provided connection string is VMWARE")
-		connectorFactory = &VmwareConnectorFactory{}
 	default:
 		return nil, errors.New("host_connector_factory:NewHostConnector() Vendor not supported yet: " + vendorConnector.Vendor.String())
 	}

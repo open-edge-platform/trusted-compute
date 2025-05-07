@@ -15,11 +15,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/clients"
 	claas "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/clients/aas"
 	cos "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/os"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
-	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -63,49 +63,23 @@ type App struct {
 
 	HvsCN       string
 	HvsSanList  string
-	IhubCN      string
-	IhubSanList string
-	WlsCN       string
-	WlsSanList  string
-	TaCN        string
-	TaSanList   string
-	KbsCN       string
-	KbsSanList  string
-	SkcLibCN    string
 	NatsSanList string
 	NatsCN      string
-	ApsCN       string
-	ApsSanList  string
-	FdsCN       string
-	FdsSanList  string
-	QvsCN       string
-	QvsSanList  string
-	TcsCN       string
-	TcsSanList  string
 
-	InstallAdminUserName    string
-	InstallAdminPassword    string
-	GlobalAdminUserName     string
-	GlobalAdminPassword     string
-	CCCAdminUsername        string
-	CCCAdminPassword        string
-	HvsServiceUserName      string
-	HvsServiceUserPassword  string
-	IhubServiceUserName     string
-	IhubServiceUserPassword string
-	WpmServiceUserName      string
-	WpmServiceUserPassword  string
-	WlsServiceUserName      string
-	WlsServiceUserPassword  string
-	WlaServiceUserName      string
-	WlaServiceUserPassword  string
-	KbsServiceUsername      string
-	KbsServiceUserPassword  string
-	SKCLibUsername          string
-	SKCLibUserPassword      string
-	SKCLibRoleContext       string
-	ApsServiceUserName      string
-	ApsServiceUserPassword  string
+	TaCN      string
+	TaSanList string
+
+	InstallAdminUserName   string
+	InstallAdminPassword   string
+	GlobalAdminUserName    string
+	GlobalAdminPassword    string
+	CCCAdminUsername       string
+	CCCAdminPassword       string
+	HvsServiceUserName     string
+	HvsServiceUserPassword string
+
+	ApsServiceUserName     string
+	ApsServiceUserPassword string
 
 	Components                    map[string]bool
 	GenPassword                   bool
@@ -186,39 +160,6 @@ func (a *App) GetServiceUsers() []UserAndRolesCreate {
 			urc.Name = a.HvsServiceUserName
 			urc.Password = a.HvsServiceUserPassword
 			urc.Roles = append(urc.Roles, NewRole("TA", "Administrator", "", []string{"*:*:*"}))
-		case "IHUB":
-			urc.Name = a.IhubServiceUserName
-			urc.Password = a.IhubServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("HVS", "ReportSearcher", "", []string{"reports:search:*"}))
-			urc.Roles = append(urc.Roles, NewRole("FDS", "HostSearcher", "", []string{"hosts:search:*"}))
-		case "WPM":
-			urc.Name = a.WpmServiceUserName
-			urc.Password = a.WpmServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("KBS", "KeyManager", "", []string{"keys:create:*", "keys:transfer:*"}))
-		case "WLS":
-			urc.Name = a.WlsServiceUserName
-			urc.Password = a.WlsServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("HVS", "ReportCreator", "", []string{"reports:create:*"}))
-		case "WLA":
-			urc.Name = a.WlaServiceUserName
-			urc.Password = a.WlaServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("WLS", "FlavorsImageRetrieval", "", []string{"image_flavors:retrieve:*"}))
-			urc.Roles = append(urc.Roles, NewRole("WLS", "ReportCreator", "", []string{"reports:create:*"}))
-			urc.Roles = append(urc.Roles, NewRole("WLS", "KeysCreator", "", []string{"keys:create:*"}))
-		case "SKC-LIBRARY":
-			urc.Name = a.SKCLibUsername
-			urc.Password = a.SKCLibUserPassword
-			urc.Roles = append(urc.Roles, NewRole("KBS", "KeyTransfer", a.SKCLibRoleContext, nil))
-		case "APS":
-			urc.Name = a.ApsServiceUserName
-			urc.Password = a.ApsServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("QVS", "QuoteVerifier", "", []string{"sgx_quote:verify:*",
-				"tdx_quote:verify:*"}))
-		case "KBS":
-			urc.Name = a.KbsServiceUsername
-			urc.Password = a.KbsServiceUserPassword
-			urc.Roles = append(urc.Roles, NewRole("APS", "TokenCreator", "", []string{"attestation_token:create:*"}))
-			urc.Roles = append(urc.Roles, NewRole("AAS", "UserReader", "", []string{"users:search:*", "user_roles:search:*"}))
 		}
 
 		if urc.Name != "" {
@@ -264,20 +205,8 @@ func (a *App) GetGlobalAdminUser() *UserAndRolesCreate {
 			urc.Roles = append(urc.Roles, NewRole("HVS", "Administrator", "", []string{"*:*:*"}))
 		case "TA":
 			urc.Roles = append(urc.Roles, NewRole("TA", "Administrator", "", []string{"*:*:*"}))
-		case "KBS":
-			urc.Roles = append(urc.Roles, NewRole("KBS", "Administrator", "", []string{"*:*:*"}))
-		case "WLS":
-			urc.Roles = append(urc.Roles, NewRole("WLS", "Administrator", "", []string{"*:*:*"}))
 		case "AAS":
 			urc.Roles = append(urc.Roles, NewRole("AAS", "Administrator", "", []string{"*:*:*"}))
-		case "APS":
-			urc.Roles = append(urc.Roles, NewRole("APS", "Administrator", "", []string{"*:*:*"}))
-		case "FDS":
-			urc.Roles = append(urc.Roles, NewRole("FDS", "Administrator", "", []string{"*:*:*"}))
-		case "QVS":
-			urc.Roles = append(urc.Roles, NewRole("QVS", "Administrator", "", []string{"*:*:*"}))
-		case "TCS":
-			urc.Roles = append(urc.Roles, NewRole("TCS", "Administrator", "", []string{"*:*:*"}))
 		default:
 			return nil
 		}
@@ -309,32 +238,9 @@ func (a *App) GetSuperInstallUser() UserAndRolesCreate {
 					"host_aiks:certify:*", "tpm_endorsements:create:*", "tpm_endorsements:search:*"}))
 			urc.Roles = append(urc.Roles, NewRole("AAS", "CredentialCreator", "type=TA", []string{"credential:create:*", "custom_claims:create:*"}))
 			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.TaCN, a.TaSanList))
-		case "IHUB":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.IhubCN, a.IhubSanList))
-		case "KBS":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.KbsCN, a.KbsSanList))
-		case "WPM":
-			urc.Roles = append(urc.Roles, NewRole("CMS", "CertApprover", "CN=WPM Flavor Signing Certificate;certType=Signing", nil))
-		case "WLS":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.WlsCN, a.WlsSanList))
-		case "WLA":
-			urc.Roles = append(urc.Roles, NewRole("HVS", "Certifier", "", []string{"host_signing_key_certificates:create:*"}))
-		case "SKC-LIBRARY":
-			urc.Roles = append(urc.Roles, MakeTlsClientCertificateRole(a.SkcLibCN))
 		case "NATS":
 			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.NatsCN, a.NatsSanList))
-		case "APS":
-			urc.Roles = append(urc.Roles, NewRole("CMS", "CertApprover", "CN=APS JWT Signing Certificate;certType=Signing", nil))
-			urc.Roles = append(urc.Roles, NewRole("CMS", "CertApprover", "CN=APS Nonce Signing Certificate;certType=Signing", nil))
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.ApsCN, a.ApsSanList))
-		case "APC":
-			urc.Roles = append(urc.Roles, NewRole("CMS", "CertApprover", "CN=APC Policy Signing Certificate;certType=Signing", nil))
-		case "FDS":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.FdsCN, a.FdsSanList))
-		case "QVS":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.QvsCN, a.QvsSanList))
-		case "TCS":
-			urc.Roles = append(urc.Roles, MakeTlsCertificateRole(a.TcsCN, a.TcsSanList))
+
 		}
 	}
 	return urc
@@ -434,60 +340,17 @@ func (a *App) LoadAllVariables(envFile string) error {
 		{&a.HvsCN, "HVS_CERT_COMMON_NAME", "HVS TLS Certificate", "Host Verification Service TLS Certificate Common Name", false, false},
 		{&a.HvsSanList, "HVS_CERT_SAN_LIST", "", "Host Verification Service TLS Certificate SAN LIST", false, false},
 
-		{&a.IhubCN, "IH_CERT_COMMON_NAME", "Integration Hub TLS Certificate", "Integration Hub TLS Certificate Common Name", false, false},
-		{&a.IhubSanList, "IH_CERT_SAN_LIST", "", "Integration Hub TLS Certificate SAN LIST", false, false},
-
-		{&a.WlsCN, "WLS_CERT_COMMON_NAME", "WLS TLS Certificate", "Workload Service TLS Certificate Common Name", false, false},
-		{&a.WlsSanList, "WLS_CERT_SAN_LIST", "", "Workload Service TLS Certificate SAN LIST", false, false},
-
-		{&a.KbsCN, "KBS_CERT_COMMON_NAME", "KBS TLS Certificate", "Key Broker Service TLS Certificate Common Name", false, false},
-		{&a.KbsSanList, "KBS_CERT_SAN_LIST", "", "Key Broker Service TLS Certificate SAN LIST", false, false},
-
 		{&a.TaCN, "TA_CERT_COMMON_NAME", "Trust Agent TLS Certificate", "Trust Agent TLS Certificate Common Name", false, false},
 		{&a.TaSanList, "TA_CERT_SAN_LIST", "", "Trust Agent TLS Certificate SAN LIST", false, false},
 
-		{&a.SkcLibCN, "SKC_LIBRARY_CERT_COMMON_NAME", "skcuser", "SKC Library TLS Client Certificate Common Name", false, false},
-
 		{&a.NatsCN, "NATS_CERT_COMMON_NAME", "NATS TLS Certificate", "Nats Server TLS Certificate Common Name", false, false},
 		{&a.NatsSanList, "NATS_CERT_SAN_LIST", "", "Nats Server TLS Certificate SAN LIST", false, false},
-
-		{&a.ApsCN, "APS_CERT_COMMON_NAME", "APS TLS Certificate", "Attestation Policy Service TLS Certificate Common Name", false, false},
-		{&a.ApsSanList, "APS_CERT_SAN_LIST", "", "Attestation Policy Service TLS Certificate SAN LIST", false, false},
-
-		{&a.FdsCN, "FDS_CERT_COMMON_NAME", "FDS TLS Certificate", "Feature Discovery Service TLS Certificate Common Name", false, false},
-		{&a.FdsSanList, "FDS_CERT_SAN_LIST", "", "Feature Discovery Service TLS Certificate SAN LIST", false, false},
-
-		{&a.QvsCN, "QVS_CERT_COMMON_NAME", "QVS TLS Certificate", "Quote Verification Service TLS Certificate Common Name", false, false},
-		{&a.QvsSanList, "QVS_CERT_SAN_LIST", "", "Quote Verification Service TLS Certificate SAN LIST", false, false},
-
-		{&a.TcsCN, "TCS_CERT_COMMON_NAME", "TCS TLS Certificate", "TEE Caching Service TLS Certificate Common Name", false, false},
-		{&a.TcsSanList, "TCS_CERT_SAN_LIST", "", "TEE Caching Service TLS Certificate SAN LIST", false, false},
 
 		{&a.GlobalAdminUserName, "GLOBAL_ADMIN_USERNAME", "", "Global Admin User Name", false, false},
 		{&a.GlobalAdminPassword, "GLOBAL_ADMIN_PASSWORD", "", "Global Admin User Password", false, true},
 
 		{&a.HvsServiceUserName, "HVS_SERVICE_USERNAME", "", "Host Verification Service User Name", false, false},
 		{&a.HvsServiceUserPassword, "HVS_SERVICE_PASSWORD", "", "Host Verification Service User Password", false, true},
-
-		{&a.IhubServiceUserName, "IHUB_SERVICE_USERNAME", "", "Integration Hub Service User Name", false, false},
-		{&a.IhubServiceUserPassword, "IHUB_SERVICE_PASSWORD", "", "Integration Hub Service User Password", false, true},
-
-		{&a.WpmServiceUserName, "WPM_SERVICE_USERNAME", "", "Workload Policy Manager Service User Name", false, false},
-		{&a.WpmServiceUserPassword, "WPM_SERVICE_PASSWORD", "", "Workload Policy Manager Service User Password", false, true},
-
-		{&a.WlsServiceUserName, "WLS_SERVICE_USERNAME", "", "Workload Service User Name", false, false},
-		{&a.WlsServiceUserPassword, "WLS_SERVICE_PASSWORD", "", "Workload Service User Password", false, true},
-
-		{&a.WlaServiceUserName, "WLA_SERVICE_USERNAME", "", "Workload Agent User Name", false, false},
-		{&a.WlaServiceUserPassword, "WLA_SERVICE_PASSWORD", "", "Workload Agent User Password", false, true},
-
-		{&a.KbsServiceUsername, "KBS_SERVICE_USERNAME", "", "Key Broker Service User Name", false, false},
-		{&a.KbsServiceUserPassword, "KBS_SERVICE_PASSWORD", "", "Key Broker Service User Password", false, true},
-
-		{&a.SKCLibUsername, "SKC_LIBRARY_USERNAME", "", "SKC Library User Name", false, false},
-		{&a.SKCLibUserPassword, "SKC_LIBRARY_PASSWORD", "", "SKC Library User Password", false, true},
-
-		{&a.SKCLibRoleContext, "SKC_LIBRARY_KEY_TRANSFER_CONTEXT", "", "SKC Library Key Transfer Role Context", false, false},
 
 		{&a.CCCAdminUsername, "CCC_ADMIN_USERNAME", "", "Custom Claims Creator Admin User Name", false, false},
 		{&a.CCCAdminPassword, "CCC_ADMIN_PASSWORD", "", "Custom Claims Creator Admin User Password", false, true},

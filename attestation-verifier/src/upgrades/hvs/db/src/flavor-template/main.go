@@ -9,25 +9,25 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/tasks"
 	"os"
 	"reflect"
 	"strings"
 
+	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/tasks"
+
 	"github.com/antchfx/jsonquery"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	hvsConstants "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/postgres"
 	hvsconfig "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/config"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
-	connector "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/host-connector"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/host-connector/constants"
 	hvsModel "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/upgrades/hvs/db/src/flavor-template/config"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/upgrades/hvs/db/src/flavor-template/database"
 	templateModel "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/upgrades/hvs/db/src/flavor-template/model"
-	"github.com/jinzhu/copier"
 
 	// Import driver for GORM
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -400,25 +400,6 @@ func updateTpmEvents(expectedPcrEvent []templateModel.EventLog, newTpmEvents []h
 			newTpmEvents[eventIndex].Tags = append(newTpmEvents[eventIndex].Tags, oldEvents.Label)
 			newTpmEvents[eventIndex].Measurement = oldEvents.Value
 			newTpmEvents[eventIndex].TypeID = eventIDList[oldEvents.Label]
-		} else if vendor == VmwareVendor {
-			if oldEvents.Info["PackageName"] != "" {
-				newTpmEvents[eventIndex].Tags = append(newTpmEvents[eventIndex].Tags, oldEvents.Info["ComponentName"], oldEvents.Info["EventName"]+"_"+oldEvents.Info["PackageName"]+"_"+oldEvents.Info["PackageVendor"])
-			} else {
-				newTpmEvents[eventIndex].Tags = append(newTpmEvents[eventIndex].Tags, oldEvents.Info["ComponentName"], oldEvents.Info["EventName"])
-			}
-			newTpmEvents[eventIndex].TypeName = oldEvents.Label
-			newTpmEvents[eventIndex].Measurement = oldEvents.Value
-
-			switch oldEvents.Info["EventType"] {
-			case connector.TPM_SOFTWARE_COMPONENT_EVENT_TYPE:
-				newTpmEvents[eventIndex].TypeID = connector.VIB_NAME_TYPE_ID
-			case connector.TPM_COMMAND_EVENT_TYPE:
-				newTpmEvents[eventIndex].TypeID = connector.COMMANDLINE_TYPE_ID
-			case connector.TPM_OPTION_EVENT_TYPE:
-				newTpmEvents[eventIndex].TypeID = connector.OPTIONS_FILE_NAME_TYPE_ID
-			case connector.TPM_BOOT_SECURITY_OPTION_EVENT_TYPE:
-				newTpmEvents[eventIndex].TypeID = connector.BOOT_SECURITY_OPTION_TYPE_ID
-			}
 		} else {
 			fmt.Println("UNKNOWN VENDOR - unable to update tpm events")
 			os.Exit(1)
