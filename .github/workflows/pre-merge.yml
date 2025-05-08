@@ -29,10 +29,10 @@ jobs:
         with:
           persist-credentials: false
       - name: "Verify Branch Name"
-        uses: open-edge-platform/orch-ci/verify-branch-name@b38eaa81326fc248c594058a8bef12c31469b6df  # 0.1.9
+        uses: open-edge-platform/orch-ci/verify-branch-name@791c0c74ac05e6d972fa6de8c979e854336e9a41  # 0.1.10
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@b38eaa81326fc248c594058a8bef12c31469b6df  # 0.1.9
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@791c0c74ac05e6d972fa6de8c979e854336e9a41  # 0.1.10
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
         env:
@@ -51,7 +51,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@13722579bc8edfb712203cb8e88fcc404d2218bc  # 0.1.9
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@791c0c74ac05e6d972fa6de8c979e854336e9a41  # 0.1.10
     with:
       run_security_scans: true
       run_version_check: false
@@ -61,3 +61,29 @@ jobs:
       run_docker_build: false
       run_artifact: false
       project_folder: ${{ matrix.project_folder }}
+  final-check:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [pre-merge-pipeline]
+    steps:
+      - name: Final Status Check
+        run: |
+          pre_merge_pipeline="${{ needs.pre-merge-pipeline.result }}"
+
+          results=("pre_merge_pipeline")
+          status="OK"
+          
+          for result in "${results[@]}"; do
+            pipeline_result=$(eval echo \$$result)
+            echo "${result} result: $pipeline_result"
+            if [[ "$pipeline_result" != "success" && "$pipeline_result" != "skipped" ]]; then
+              status="KO"
+            fi
+          done
+          
+          if [[ "$status" == "OK" ]]; then
+            echo "Pre-merge check passed successfully."
+          else
+            echo "All pre-merge checks failed or were skipped. PR can't get merged"
+            exit 1
+          fi
