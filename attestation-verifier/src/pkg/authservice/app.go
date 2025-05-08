@@ -7,6 +7,11 @@ package authservice
 import (
 	"flag"
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"runtime/debug"
+
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/config"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/constants"
 	commLog "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log"
@@ -15,13 +20,6 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/setup"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"io"
-	"os"
-	"os/exec"
-	"runtime/debug"
-
-	// Import driver for GORM
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var errInvalidCmd = errors.New("Invalid input after command")

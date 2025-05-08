@@ -52,6 +52,8 @@ type RetrieveJwtCertFn func() error
 func NewTokenAuth(signingCertsDir, trustedCAsDir string, fnGetJwtCerts RetrieveJwtCertFn, cacheTime time.Duration) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Trace("Common/Middleware/NewTokenAuth() - Entering");
+			defer log.Trace("Common/Middleware/NewTokenAuth() - Leaving");
 
 			// pull up the bearer token.
 

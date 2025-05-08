@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"html"
 
 	"github.com/gorilla/mux"
 )
@@ -61,8 +62,10 @@ func (w *logResponseWriter) WriteHeader(code int) {
 
 func (w *logResponseWriter) Write(body []byte) (int, error) {
 	// Sanitize the user-provided value to prevent XSS
-	sanitizedBody := bytes.ReplaceAll(body, []byte("<"), []byte("&lt;"))
-	sanitizedBody = bytes.ReplaceAll(sanitizedBody, []byte(">"), []byte("&gt;"))
+	bodyStr := string(body)
+	sanitizedBodyStr := html.EscapeString(bodyStr)
+	sanitizedBody := []byte(sanitizedBodyStr)
+
 	size, err := w.ResponseWriter.Write(sanitizedBody)
 	w.size += size
 	return size, err

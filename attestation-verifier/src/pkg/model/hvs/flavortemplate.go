@@ -56,7 +56,7 @@ type FlavorTemplate struct {
 	Label string    `json:"label"`
 	// An array of 'jsonquery' statements that are used to determine if the template should be executed. Sample value: ["//host_info/os_name//*[text()='RedHatEnterprise']","//host_info/hardware_features/TPM/meta/tpm_version//*[text()='2.0']"].
 	Condition   []string     `json:"condition" sql:"type:text[]"`
-	FlavorParts *FlavorParts `json:"flavor_parts,omitempty" sql:"type:JSONB"`
+	FlavorParts *FlavorParts `json:"flavor_parts,omitempty" gorm:"type:jsonb"`
 }
 
 type FlavorTemplateFlavorgroupCollection struct {

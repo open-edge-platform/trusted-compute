@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type FlavorStore struct {
@@ -140,7 +140,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build biosQuery with all the platform flavor query attributes from host manifest
 				pfQueryAttributes := flavorMetaInfo[hvs.FlavorPartPlatform]
 				for _, pfQueryAttribute := range pfQueryAttributes {
-					biosQuery = biosQuery.Where(convertToPgJsonqueryString("f.content", pfQueryAttribute.Key)+" = ?", pfQueryAttribute.Value)
+					biosQuery = biosQuery.Where(convertToPgJsonqueryString("f.content", pfQueryAttribute.Key)+" = ?", convertBoolToString(pfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartPlatform] {
@@ -153,7 +153,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build osQuery with all the OS flavor query attributes from host manifest
 				osfQueryAttributes := flavorMetaInfo[hvs.FlavorPartOs]
 				for _, osfQueryAttribute := range osfQueryAttributes {
-					osQuery = osQuery.Where(convertToPgJsonqueryString("f.content", osfQueryAttribute.Key)+" = ?", osfQueryAttribute.Value)
+					osQuery = osQuery.Where(convertToPgJsonqueryString("f.content", osfQueryAttribute.Key)+" = ?", convertBoolToString(osfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartOs] {
@@ -168,7 +168,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build host unique Query with all the host unique flavor query attributes from host manifest
 				hufQueryAttributes := flavorMetaInfo[hvs.FlavorPartHostUnique]
 				for _, hufQueryAttribute := range hufQueryAttributes {
-					hostUniqueQuery = hostUniqueQuery.Where(convertToPgJsonqueryString("f.content", hufQueryAttribute.Key)+" = ?", hufQueryAttribute.Value)
+					hostUniqueQuery = hostUniqueQuery.Where(convertToPgJsonqueryString("f.content", hufQueryAttribute.Key)+" = ?", convertBoolToString(hufQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartHostUnique] {
@@ -195,7 +195,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build assetTag Query with all the assetTag flavor query attributes from host manifest
 				atfQueryAttributes := flavorMetaInfo[hvs.FlavorPartAssetTag]
 				for _, atfQueryAttribute := range atfQueryAttributes {
-					aTagQuery = aTagQuery.Where(convertToPgJsonqueryString("f.content", atfQueryAttribute.Key)+" = ?", atfQueryAttribute.Value)
+					aTagQuery = aTagQuery.Where(convertToPgJsonqueryString("f.content", atfQueryAttribute.Key)+" = ?", convertBoolToString(atfQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartAssetTag] {
@@ -208,7 +208,7 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 				// build biosQuery with all the ima flavor query attributes from host manifest
 				imaFlavorQueryAttributes := flavorMetaInfo[hvs.FlavorPartIma]
 				for _, imaFlavorQueryAttribute := range imaFlavorQueryAttributes {
-					imaQuery = imaQuery.Where(convertToPgJsonqueryString("f.content", imaFlavorQueryAttribute.Key)+" = ?", imaFlavorQueryAttribute.Value)
+					imaQuery = imaQuery.Where(convertToPgJsonqueryString("f.content", imaFlavorQueryAttribute.Key)+" = ?", convertBoolToString(imaFlavorQueryAttribute.Value))
 				}
 				// apply limit if latest
 				if flavorPartsWithLatest[hvs.FlavorPartIma] {
@@ -225,53 +225,53 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	subQuery := tx
 	// add bios query to sub query
 	if biosQuery != nil {
-		biosSubQuery := biosQuery.SubQuery()
-		subQuery = subQuery.Where("f.id IN ?", biosSubQuery)
+		biosSubQuery := biosQuery
+		subQuery = subQuery.Where("f.id IN (?)", biosSubQuery)
 	}
 	// add OS query string to sub query
 	if osQuery != nil {
-		osSubQuery := osQuery.SubQuery()
+		osSubQuery := osQuery
 		if biosQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", osSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", osSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", osSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", osSubQuery)
 		}
 	}
 	// add software query to sub query
 	if softwareQuery != nil {
-		softwareSubQuery := softwareQuery.SubQuery()
+		softwareSubQuery := softwareQuery
 		if biosQuery != nil || osQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", softwareSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", softwareSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", softwareSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", softwareSubQuery)
 		}
 	}
 	// add asset tag query to sub query
 	if aTagQuery != nil {
-		aTagSubQuery := aTagQuery.SubQuery()
+		aTagSubQuery := aTagQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", aTagSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", aTagSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", aTagSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", aTagSubQuery)
 		}
 	}
 	// add host-unique query to sub query
 	if hostUniqueQuery != nil {
-		hostUniqueSubQuery := hostUniqueQuery.SubQuery()
+		hostUniqueSubQuery := hostUniqueQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", hostUniqueSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", hostUniqueSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", hostUniqueSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", hostUniqueSubQuery)
 		}
 	}
 
 	// add ima query to sub query
 	if imaQuery != nil {
-		imaSubQuery := imaQuery.SubQuery()
+		imaSubQuery := imaQuery
 		if biosQuery != nil || osQuery != nil || softwareQuery != nil || aTagQuery != nil || hostUniqueQuery != nil {
-			subQuery = subQuery.Or("f.id IN ?", imaSubQuery)
+			subQuery = subQuery.Or("f.id IN (?)", imaSubQuery)
 		} else {
-			subQuery = subQuery.Where("f.id IN ?", imaSubQuery)
+			subQuery = subQuery.Where("f.id IN (?)", imaSubQuery)
 		}
 	}
 
@@ -279,10 +279,19 @@ func (f *FlavorStore) buildMultipleFlavorPartQueryString(tx *gorm.DB, fgId uuid.
 	if subQuery != nil && (biosQuery != nil || aTagQuery != nil || softwareQuery != nil || hostUniqueQuery != nil || osQuery != nil || imaQuery != nil) {
 		tx = subQuery
 	} else if fgId != uuid.Nil {
-		fgSubQuery := buildFlavorPartQueryStringWithFlavorgroup(fgId.String(), tx).SubQuery()
-		tx = tx.Where("f.id IN ?", fgSubQuery)
+		fgSubQuery := buildFlavorPartQueryStringWithFlavorgroup(fgId.String(), tx)
+		tx = tx.Where("f.id IN (?)", fgSubQuery)
 	}
 	return tx
+}
+
+// Checks if the value is a boolean and converts it to a string representation.
+func convertBoolToString(value interface{}) string {
+	if boolValue, ok := value.(bool); ok {
+		return fmt.Sprintf("%t", boolValue)
+	}
+	// return the value as is since it's likely already string
+	return fmt.Sprintf("%v", value)
 }
 
 func convertToPgJsonqueryString(queryHead string, jsonKeyPath string) string {
