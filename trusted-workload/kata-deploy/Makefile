@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #/
 
-VERSION := $(shell cat VERSION)
+VERSION_SUFFIX              ?= ""
+VERSION                     ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 DOCKER_IMAGE_NAME :=$(shell yq e '.kata-deploy.name' version.yaml)
 DOCKER_REPOSITORY  ?= edge-orch/trusted-compute
 DOCKER_REGISTRY    ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
@@ -15,7 +16,7 @@ all: build lint test
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	sudo -E bash build-kata-deploy-image.sh
+	sudo -E bash build-kata-deploy-image.sh ${VERSION}
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -48,6 +49,12 @@ docker-push:
 	aws ecr create-repository --region us-west-2 --repository-name ${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME} || true
 	docker tag ${DOCKER_IMAGE_NAME}:${VERSION} ${DOCKER_IMAGE}
 	docker push ${DOCKER_IMAGE}
+
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
 
 help:
 	@printf "%-30s %s\n" "Target" "Description"

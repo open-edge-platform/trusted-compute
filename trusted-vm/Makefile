@@ -69,6 +69,12 @@ docker-build:
 docker-push:
 	@echo "This is a dummy docker-push target."
 
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
+
 clean-all:
 	@# Help: Runs clean-all stage in all subprojects
 	@echo "---MAKEFILE CLEAN-ALL---"
