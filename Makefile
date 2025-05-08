@@ -33,13 +33,13 @@ build-trusted-vm:
 
 build-attestation-verifier:
 	@# Help: Runs build stage in attestation-verifier subprojects
-	make -C ${PWD}/attestation-verifier build
+	make -C ${PWD}/attestation-verifier docker-build
 
 build-attestation-manager: $(eval SHELL:=/bin/bash)
 	@# Help: Runs build stage in attestation-manager subprojects
 	#echo " add build step in below line"
 	echo " building attestation manager"
-	make -C ${PWD}/attestation-manager build
+	make -C ${PWD}/attestation-manager build docker-build
 
 build-trusted-workload:
 	@# Help: Runs build stage in trusted-workload subprojects

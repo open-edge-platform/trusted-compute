@@ -63,6 +63,9 @@ build-tvm-agent:
 	sudo true  # Prompt for password once
 	cd tvm-agent && bash ./tvm_agent_build.sh
 
+docker-build:
+	@echo "This is a dummy docker-build target."
+
 docker-push:
 	@echo "This is a dummy docker-push target."
 

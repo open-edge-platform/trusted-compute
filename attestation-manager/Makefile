@@ -29,7 +29,6 @@ build:
 	export GOPRIVATE="github.com/open-edge-platform/*"
 	cd src/ && go mod tidy
 	cd src/cmd/app && go build -o main
-	docker build -f Dockerfile -t attestation-manager:${VERSION} --no-cache .
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -48,7 +47,7 @@ docker-push: ## Push docker images.
 DOCKER_ENV := DOCKER_BUILDKIT=1
 docker-build: test ## Build docker images.
 	@echo "---Docker Build---"
-	echo $@
+	docker build -f Dockerfile -t attestation-manager:${VERSION} --no-cache .
 	@echo "---End Docker Build---"
 
 lint:
