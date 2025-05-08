@@ -15,34 +15,43 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-checks:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       filtered_projects: ${{ steps.filter-changes.outputs.filtered_projects }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: "Verify Branch Name"
-        uses: open-edge-platform/orch-ci/verify-branch-name@0.1.7
+        uses: open-edge-platform/orch-ci/verify-branch-name@b38eaa81326fc248c594058a8bef12c31469b6df  # 0.1.9
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@0.1.7
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@b38eaa81326fc248c594058a8bef12c31469b6df  # 0.1.9
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
+        env:
+          changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
           folders_to_remove='[".github",".reuse","LICENSES",".git", "tests"]'
-          
-          changed_projects='${{ steps.discover-changes.outputs.changed_projects }}'
+
           filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           echo "filtered_projects=$filtered_projects" >> $GITHUB_OUTPUT
   pre-merge-pipeline:
+    permissions:
+      contents: read
     needs: pre-checks
     if: ${{ needs.pre-checks.outputs.filtered_projects != '[]' }}
     strategy:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@0.1.7
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@13722579bc8edfb712203cb8e88fcc404d2218bc  # 0.1.9
     with:
       run_security_scans: true
       run_version_check: false
@@ -52,4 +61,3 @@ jobs:
       run_docker_build: false
       run_artifact: false
       project_folder: ${{ matrix.project_folder }}
-    secrets: inherit
