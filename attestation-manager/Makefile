@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-VERSION := $(shell cat VERSION)
+VERSION_SUFFIX              ?= ""
+VERSION                     ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 DOCKER_REPOSITORY  ?= edge-orch/trusted-compute
 DOCKER_REGISTRY    ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 DOCKER_IMAGE       ?= ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/attestation-manager:${VERSION}
@@ -49,6 +50,12 @@ docker-build: test ## Build docker images.
 	@echo "---Docker Build---"
 	docker build -f Dockerfile -t attestation-manager:${VERSION} --no-cache .
 	@echo "---End Docker Build---"
+
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
 
 lint:
 	@# Help: Runs lint stage

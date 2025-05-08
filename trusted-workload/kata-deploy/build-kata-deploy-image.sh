@@ -24,7 +24,12 @@ KATA_CONTAINERS_DIR=$(yq '.kata-containers.name' version.yaml)
 KATA_CONTAINERS_TAG=$(yq '.kata-containers.version' version.yaml)
 
 KATA_DEPLOY_IMAGE_NAME=$(yq '.kata-deploy.name' version.yaml)
-KATA_DEPLOY_IMAGE_VERSION=$(tr -d '[:space:]' < VERSION)
+if [ $# -eq 0 ]; then
+	echo "ERROR: No version argument supplied"
+	exit 1
+fi
+KATA_DEPLOY_IMAGE_VERSION="$1"
+
 
 KATA_ARTIFACT_RELEASE_URL="https://github.com/kata-containers/kata-containers/releases/download/${KATA_CONTAINERS_TAG}/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.xz"
 KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")

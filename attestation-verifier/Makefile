@@ -5,7 +5,8 @@ SHELL:=/bin/bash
 BUILDDATE := $(shell TZ=UTC date +%Y-%m-%dT%H:%M:%SZ)
 PROXY_EXISTS := $(shell if [[ "${https_proxy}" || "${http_proxy}" ]]; then echo 1; else echo 0; fi)
 DOCKER_PROXY_FLAGS := ""
-VERSION := $(shell cat VERSION)
+VERSION_SUFFIX              ?= ""
+VERSION                     ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 ifeq ($(PROXY_EXISTS),1)
         DOCKER_PROXY_FLAGS = --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy}
 else
@@ -104,6 +105,13 @@ docker-push-%:
 	@echo "---End Docker Push for $*---"
 
 docker-push: $(addprefix docker-push-,$(DOCKER_TARGETS))
+
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
+
 clean:
 	@# Help: Runs clean stage in all subprojects
 	rm -rf k8s/

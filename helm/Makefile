@@ -6,6 +6,11 @@
 LABEL_REVISION=$(shell git rev-parse HEAD)
 LABEL_CREATED=$(shell date -u "+%Y-%m-%dT%H:%M:%SZ")
 
+ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)${VERSION_SUFFIX}
+ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)${VERSION_SUFFIX}
+TRUSTED_WORKLOAD_VERSION        ?= $(shell cat ./../trusted-workload/VERSION)${VERSION_SUFFIX}
+KATA_DEPLOY_VERSION            ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)${VERSION_SUFFIX}
+
 HELM_REPOSITORY      ?= edge-orch/trusted-compute
 HELM_REGISTRY        ?= oci://080137407410.dkr.ecr.us-west-2.amazonaws.com/
 HELM_CHART_BUILD_DIR ?= build/_output/
@@ -18,7 +23,6 @@ all: build lint test unittest
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	@echo "Trusted-worklaod build"
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -66,22 +70,46 @@ docker-build:
 docker-push: ## Push docker images.
 	@echo "This is a dummy docker-push target."
 
+.update-version-attestation-manager:
+	@echo "Updating the version of attestation-manager to ${ATTESTATION_MANAGER_VERSION}"
+	yq eval -i '.appVersion = "${ATTESTATION_MANAGER_VERSION}"' attestation-manager/Chart.yaml
+	yq eval -i '.version = "${ATTESTATION_MANAGER_VERSION}"' attestation-manager/Chart.yaml
+
+.update-version-attestation-verifier:
+	@echo "Updating the version of attestation-verifier to ${ATTESTATION_VERIFIER_VERSION}"
+	yq eval -i '.appVersion = "${ATTESTATION_VERIFIER_VERSION}"' attestation-verifier/Chart.yaml
+	yq eval -i '.version = "${ATTESTATION_VERIFIER_VERSION}"' attestation-verifier/Chart.yaml
+	# Find all Chart.yaml files in the specified path and update the appVersion
+	find "attestation-verifier" -type f -name "Chart.yaml" | while read -r file; do \
+		echo "Updating versions in $$file to ${ATTESTATION_VERIFIER_VERSION}"; \
+		sed -i "s/^appVersion:.*/appVersion: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+		sed -i "s/^version:.*/version: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+		sed -i "s/^\(\s*version:\).*/\1 ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+	done; \
+
+.update-version-trustagent:
+	@echo "Updating the version of trustagent to ${ATTESTATION_VERIFIER_VERSION}"
+	yq eval -i '.appVersion = "${ATTESTATION_VERIFIER_VERSION}"' trustagent/Chart.yaml
+	yq eval -i '.version = "${ATTESTATION_VERIFIER_VERSION}"' trustagent/Chart.yaml
+	yq eval -i '.config.imaAllowlist |= sub("<ATTESTATION_VERIFIER_VERSION>", "${ATTESTATION_VERIFIER_VERSION}")' trustagent/values.yaml
+
+.update-version-trusted-workload:
+	@echo "Updating the version of trusted-workload to ${TRUSTED_WORKLOAD_VERSION}"
+	yq eval -i '.appVersion = "${TRUSTED_WORKLOAD_VERSION}"' trusted-workload/Chart.yaml
+	yq eval -i '.version = "${TRUSTED_WORKLOAD_VERSION}"' trusted-workload/Chart.yaml
+	yq eval -i '.image.tag = "${KATA_DEPLOY_VERSION}"' trusted-workload/charts/cc-runtimeclass/values.yaml
+
 helm-build-%:
 	rm -rf ${HELM_CHART_BUILD_DIR}$*.tgz;
-	if [ "$*" = "attestation-manager" ]; then \
-		yq eval -i '.appVersion = "$(shell cat ../attestation-manager/VERSION)"' $*/Chart.yaml; \
-	elif [ "$*" = "attestation-verifier" ]; then \
-		bash ./updateAppVersion.sh attestation-verifier; \
-	elif [ "$*" = "trustagent" ]; then \
-		yq eval -i '.appVersion = "$(shell cat ../attestation-verifier/VERSION)"' $*/Chart.yaml; \
-		yq eval -i '.config.imaAllowlist |= sub("\\{VERSION\\}", "$(shell cat ../attestation-verifier/VERSION)")' trustagent/values.yaml; \
-	fi;
+	# update the versions in the chart
+	$(MAKE) .update-version-$* \
 
-	yq eval -i '.version = "$(shell cat ./$*/VERSION)"' $*/Chart.yaml;
-	yq eval -i '.annotations.revision = "${LABEL_REVISION}"' $*/Chart.yaml;
-	yq eval -i '.annotations.created = "${LABEL_CREATED}"' $*/Chart.yaml;
+	# update the labels in the chart
+	yq eval -i '.annotations.revision = "${LABEL_REVISION}"' $*/Chart.yaml; \
+	yq eval -i '.annotations.created = "${LABEL_CREATED}"' $*/Chart.yaml; \
+
+	# Build the chart
 	helm package \
-		--version=$(shell cat ./$*/VERSION) \
 		--dependency-update \
 		--destination ${HELM_CHART_BUILD_DIR} \
 		$*
