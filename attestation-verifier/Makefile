@@ -17,7 +17,7 @@ DOCKER_REGISTRY    ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 DOCKER_TARGETS = nats-init init-wait authservice cms hvs tagent aas-manager
 
 DOCKER_IMAGE = debian:bookworm
-CONTAINER_NAME = attestation_verifier_debian
+CONTAINER_NAME = attestation_verifier_debian_build
 CONTAINER_NAME_TEST = attestation_verifier_debian_test
 VERFIER_DIR_NAME = attestation-verifier
 VERIFIER_PATH =   $(shell find $(PWD) -maxdepth 1 -type d -name $(VERFIER_DIR_NAME) -print -quit)
@@ -36,23 +36,6 @@ build:
 	@# Help: Runs build stage in all subprojects
 	echo "---MAKEFILE BUILD---"
 	echo "attestation-verfier build"
-	sudo true  # Prompt for password once
-
-	@if [ "$(shell docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
-		echo "Error: Container '$(CONTAINER_NAME)' is already running."; \
-		exit 1; \
-	else \
-		echo "Starting container '$(CONTAINER_NAME)'..."; \
-		echo '$(SCRIPT_PATH)';\
-		echo '$(VERIFIER_PATH)';\
-		docker run --rm --privileged --name $(CONTAINER_NAME) \
-			-e http_proxy=${http_proxy} -e https_proxy=${https_proxy} -e VERSION=${VERSION} \
-			-v /var/run/docker.sock:/var/run/docker.sock -v ${VERIFIER_PATH}:/intel_isecl \
-			-v $(SCRIPT_PATH):/attestation_verifier_inside_container.sh \
-			-d $(DOCKER_IMAGE) /attestation_verifier_inside_container.sh build; \
-		docker logs -f $(CONTAINER_NAME); \
-		docker images; \
-	fi
 	echo "---END MAKEFILE Build---"
 
 
@@ -94,7 +77,23 @@ list:
 
 docker-build:
 	@echo "---Docker Build---"
-	echo "add docker build -f Dockerfile -t <image name version> --no-cache <folder"
+	sudo true  # Prompt for password once
+
+	@if [ "$(shell docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
+		echo "Error: Container '$(CONTAINER_NAME)' is already running."; \
+		exit 1; \
+	else \
+		echo "Starting container '$(CONTAINER_NAME)'..."; \
+		echo '$(SCRIPT_PATH)';\
+		echo '$(VERIFIER_PATH)';\
+		docker run --rm --privileged --name $(CONTAINER_NAME) \
+			-e http_proxy=${http_proxy} -e https_proxy=${https_proxy} -e VERSION=${VERSION} \
+			-v /var/run/docker.sock:/var/run/docker.sock -v ${VERIFIER_PATH}:/intel_isecl \
+			-v $(SCRIPT_PATH):/attestation_verifier_inside_container.sh \
+			-d $(DOCKER_IMAGE) /attestation_verifier_inside_container.sh build; \
+		docker logs -f $(CONTAINER_NAME); \
+		docker images; \
+	fi
 	@echo "---End Docker Build---"
 
 docker-push-%:

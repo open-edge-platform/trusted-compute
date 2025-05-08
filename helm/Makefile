@@ -61,13 +61,10 @@ list:
 	help
 
 docker-build:
-	@echo "---Docker Build---"
-	echo "add docker build -f Dockerfile -t <image name version> --no-cache <folder"
-	@echo "---End Docker Build---"
+	@echo "This is a dummy docker-build target."
 
 docker-push: ## Push docker images.
-	@echo "----------Docker push images-------"
-	echo "docker push ${DOCKER_IMAGE}"
+	@echo "This is a dummy docker-push target."
 
 helm-build-%:
 	rm -rf ${HELM_CHART_BUILD_DIR}$*.tgz;

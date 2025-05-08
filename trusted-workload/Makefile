@@ -13,7 +13,6 @@ all: build lint test
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	$(MAKE) -C kata-deploy build
 	@echo "---END MAKEFILE Build---"
 
 gen-helm:
@@ -44,7 +43,7 @@ license:
 
 docker-build:
 	@echo "---MAKEFILE Docker BUILD---"
-	@echo "Trusted-worklaod docker-build"
+	$(MAKE) -C kata-deploy build
 	@echo "---END MAKEFILE Docker Build---"
 
 docker-push:
