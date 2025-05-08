@@ -14,9 +14,15 @@ on:
       - 'attestation-manager/**'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   post-merge-pipeline:
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@0.1.7
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@13722579bc8edfb712203cb8e88fcc404d2218bc  # 0.1.9
     with:
       run_version_check: false
       run_build: true
@@ -26,4 +32,4 @@ jobs:
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: "attestation-manager"
-    secrets: inherit
+    secrets: inherit  # zizmor: ignore[secrets-inherit]
