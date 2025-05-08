@@ -10,7 +10,7 @@ LABEL org.label-schema.name="Authservice Manager" \
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends curl ca-certificates && apt-get clean && apt-get autoclean
 
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+RUN curl -LO https://dl.k8s.io/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
 
 COPY tools/aas-manager/populate-users /usr/bin/populate-users
 
