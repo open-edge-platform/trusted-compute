@@ -16,7 +16,7 @@ all: build lint test
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	sudo -E bash build-kata-deploy-image.sh ${VERSION}
+	VERSION=${VERSION} sudo -E bash build-kata-deploy-image.sh
 	@echo "---END MAKEFILE Build---"
 
 clean:
