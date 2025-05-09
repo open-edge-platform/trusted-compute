@@ -104,7 +104,7 @@ tests:
                       path: /
                       type: ""
                     name: host
-                payloadImage: "registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:1.4.1-dev"
+                payloadImage: "registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:map[]"
                 runtimeClasses:
                   - name: kata-qemu
                     pulltype: ""

@@ -2,8 +2,8 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 #/
-
-VERSION := $(shell cat VERSION)
+VERSION_SUFFIX              ?= ""
+VERSION                     ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 DOCKER_REPOSITORY  ?= edge-orch/trusted-compute
 DOCKER_REGISTRY    ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 
@@ -13,7 +13,6 @@ all: build lint test
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	$(MAKE) -C kata-deploy build
 	@echo "---END MAKEFILE Build---"
 
 gen-helm:
@@ -44,11 +43,17 @@ license:
 
 docker-build:
 	@echo "---MAKEFILE Docker BUILD---"
-	@echo "Trusted-worklaod docker-build"
+	$(MAKE) -C kata-deploy build
 	@echo "---END MAKEFILE Docker Build---"
 
 docker-push:
 	$(MAKE) -C kata-deploy docker-push
+
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
 
 help:
 	@printf "%-30s %s\n" "Target" "Description"

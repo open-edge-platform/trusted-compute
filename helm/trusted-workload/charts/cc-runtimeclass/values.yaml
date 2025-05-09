@@ -3,4 +3,4 @@
 ---
 image:
   repository: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy 
-  tag: 1.4.1-dev
+  tag: {kata_deploy_version}

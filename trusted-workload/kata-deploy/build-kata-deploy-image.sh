@@ -24,7 +24,13 @@ KATA_CONTAINERS_DIR=$(yq '.kata-containers.name' version.yaml)
 KATA_CONTAINERS_TAG=$(yq '.kata-containers.version' version.yaml)
 
 KATA_DEPLOY_IMAGE_NAME=$(yq '.kata-deploy.name' version.yaml)
-KATA_DEPLOY_IMAGE_VERSION=$(tr -d '[:space:]' < VERSION)
+
+if [ -z "$VERSION" ]; then
+	echo "ERROR: Version argument is empty"
+	exit 1
+fi
+KATA_DEPLOY_IMAGE_VERSION="$VERSION"
+
 
 KATA_ARTIFACT_RELEASE_URL="https://github.com/kata-containers/kata-containers/releases/download/${KATA_CONTAINERS_TAG}/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.xz"
 KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")
@@ -156,3 +162,4 @@ rm -rf "${KATA_ARTIFACT_DIR}"
 rm -rf "${KATA_CONTAINERS_DIR}"
 rm -f "${KATA_ARTIFACT_FILE_NAME}"
 rm -f "${KATA_ARTIFACT_NEW_NAME}"
+docker rmi -f ubuntu:24.04 || true

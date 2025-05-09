@@ -63,8 +63,17 @@ build-tvm-agent:
 	sudo true  # Prompt for password once
 	cd tvm-agent && bash ./tvm_agent_build.sh
 
+docker-build:
+	@echo "This is a dummy docker-build target."
+
 docker-push:
 	@echo "This is a dummy docker-push target."
+
+helm-build:
+	@echo "This is a dummy helm-build target."
+
+helm-push:
+	@echo "This is a dummy helm-push target."
 
 clean-all:
 	@# Help: Runs clean-all stage in all subprojects
