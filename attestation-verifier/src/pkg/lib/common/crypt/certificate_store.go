@@ -10,6 +10,7 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log"
 	"github.com/pkg/errors"
 	"strings"
+	"path/filepath"
 )
 
 var defaultLog = log.GetDefaultLogger()
@@ -134,8 +135,33 @@ func (cs *CertificatesStore) AddCertificatesToStore(certType, certFile string, c
 	defer defaultLog.Trace("crypt/certificate_store:AddCertificatesToStore() Leaving")
 
 	certStore := (*cs)[certType]
-	// Save certificate to file with common name
-	certPath := certStore.CertPath + strings.Replace(certFile, " ", "", -1) + ".pem"
+	safeDirs := []string{
+		"/etc/hvs/certs",
+		"/etc/cms",
+	}
+
+	// Ensure certFile doesn't contain invalid characters if it's a file name
+	if !filepath.IsAbs(certFile) {
+		if strings.Contains(certFile, string(filepath.Separator)) || strings.Contains(certFile, "..") {
+			return errors.Errorf("Certificate file name %s contains invalid path separators or parent directory reference", certFile)
+		}
+	}
+
+	certPath := filepath.Join(certStore.CertPath, strings.Replace(certFile, " ", "", -1) + ".pem")
+	defaultLog.Debugf("certPath:  %s", certPath)
+
+	// Check if certPath is within one of the safe directories
+	isSafe := false
+	for _, safeDir := range safeDirs {
+		if strings.HasPrefix(certPath, safeDir) {
+			isSafe = true
+			break
+		}
+	}
+	if !isSafe {
+		return errors.Errorf("Certificate path %s is not within any of the safe directories", certPath)
+	}
+
 	err := SavePemCert(certificate.Raw, certPath)
 	if err != nil {
 		return errors.Errorf("Failed to store certificate %s", certPath)
@@ -143,7 +169,6 @@ func (cs *CertificatesStore) AddCertificatesToStore(certType, certFile string, c
 
 	// Add certificate to store
 	certStore.Certificates = append(certStore.Certificates, *certificate)
-
 	return nil
 }
 
