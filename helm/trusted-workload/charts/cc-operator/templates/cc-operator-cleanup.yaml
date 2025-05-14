@@ -1,0 +1,90 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cleanup-trusted-workload-sa
+  namespace: confidential-containers-system
+  annotations:
+    helm.sh/hook: post-delete
+    helm.sh/hook-weight: "-5"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cleanup-trusted-workload-role
+  annotations:
+    helm.sh/hook: post-delete
+    helm.sh/hook-weight: "-4"
+    helm.sh/hook-delete-policy: hook-succeeded
+rules:
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["delete", "list", "get"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["delete", "list", "get", "watch"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["delete", "list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cleanup-trusted-workload-rolebinding
+  annotations:
+    helm.sh/hook: post-delete
+    helm.sh/hook-weight: "-3"
+    helm.sh/hook-delete-policy: hook-succeeded
+subjects:
+- kind: ServiceAccount
+  name: cleanup-trusted-workload-sa
+  namespace: confidential-containers-system
+roleRef:
+  kind: ClusterRole
+  name: cleanup-trusted-workload-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cc-operator-cleanup
+  namespace: confidential-containers-system
+  annotations:
+    helm.sh/hook: post-delete
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: cleanup-trusted-workload-sa
+      containers:
+      - name: cleanup-trusted-workload
+        image: bitnami/kubectl:1.33.0
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting resource deletion in namespace 'confidential-containers-system'..."
+
+          # Delete ClusterRoleBindings
+          kubectl delete clusterrolebinding cc-operator-manager-rolebinding --ignore-not-found=true
+          kubectl delete clusterrolebinding cc-operator-metrics-auth-rolebinding --ignore-not-found=true
+          kubectl delete clusterrolebinding helm-cluster-rolebinding --ignore-not-found=true
+
+          # Delete ClusterRoles
+          kubectl delete clusterrole cc-operator-manager-role --ignore-not-found=true
+          kubectl delete clusterrole cc-operator-metrics-auth-role --ignore-not-found=true
+          kubectl delete clusterrole cc-operator-metrics-reader --ignore-not-found=true
+          kubectl delete clusterrole helm-cluster-role --ignore-not-found=true
+
+          # Delete CustomResourceDefinition (CRD)
+          kubectl delete crd ccruntimes.confidentialcontainers.org --ignore-not-found=true
+
+          # Delete Namespace
+          kubectl delete namespace confidential-containers-system --ignore-not-found=true
+
+          echo "Resource deletion completed."
+        securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false

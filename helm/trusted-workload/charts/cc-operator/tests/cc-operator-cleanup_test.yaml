@@ -1,0 +1,167 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+suite: cleanup-trusted-workload
+templates:
+  - cc-operator-cleanup.yaml
+
+tests:
+  - it: should create a ServiceAccount for cleanup-trusted-workload-sa
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ServiceAccount
+      - isAPIVersion:
+          of: v1
+      - equal:
+          path: metadata.name
+          value: cleanup-trusted-workload-sa
+      - equal:
+          path: metadata.namespace
+          value: confidential-containers-system
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-delete
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "-5"
+
+  - it: should create a ClusterRole for cleanup-trusted-workload-role
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: ClusterRole
+      - isAPIVersion:
+          of: rbac.authorization.k8s.io/v1
+      - equal:
+          path: metadata.name
+          value: cleanup-trusted-workload-role
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-delete
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "-4"
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: hook-succeeded
+      - contains:
+          path: rules
+          content:
+            apiGroups: ["rbac.authorization.k8s.io"]
+            resources: ["clusterroles", "clusterrolebindings"]
+            verbs: ["delete", "list", "get"]
+      - contains:
+          path: rules
+          content:
+            apiGroups: ["apiextensions.k8s.io"]
+            resources: ["customresourcedefinitions"]
+            verbs: ["delete", "list", "get", "watch"]
+      - contains:
+          path: rules
+          content:
+            apiGroups: [""]
+            resources: ["namespaces"]
+            verbs: ["delete", "list", "get"]
+
+  - it: should create a ClusterRoleBinding for cleanup-trusted-workload-rolebinding
+    documentIndex: 2
+    asserts:
+      - isKind:
+          of: ClusterRoleBinding
+      - isAPIVersion:
+          of: rbac.authorization.k8s.io/v1
+      - equal:
+          path: metadata.name
+          value: cleanup-trusted-workload-rolebinding
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-delete
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "-3"
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: hook-succeeded
+      - equal:
+          path: roleRef.kind
+          value: ClusterRole
+      - equal:
+          path: roleRef.name
+          value: cleanup-trusted-workload-role
+      - equal:
+          path: roleRef.apiGroup
+          value: rbac.authorization.k8s.io
+      - contains:
+          path: subjects
+          content:
+            kind: ServiceAccount
+            name: cleanup-trusted-workload-sa
+            namespace: confidential-containers-system
+
+  - it: should create a Job for cc-operator-cleanup
+    documentIndex: 3
+    asserts:
+      - isKind:
+          of: Job
+      - isAPIVersion:
+          of: batch/v1
+      - equal:
+          path: metadata.name
+          value: cc-operator-cleanup
+      - equal:
+          path: metadata.namespace
+          value: confidential-containers-system
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-delete
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: hook-succeeded
+      - equal:
+          path: spec.template.spec.restartPolicy
+          value: OnFailure
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: cleanup-trusted-workload-sa
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: cleanup-trusted-workload
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: bitnami/kubectl:1.33.0
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value:
+            - /bin/sh
+            - -c
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value:
+            - |
+              echo "Starting resource deletion in namespace 'confidential-containers-system'..."
+
+              # Delete ClusterRoleBindings
+              kubectl delete clusterrolebinding cc-operator-manager-rolebinding --ignore-not-found=true
+              kubectl delete clusterrolebinding cc-operator-metrics-auth-rolebinding --ignore-not-found=true
+              kubectl delete clusterrolebinding helm-cluster-rolebinding --ignore-not-found=true
+
+              # Delete ClusterRoles
+              kubectl delete clusterrole cc-operator-manager-role --ignore-not-found=true
+              kubectl delete clusterrole cc-operator-metrics-auth-role --ignore-not-found=true
+              kubectl delete clusterrole cc-operator-metrics-reader --ignore-not-found=true
+              kubectl delete clusterrole helm-cluster-role --ignore-not-found=true
+
+              # Delete CustomResourceDefinition (CRD)
+              kubectl delete crd ccruntimes.confidentialcontainers.org --ignore-not-found=true
+
+              # Delete Namespace
+              kubectl delete namespace confidential-containers-system --ignore-not-found=true
+
+              echo "Resource deletion completed."
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false

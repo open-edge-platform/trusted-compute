@@ -29,7 +29,7 @@ tests:
           value: wait-for-dependencies
       - equal:
           path: spec.template.spec.initContainers[0].image
-          value: bitnami/kubectl:1.32.3
+          value: bitnami/kubectl:1.33.0
       - equal:
           path: spec.template.spec.initContainers[0].command
           value:
