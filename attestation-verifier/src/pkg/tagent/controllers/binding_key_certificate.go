@@ -6,8 +6,9 @@ package controllers
 
 import (
 	"bytes"
-	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/middleware"
 	"net/http"
+
+	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/middleware"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/tagent/common"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/tagent/constants"
@@ -17,7 +18,7 @@ import (
 
 // Returns the WLA provisioned binding key certificate from /etc/workload-agent/bindingkey.pem
 //
-// Ex. curl --request GET --user tagentadmin:TAgentAdminPassword https://localhost:1443/v2/binding-key-certificate -k --noproxy "*"
+// Ex. curl --request GET --user <tagentadmin>:<TAgentAdminPassword> https://localhost:1443/v2/binding-key-certificate -k --noproxy "*"
 func GetBindingKeyCertificate(requestHandler common.RequestHandler) middleware.EndpointHandler {
 	return func(httpWriter http.ResponseWriter, httpRequest *http.Request) error {
 		log.Trace("controllers/binding_key_certificate:GetBindingKeyCertificate() Entering")

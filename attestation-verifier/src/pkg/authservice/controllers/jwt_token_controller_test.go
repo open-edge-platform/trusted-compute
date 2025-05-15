@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	comm "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/common"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/controllers"
@@ -18,8 +20,6 @@ import (
 	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/context"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("JwtTokenController", func() {
@@ -120,7 +120,7 @@ var _ = Describe("JwtTokenController", func() {
 				usercred := `{
 							"username":"ARIIHq2xUtPhAEnwf4ldJPJF4kmp41P8R8T6Gy7UmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsARIIHq2xUtPhAEnwf4ldJPJF4kmp41P8R8T6Gy7UmVYf0dEtIDkPCi9FGI8wuwyGvKSqZo",
 							"password":"testAdminPassword"
-							}`
+							}` //gitleaks:allow
 				req, err := http.NewRequest(http.MethodPost, "/token", strings.NewReader(usercred))
 
 				Expect(err).NotTo(HaveOccurred())
@@ -137,7 +137,7 @@ var _ = Describe("JwtTokenController", func() {
 				usercred := `{
 									"username":"testusername",
 									"password":"ARIIHq2xUtPhAEnwf4ldJPJF4kmp41P8R8T6Gy7UmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsARIIHq2xUtPhAEnwf4ldJPJF4kmp41P8R8T6Gy7UmVYf0dEtIDkPCi9FGI8wuwyGvKSqZo"
-									}`
+									}` //gitleaks:allow
 				req, err := http.NewRequest(http.MethodPost, "/token", strings.NewReader(usercred))
 
 				Expect(err).NotTo(HaveOccurred())
