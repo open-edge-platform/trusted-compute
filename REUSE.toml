@@ -5,6 +5,7 @@ path = [
     "REUSE.toml",
     "trivyignore.yaml",
     ".trivyignore.yaml",
+    ".gitleaksignore",
     "trivy.yaml",
     "ci/**",
     "trusted-vm/config-6.12.8-142",
@@ -38,7 +39,7 @@ path = [
     "**.zip",
     ".gitattributes",
     "**.tar.gz",
-    "**/kata_keeplist.txt"
+    "**/kata_keeplist.txt",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"

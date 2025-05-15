@@ -148,7 +148,7 @@ const (
 // viper config keys
 const (
 	CmsBaseUrlViperKey              = "cms.base-url"
-	CmsTlsCertSha384ViperKey        = "cms.tls-cert-sha384"
+	CmsTlsCertSha384ViperKey        = "cms.tls-cert-sha384" //gitleaks:allow
 	TlsCommonNameViperKey           = "tls.common-name"
 	TlsSanListViperKey              = "tls.san-list"
 	BearerTokenViperKey             = "bearer-token"

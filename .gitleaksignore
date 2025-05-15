@@ -1,0 +1,8 @@
+attestation-verifier/src/pkg/lib/common/crypt/test_data/key/key.pem:private-key:1
+attestation-verifier/src/pkg/authservice/controllers/users_controller_test.go:generic-api-key:148
+attestation-verifier/src/pkg/authservice/controllers/users_controller_test.go:generic-api-key:411
+attestation-verifier/src/pkg/authservice/controllers/users_controller_test.go:generic-api-key:1498
+attestation-verifier/src/pkg/authservice/controllers/users_controller_test.go:generic-api-key:1535
+attestation-verifier/src/pkg/authservice/controllers/users_controller_test.go:generic-api-key:1536
+attestation-verifier/src/pkg/clients/aas/client_test.go:jwt:107
+attestation-verifier/src/pkg/authservice/controllers/jwt_token_controller_test.go:generic-api-key:139

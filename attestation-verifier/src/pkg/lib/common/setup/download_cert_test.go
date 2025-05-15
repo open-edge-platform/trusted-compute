@@ -43,7 +43,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: false,
 		},
@@ -56,7 +56,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: false,
 		},
@@ -69,7 +69,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("400"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -82,7 +82,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("Invalid body content"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -95,7 +95,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -108,7 +108,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -121,7 +121,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "test #/\\!@#$%^&*()_",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -147,7 +147,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        nil,
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},
@@ -160,7 +160,7 @@ func TestDownloadCert_Run(t *testing.T) {
 				SanList:       "127.0.0.1,hostname",
 				Client:        NewClientMock("200"),
 				CmsBaseURL:    "https://127.0.0.1:8445/v1/cms",
-				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+				BearerToken:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", //gitleaks:allow
 			},
 			wantErr: true,
 		},

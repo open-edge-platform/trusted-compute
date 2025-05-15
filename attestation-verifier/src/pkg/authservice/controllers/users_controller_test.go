@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	comm "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/common"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/controllers"
@@ -18,8 +20,6 @@ import (
 	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/context"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("UsersController", func() {

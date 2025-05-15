@@ -42,7 +42,7 @@ func Test_addDBUser(t *testing.T) {
 		{
 			name: "Username Validation",
 			args: args{
-				username: "mVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM",
+				username: "mVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM", //gitleaks:allow
 				password: "testPassword",
 			},
 			wantErr: true,
@@ -51,7 +51,7 @@ func Test_addDBUser(t *testing.T) {
 			name: "Passsword Validation",
 			args: args{
 				username: "testusername",
-				password: "mVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM",
+				password: "mVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM80zpCYoGznQkFklJR4pxDYsPbrmYBxsmVYf0dEtIDkPCi9FGI8wuwyGvKSqZotHw3xGQxUHIVdS3SIKKwqn0MQxnZYmGFSat5PTdmWilYozKRqw3kwoSRmxH7xhDOfcYQWbuRKIDhCE00Bf2raaoCg0Q0MyrVpBM", //gitleaks:allow
 			},
 			wantErr: true,
 		},
