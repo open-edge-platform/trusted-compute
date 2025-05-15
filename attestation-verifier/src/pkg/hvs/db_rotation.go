@@ -128,13 +128,16 @@ func (a *App) configDBRotation() error {
 	if c == nil {
 		return errors.New("Failed to load configuration file")
 	}
+
 	dataStore, err := postgres.NewDataStore(postgres.NewDatabaseConfig(constants.DBTypePostgres, &c.DB))
 	if err != nil {
 		return errors.Wrap(err, "Failed to connect database")
 	}
+
 	if err := dataStore.ExecuteSql(&dbScript); err != nil {
 		return errors.Wrap(err, "failed to configure trigger in database")
 	}
+
 	sqlConfigCmd := fmt.Sprintf(dbScriptConfig, c.AuditLog.MaxRowCount, c.AuditLog.NumRotated)
 	return errors.Wrap(dataStore.ExecuteSql(&sqlConfigCmd), "failed to configure rotation parameters in database")
 }

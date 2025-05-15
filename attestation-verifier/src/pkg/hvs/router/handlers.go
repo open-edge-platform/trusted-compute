@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"net/http"
+	"runtime/debug"
+
 	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/auth"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
@@ -16,10 +19,8 @@ import (
 	commLogMsg "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/log/message"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/middleware"
 	ct "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/aas"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"net/http"
-	"runtime/debug"
+	"gorm.io/gorm"
 )
 
 // Generic handler for writing response header and body for all handler functions
@@ -44,7 +45,7 @@ func ResponseHandler(h func(http.ResponseWriter, *http.Request) (interface{}, in
 }
 
 // JsonResponseHandler  is the same as http.JsonResponseHandler, but returns an error that can be handled by a generic
-//// middleware handler
+// // middleware handler
 func JsonResponseHandler(h func(http.ResponseWriter, *http.Request) (interface{}, int, error)) middleware.EndpointHandler {
 	defaultLog.Trace("router/handlers:JsonResponseHandler() Entering")
 	defer defaultLog.Trace("router/handlers:JsonResponseHandler() Leaving")
@@ -165,7 +166,7 @@ func ErrorHandler(eh middleware.EndpointHandler) http.HandlerFunc {
 			}
 		}()
 		if err := eh(w, r); err != nil {
-			if gorm.IsRecordNotFoundError(err) {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}

@@ -12,8 +12,8 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	commErr "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/err"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 // FlavorTemplateStore to hold DB operations.
@@ -139,7 +139,7 @@ func (ft *FlavorTemplateStore) Delete(templateID uuid.UUID) error {
 		}
 	}
 
-	err = ft.Store.Db.Model(flavorTemplate{}).Where(&flavorTemplate{ID: templateID}).Update(&flavorTemplate{Deleted: true}).Error
+	err = ft.Store.Db.Model(flavorTemplate{}).Where(&flavorTemplate{ID: templateID}).Updates(&flavorTemplate{Deleted: true}).Error
 	if err != nil {
 		return errors.Wrap(err, "postgres/flavortemplate_store:Delete() - Could not Delete record "+templateID.String())
 	}

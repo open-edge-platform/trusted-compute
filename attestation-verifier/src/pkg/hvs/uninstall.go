@@ -143,13 +143,17 @@ func (a *App) eraseData() error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to connect database")
 	}
-	for _, t := range tablesToDrop {
-		sqlCmd := "DROP TABLE IF EXISTS " + t + " CASCADE;"
+
+	for _, tableName := range tablesToDrop {
+		// Construct the SQL command safely
+		sqlCmd := fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE;", tableName)
+
 		err = dataStore.ExecuteSql(&sqlCmd)
 		if err != nil {
 			return errors.Wrap(err, "Failed to execute query")
 		}
 	}
+
 	dataStore.Migrate()
 	// create default flavor group
 	t := tasks.CreateDefaultFlavor{

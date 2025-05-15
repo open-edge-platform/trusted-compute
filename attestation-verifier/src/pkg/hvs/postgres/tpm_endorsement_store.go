@@ -6,13 +6,14 @@
 package postgres
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/constants"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"strings"
+	"gorm.io/gorm"
 )
 
 type TpmEndorsementStore struct {

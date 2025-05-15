@@ -7,8 +7,8 @@ package postgres
 import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/authservice/types"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type PostgresRoleStore struct {
@@ -123,7 +123,7 @@ func (r *PostgresRoleStore) Delete(role types.Role) error {
 	defer defaultLog.Trace("Repository role Delete done")
 
 	if err := r.db.Model(&role).Association("Users").Clear().Error; err != nil {
-		return errors.Wrap(err, "Repository role delete: failed to clear user-role mapping")
+		return errors.Wrap(errors.New(err()), "Repository role delete: failed to clear user-role mapping")
 	}
 
 	if err := r.db.Delete(&role).Error; err != nil {
@@ -137,7 +137,7 @@ func (r *PostgresPermissionStore) AddPermissions(role types.Role, permissions ty
 	defer defaultLog.Trace("role AddPermissions done")
 
 	if err := r.db.Model(&role).Association("Permissions").Append(permissions).Error; err != nil {
-		return errors.Wrap(err, "role add permissions: failed")
+		return errors.Wrap(errors.New(err()), "role add permissions: failed")
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func (r *PostgresPermissionStore) DeletePermission(role types.Role, permissionID
 	if err != nil {
 		return errors.Wrapf(err, "role delete permissions: could not find permission id %s in database", permissionID)
 	}
-	if err = r.db.Model(&role).Association("Permissions").Delete(permission).Error; err != nil {
+	if err = r.db.Model(&role).Association("Permissions").Delete(permission); err != nil {
 		return errors.Wrap(err, "role delete permission: failed")
 	}
 	return nil

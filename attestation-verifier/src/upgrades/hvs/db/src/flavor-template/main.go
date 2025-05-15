@@ -30,7 +30,7 @@ import (
 	templateModel "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/upgrades/hvs/db/src/flavor-template/model"
 
 	// Import driver for GORM
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "gorm.io/driver/postgres"
 )
 
 // eventIDList - define map for event id

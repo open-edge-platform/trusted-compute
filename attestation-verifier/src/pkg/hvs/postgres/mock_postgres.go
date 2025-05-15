@@ -6,8 +6,11 @@ package postgres
 
 import (
 	"database/sql"
+
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var mock sqlmock.Sqlmock
@@ -17,10 +20,14 @@ func NewSQLMockDataStore() (*DataStore, sqlmock.Sqlmock) {
 	var db *sql.DB
 
 	db, mock, _ = sqlmock.New()
-	gdb, _ := gorm.Open("postgres", db)
-
-	// enable single table setting
-	gdb.SingularTable(true)
+	dialector := postgres.New(postgres.Config{
+		Conn: db,
+	})
+	gdb, _ := gorm.Open(dialector, &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 
 	return &DataStore{Db: gdb}, mock
 }

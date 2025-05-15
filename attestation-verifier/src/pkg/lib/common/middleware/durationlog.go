@@ -11,12 +11,24 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
 
 type LogWriterMiddleware struct {
 	Writer io.Writer
+}
+
+const (
+        deniedCharacters = `[^A-Za-z0-9/\. ;:\+\(|\)_,-]`
+)
+
+// Returns a copy of userAgent where all non-valid characters are replaced
+// by replaceWith.
+func sanitizeUserAgent(userAgent, replaceWith string) string {
+        denyList := regexp.MustCompile(deniedCharacters)
+        return denyList.ReplaceAllString(userAgent, replaceWith)
 }
 
 func (logWriter *LogWriterMiddleware) WriteDurationLog() mux.MiddlewareFunc {
@@ -32,13 +44,14 @@ func (logWriter *LogWriterMiddleware) WriteDurationLog() mux.MiddlewareFunc {
 			}
 
 			var buffer bytes.Buffer
-			var TimestampFormat = "02/Jan/2006:15:04:05"
+			var timestampFormat = "02/Jan/2006:15:04:05"
 			duration := time.Since(startTime).String()
+			userAgent := sanitizeUserAgent(r.UserAgent(), "")
 
-			buffer.WriteString(host + " - [" + startTime.Format(TimestampFormat) + "] ")
+			buffer.WriteString(host + " - [" + startTime.Format(timestampFormat) + "] ")
 			buffer.WriteString(`"` + r.Method + " " + r.RequestURI + " " + r.Proto + `" `)
 			buffer.WriteString(strconv.Itoa(logRespWriter.statusCode) + " " + strconv.Itoa(logRespWriter.size) + ` "`)
-			buffer.WriteString(r.UserAgent() + `" - [duration ` + duration + "]" + "\n")
+			buffer.WriteString(userAgent + `" - [duration ` + duration + "]" + "\n")
 			logWriter.Writer.Write(buffer.Bytes())
 		})
 	}
@@ -60,10 +73,7 @@ func (w *logResponseWriter) WriteHeader(code int) {
 }
 
 func (w *logResponseWriter) Write(body []byte) (int, error) {
-	// Sanitize the user-provided value to prevent XSS
-	sanitizedBody := bytes.ReplaceAll(body, []byte("<"), []byte("&lt;"))
-	sanitizedBody = bytes.ReplaceAll(sanitizedBody, []byte(">"), []byte("&gt;"))
-	size, err := w.ResponseWriter.Write(sanitizedBody)
+	size, err := w.ResponseWriter.Write(body)
 	w.size += size
 	return size, err
 }

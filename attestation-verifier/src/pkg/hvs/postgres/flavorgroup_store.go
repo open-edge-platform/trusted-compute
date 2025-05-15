@@ -13,8 +13,8 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/domain/models"
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/model/hvs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type FlavorGroupStore struct {
@@ -148,7 +148,7 @@ func (f *FlavorGroupStore) HasAssociatedHosts(fgId uuid.UUID) (bool, error) {
 	defaultLog.Trace("postgres/flavorgroup_store:HasAssociatedHosts() Entering")
 	defer defaultLog.Trace("postgres/flavorgroup_store:HasAssociatedHosts() Leaving")
 
-	count := 0
+	var count int64 = 0
 	tx := f.Store.Db.Model(&hostFlavorgroup{}).Where("flavorgroup_id = ?", fgId).Count(&count)
 	if tx == nil {
 		return false, errors.New("postgres/flavorgroup_store:HasAssociatedHosts() Unexpected Error. Could not get" +
