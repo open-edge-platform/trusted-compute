@@ -4,9 +4,8 @@ go 1.23.7
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/Waterdrips/jwt-go v3.2.0+incompatible
 	github.com/antchfx/jsonquery v1.3.6
-	github.com/beevik/etree v1.5.0
+	github.com/beevik/etree v1.5.1
 	github.com/cloudflare/cfssl v1.6.5
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
@@ -19,9 +18,9 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/mattermost/xml-roundtrip-validator v0.1.0
-	github.com/nats-io/jwt/v2 v2.7.3
-	github.com/nats-io/nats.go v1.41.1
-	github.com/nats-io/nkeys v0.4.10
+	github.com/nats-io/jwt/v2 v2.7.4
+	github.com/nats-io/nats.go v1.41.2
+	github.com/nats-io/nkeys v0.4.11
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0

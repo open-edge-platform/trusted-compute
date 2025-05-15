@@ -13,9 +13,15 @@ on:
       - 'trusted-vm/**'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   post-merge-pipeline:
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@0.1.7
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@791c0c74ac05e6d972fa6de8c979e854336e9a41  # 0.1.10
     with:
       run_version_check: false
       run_build: true
@@ -24,4 +30,4 @@ jobs:
       run_version_tag: false
       prefix_tag_separator: "/"
       project_folder: "trusted-vm"
-    secrets: inherit
+    secrets: inherit  # zizmor: ignore[secrets-inherit]

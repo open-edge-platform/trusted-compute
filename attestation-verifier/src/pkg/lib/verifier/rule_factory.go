@@ -48,8 +48,8 @@ func NewRuleFactory(verifierCertificates VerifierCertificates,
 	}
 }
 
-//GetVerificationRules method is used to get the verification rules dynamically for pcr/event log rules
-//Other rules like aik certificate,asset tag rules will be hardcoded based on vendor and flavor part
+// GetVerificationRules method is used to get the verification rules dynamically for pcr/event log rules
+// Other rules like aik certificate,asset tag rules will be hardcoded based on vendor and flavor part
 func (factory *ruleFactory) GetVerificationRules() ([]rules.Rule, string, error) {
 	var flavorPartName flavormodel.FlavorPartName
 	var requiredRules, pcrRules []rules.Rule
@@ -150,7 +150,7 @@ func (factory *ruleFactory) GetVerificationRules() ([]rules.Rule, string, error)
 	return requiredRules, ruleBuilder.GetName(), nil
 }
 
-//getRuleBuilder method will get the ruler builder based on vendor
+// getRuleBuilder method will get the ruler builder based on vendor
 func (factory *ruleFactory) getRuleBuilder() (ruleBuilder, error) {
 	var builder ruleBuilder
 	var vendor constants.Vendor
@@ -171,25 +171,6 @@ func (factory *ruleFactory) getRuleBuilder() (ruleBuilder, error) {
 		builder, err = newRuleBuilderIntelTpm20(factory.verifierCertificates, factory.hostManifest, factory.signedFlavor)
 		if err != nil {
 			return nil, errors.Wrap(err, "There was an error creating the Intel rule builder")
-		}
-	case constants.VendorVMware:
-		tpmVersionString := factory.signedFlavor.Flavor.Meta.Description[flavormodel.TpmVersion].(string)
-		if len(tpmVersionString) == 0 {
-			tpmVersionString = factory.hostManifest.HostInfo.HardwareFeatures.TPM.Meta.TPMVersion
-		}
-
-		if tpmVersionString == "1.2" {
-			builder, err = newRuleBuilderVMWare12(factory.verifierCertificates, factory.hostManifest, factory.signedFlavor)
-			if err != nil {
-				return nil, errors.Wrap(err, "There was an error creating the VMWare 1.2 verification rule builder")
-			}
-		} else if tpmVersionString == "2.0" {
-			builder, err = newRuleBuilderVMWare20(factory.verifierCertificates, factory.hostManifest, factory.signedFlavor)
-			if err != nil {
-				return nil, errors.Wrap(err, "There was an error creating the VMWare 1.2 verification rule builder")
-			}
-		} else {
-			return nil, errors.Errorf("Unknown TPM version '%s'", tpmVersionString)
 		}
 
 	default:

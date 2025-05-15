@@ -174,7 +174,7 @@ func main() {
 				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
 			}
 			logging.Info("Step 7: SecureBoot Disabled, cordoning the node")
-			cordonDrainNode()
+			cordonDrainNode(cfg, attestToken)
 		} else if !parseSuccess {
 			// var attestationDetails string = "Attestation Fail"
 			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestStatus)
@@ -183,7 +183,7 @@ func main() {
 			} else {
 				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
 			}
-			cordonDrainNode()
+			cordonDrainNode(cfg, attestToken)
 		} else {
 			logging.Info("Step 7: Trust report parsed successfully")
 			// Inform Attestation  Manager Server Server on successful attestation first time
@@ -218,7 +218,29 @@ func retryOperation(operation func() (bool, interface{}), retryCount int, retryI
 	return false, nil
 }
 
-func cordonDrainNode() {
+func DumpReportAndFlavorDetails(cfg *constants.Config, attestToken string) {
+	logging.Info("Handling error: logging flavor templates and trust report")
+
+	logging.Info("Fetching flavors...")
+	flavors, err := api.GetFlavorIDs(cfg, attestToken)
+	if err != nil {
+		logging.Error("Error fetching flavors:", err)
+	} else {
+		logging.Info("Flavors:", flavors)
+	}
+
+	logging.Info("Fetching trust report...")
+	success, trustReport := api.FetchTrustReport(cfg, attestToken, cfg.TCHOSTNAME)
+	if !success {
+		logging.Error("Error fetching trust report")
+	} else {
+		logging.Info("Trust Report:", trustReport)
+	}
+}
+
+func cordonDrainNode(cfg *constants.Config, attestToken string) {
+
+	DumpReportAndFlavorDetails(cfg, attestToken) // Error Handler called on failure
 	logging.Info("Attestation failure, cordoning the node")
 	logging.Debug("Sleeping for 30 seconds and calling drainNode()")
 	time.Sleep(30 * time.Second)
