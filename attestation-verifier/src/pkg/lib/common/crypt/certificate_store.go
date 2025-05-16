@@ -137,6 +137,7 @@ func (cs *CertificatesStore) AddCertificatesToStore(certType, certFile string, c
 	certStore := (*cs)[certType]
 	safeDirs := []string{
 		"/etc/hvs/certs",
+		"/etc/authservice/certs",
 		"/etc/cms",
 	}
 
