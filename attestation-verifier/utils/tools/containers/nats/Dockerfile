@@ -7,8 +7,7 @@ FROM debian:bookworm
 
 RUN apt-get update && \
     apt-get -yq install --no-install-recommends curl ca-certificates wget && \
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/`\
-    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
+    curl -LO https://dl.k8s.io/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
     chmod +x kubectl
 
 RUN wget -O /usr/local/bin/cfssl http://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
