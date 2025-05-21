@@ -37,11 +37,6 @@ fi
 sed -i "s#operator:.*#operator: $nats_operator#g" nats.conf || exit 1
 sed -i "s#resolver_preload:.*#resolver_preload: { $resolver_jwt }#g" nats.conf || exit 1
 
-./kubectl create configmap nats-config --from-file=nats.conf --namespace=$NAMESPACE
-if [ $? != 0 ]; then
-    echo "Failed to create NATS configmap"
-    exit 1
-fi
 ./kubectl create secret generic nats-certs --from-file=secrets --namespace=$NAMESPACE
 if [ $? != 0 ]; then
     echo "Failed to create NATS certificates"

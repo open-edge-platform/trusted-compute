@@ -1,0 +1,25 @@
+{{- include "factory.headers" . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nats-server-config
+data:
+  nats-server-update.conf: |
+    pid_file = "/var/run/nats/nats.pid"
+
+    tls {
+      cert_file = "/etc/nats-certs/server.pem"
+      key_file = "/etc/nats-certs/sslcert-key.pem"
+    }
+
+    cluster {
+      port = 6222
+      routes = [
+        nats://nats-0.nats.{{ .Release.Namespace }}.svc:6222,
+      ]
+      cluster_advertise = $CLUSTER_ADVERTISE
+      connect_retries = 30
+    }
+
+    resolver = "MEMORY"
