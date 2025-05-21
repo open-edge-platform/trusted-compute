@@ -349,6 +349,17 @@ verify_files_permission() {
     echo "${test_case_name}: ${test_case_desc}"
     echo "========================================================="
 
+    SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+    if [[ "$SERVER" =~ ^https://10\. || "$SERVER" =~ ^https://192\.168\. || "$SERVER" =~ ^https://127\.0\.0\.1 || "$SERVER" =~ ^https://localhost ]]; then
+        echo "Local cluster: $SERVER"
+    else
+        echo "Remote cluster: $SERVER"
+        echo "edge node not accessible, skipping file permission check"
+        echo "RESULT: ${test_case_desc} [ skipped ]"
+        echo ""
+        return 0
+    fi
+
     local permission_file="$PWD/../trusted-workload/kata-deploy/kata_keeplist.txt"
     local kernel_config=$(yq '.kernel.config' ../trusted-workload/kata-deploy/version.yaml)
     local kernel_name=$(yq '.kernel.name' ../trusted-workload/kata-deploy/version.yaml)
