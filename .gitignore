@@ -1,7 +1,6 @@
 attestation-verifier/src/cmd/hvs/hvs
 attestation-verifier/src/cmd/cms/cms
 attestation-verifier/src/cmd/tagent/tagent
-attestation-verifier/src/go.sum
 attestation-verifier/src/cmd/authservice/authservice
 
 */tpmout
