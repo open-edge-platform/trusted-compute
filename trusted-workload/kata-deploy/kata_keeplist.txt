@@ -3,7 +3,7 @@ bin/containerd-shim-kata-v2 root:bm-agents 740
 bin/kata-agent-ctl root:root 700
 bin/kata-collect-data.sh root:root 700
 bin/kata-ctl root:root 700
-bin/kata-manager root:root 700
+bin/kata-manager root:root 777
 bin/kata-manager.sh root:root 700
 bin/kata-monitor root:root 700
 bin/kata-runtime root:root 700
