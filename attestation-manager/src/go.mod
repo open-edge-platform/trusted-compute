@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/open-edge-platform/infra-managers/attestationstatus v0.0.0-20250401180327-e213f1be8b25
-	google.golang.org/grpc v1.71.1
+	google.golang.org/grpc v1.72.2
 	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.3
 )
