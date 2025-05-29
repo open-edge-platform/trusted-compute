@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+fullnameOverride: httpbin
+
+service:
+  # -- Service type
+  type: LoadBalancer
+  # -- Service port
+  port: 8080
+
+  # -- Service annotations
+  annotations:
+    service-proxy.app.orchestrator.io/ports: "8080"
