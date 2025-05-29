@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl-httpbin-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl-httpbin
+  template:
+    metadata:
+      labels:
+        app: curl-httpbin
+    spec:
+      {{- if .Values.runtimeClassName }}
+      runtimeClassName: {{ .Values.runtimeClassName | quote }}
+      {{- end }}
+      containers:
+      - name: curl-httpbin
+        image: curlimages/curl
+        imagePullPolicy: Always
+        command: ["sh", "-c", "while true; do curl -sS http://httpbin.org/headers; sleep 5; done"]

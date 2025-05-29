@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+specSchema: "Application"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: curl-httpbin
+version: 0.1.0
+description: "Helm chart to install curl-httpbin on Kubernetes."
+displayName: "Curl HttpBin"
+
+helmRegistry: "harbor-helm-oci"
+chartName: "curl-httpbin"
+chartVersion: "0.1.0"
+
+profiles:
+  - name: "trusted-compute"
+    valuesFileName: "values-curl-httpbin-tc.yaml"
