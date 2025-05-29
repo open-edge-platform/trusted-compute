@@ -44,7 +44,7 @@ jobs:
           if [[ $filtered_projects != '[]' ]]; then
             echo "filtered_projects=$build_folders" >> $GITHUB_OUTPUT
           else
-            echo "filtered_projects='[]'" >> $GITHUB_OUTPUT
+            echo "filtered_projects=[]" >> $GITHUB_OUTPUT
           fi
   pre-merge-pipeline:
     permissions:
