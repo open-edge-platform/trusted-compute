@@ -181,6 +181,7 @@ const (
 	ImaHashSha512 = "ima_hash=sha512"
 	ImaPolicyTCB  = "ima_policy=tcb"
 	PCR10         = 10
+	PCR11         = 11
 	TemplateNG    = "ima_template=ima-ng"
 	TemplateSIG   = "ima_template=ima-sig"
 	TemplateIMA   = "ima_template=ima"
