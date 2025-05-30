@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directories:
+      - "/attestation-verifier/src"
+      - "/attestation-manager/src"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    reviewers:
+      - "cgoea"
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  - package-ecosystem: "docker"
+    directories:
+      - "/attestation-manager"
+      - "/attestation-verifier/src/build/image/aas-manager"
+      - "/attestation-verifier/src/build/image/authservice"
+      - "/attestation-verifier/src/build/image/cms"
+      - "/attestation-verifier/src/build/image/hvs"
+      - "/attestation-verifier/src/build/image/tagent"
+      - "/attestation-verifier/utils/tools/containers/init-wait"
+      - "/attestation-verifier/utils/tools/containers/nats"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "cgoea"
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
