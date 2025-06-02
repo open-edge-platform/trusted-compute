@@ -42,3 +42,19 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "[gha] "
+    labels:
+      - "gha"
+    reviewers:
+      - "cgoea"
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
