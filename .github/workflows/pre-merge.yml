@@ -103,14 +103,14 @@ jobs:
   final-check:
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [pre-merge-pipeline]
+    needs: [pre-merge-root, pre-merge-pipeline]
     steps:
       - name: Final Status Check
         env:
           pre_merge_pipeline: ${{ needs.pre-merge-pipeline.result }}
           pre_merge_root_pipeline: ${{ needs.pre-merge-root.result }}
         run: |
-          results=("pre_merge_root_pipeline" "pre_merge_pipeline")
+          results=("pre_merge_root_pipeline", "pre_merge_pipeline")
           status="OK"
           
           for result in "${results[@]}"; do
