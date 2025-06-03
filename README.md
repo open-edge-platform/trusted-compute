@@ -6,7 +6,7 @@ Trusted Compute is a set of software-defined security extensions that utilize
 hardware security capabilities of the Edge Node within the
 Open Edge Manageability Framework.
 
-A user can select and deploy trusted compute extensions on a node to achieve 
+A user can select and deploy trusted compute extensions on a node to achieve
 higher security assurances for their workloads.
 This extension enhances edge node protection through:
 
