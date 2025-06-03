@@ -110,9 +110,10 @@ jobs:
           pre_merge_pipeline: ${{ needs.pre-merge-pipeline.result }}
           pre_merge_root_pipeline: ${{ needs.pre-merge-root.result }}
         run: |
-          results=("pre_merge_root_pipeline", "pre_merge_pipeline")
+         
+          results=("pre_merge_root_pipeline" "pre_merge_pipeline")
           status="OK"
-          
+
           for result in "${results[@]}"; do
             pipeline_result=$(eval echo \$$result)
             echo "${result} result: $pipeline_result"
@@ -120,7 +121,7 @@ jobs:
               status="KO"
             fi
           done
-          
+
           if [[ "$status" == "OK" ]]; then
             echo "Pre-merge check passed successfully."
           else
