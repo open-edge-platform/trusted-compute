@@ -2,7 +2,7 @@
 
 ## License
 
-**<PROJECT NAME>** is licensed under the terms in LICENSE.  
+**PROJECT NAME** is licensed under the terms in LICENSE.  
 By contributing to the project, you agree to the license and copyright
 terms therein and release your contribution under these terms.
 

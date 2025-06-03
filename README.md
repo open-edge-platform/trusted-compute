@@ -35,4 +35,4 @@ are required:
 ## Contribute
 
 Trusted Compute contribution details can be found in the following  
-[documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide
+[documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide)
