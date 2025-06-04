@@ -57,6 +57,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
       restartPolicy: OnFailure
       serviceAccountName: cleanup-trusted-workload-sa
       containers:
@@ -66,25 +69,22 @@ spec:
         args:
         - |
           echo "Starting resource deletion in namespace 'confidential-containers-system'..."
-
           # Delete ClusterRoleBindings
           kubectl delete clusterrolebinding cc-operator-manager-rolebinding --ignore-not-found=true
           kubectl delete clusterrolebinding cc-operator-metrics-auth-rolebinding --ignore-not-found=true
           kubectl delete clusterrolebinding helm-cluster-rolebinding --ignore-not-found=true
-
           # Delete ClusterRoles
           kubectl delete clusterrole cc-operator-manager-role --ignore-not-found=true
           kubectl delete clusterrole cc-operator-metrics-auth-role --ignore-not-found=true
           kubectl delete clusterrole cc-operator-metrics-reader --ignore-not-found=true
           kubectl delete clusterrole helm-cluster-role --ignore-not-found=true
-
           # Delete CustomResourceDefinition (CRD)
           kubectl delete crd ccruntimes.confidentialcontainers.org --ignore-not-found=true
-
           # Delete Namespace
           kubectl delete namespace confidential-containers-system --ignore-not-found=true
-
           echo "Resource deletion completed."
         securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
