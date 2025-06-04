@@ -7,4 +7,4 @@ Trusted Compute Sample Application are collections of sample applications for in
 
 These samples simplify the creation of User solutions using Trusted Compute by providing curated sample applications & example code to accelerate application development.
 
-[Networking](networking) accelerates Trusted Compute Application Ingress and Egress networking configuration and enables User application deployed in Trusted Compute with external (outside cluster) networking capabilities.
+[Networking](networking) accelerates Trusted Compute Application Ingress and Egress networking configuration and enables User applications deployed in Trusted Compute with external (outside cluster) networking capabilities.
