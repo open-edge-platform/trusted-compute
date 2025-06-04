@@ -1,9 +1,9 @@
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)]()
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-green)]()
 
 # Trusted Compute Sample Applications
 
 ## Overview
-Trusted Compute Sample Application are collections of sample applications for independent software vendors (ISVs), system integrators and solutions builders to build thier applications in Trusted Compute using the reference of the sample applications. 
+Trusted Compute Sample Application are collections of sample applications for independent software vendors (ISVs), system integrators and solutions builders to build their applications in Trusted Compute using the reference of the sample applications. 
 
 These samples simplify the creation of User solutions using Trusted Compute by providing curated sample applications & example code to accelerate application development.
 
