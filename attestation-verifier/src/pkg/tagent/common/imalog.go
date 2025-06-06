@@ -174,7 +174,7 @@ func (imaSystemDetails *ImaSystemDetails) readPcr10Events(asciiFilePath string) 
 
 		if array[0] != "11" {
 			log.Debugf("common/imalog:readPcr10Events() PCR index %s is not 11, skipping", array[0])
-			break
+			continue
 		}
 
 		if strings.EqualFold(array[2], hvsModel.IMA_TEMPLATE) {
