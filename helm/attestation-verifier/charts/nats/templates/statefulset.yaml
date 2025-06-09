@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       {{- include "factory.labelsSvcSelector" . | nindent 6 }}
-  replicas: 2
+  replicas: 1
   serviceName: "nats"
   template:
     metadata:
@@ -106,7 +106,7 @@ spec:
   selector:
     matchLabels:
       {{- include "factory.labelsSvcSelector" . | nindent 6 }}
-  replicas: 2
+  replicas: 1
   serviceName: "nats"
   template:
     metadata:
