@@ -38,7 +38,7 @@ config:
     servers:  # NATS Server IP/Hostname
     serviceMode: outbound # The model for TA<br> (Allowed values: `outbound`)
   imaPolicy: |
-    measure uid=504 template=ima-ng
+    measure uid=504 template=ima-ng pcr=11
     dont_measure fsmagic=0x794c7630
   imaAllowlist: |
     /opt/verifier/cms/<ATTESTATION_VERIFIER_VERSION>/config/root-ca.key

@@ -116,7 +116,7 @@ func (imaSystemDetails *ImaSystemDetails) getImaLog(asciiFilePath string) (strin
 	}
 
 	imaLog.Pcr.Bank = imaSystemDetails.ImaHashAlgorithm
-	imaLog.Pcr.Index = constants.PCR10
+	imaLog.Pcr.Index = constants.PCR11
 	imaLog.ImaTemplate = imaSystemDetails.ImaTemplate
 	// Marshal the structure into string
 	marshalledImaLog, err := json.Marshal(imaLog)
@@ -171,6 +171,11 @@ func (imaSystemDetails *ImaSystemDetails) readPcr10Events(asciiFilePath string) 
 		//array[2] - ima-ng --> ima template
 		//array[3] - sha256:a9ea73d04dc53931c8729429295ccc4bd3f613612d6732334982781da6b25893 --> file_hash_algorithm: file hash
 		//array[4] - file name
+
+		if array[0] != "11" {
+			log.Debugf("common/imalog:readPcr10Events() PCR index %s is not 11, skipping", array[0])
+			continue
+		}
 
 		if strings.EqualFold(array[2], hvsModel.IMA_TEMPLATE) {
 			imaEvent.Measurement = array[3]
