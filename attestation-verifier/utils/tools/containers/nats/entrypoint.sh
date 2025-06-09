@@ -34,8 +34,8 @@ if [ $? != 0 ]; then
     echo "Failed to retrieve resolver jwt from create-credentials output"
     exit 1
 fi
-sed -i "s#operator:.*#operator: $nats_operator#g" nats.conf || exit 1
-sed -i "s#resolver_preload:.*#resolver_preload: { $resolver_jwt }#g" nats.conf || exit 1
+#sed -i "s#operator:.*#operator: $nats_operator#g" nats.conf || exit 1
+#sed -i "s#resolver_preload:.*#resolver_preload: { $resolver_jwt }#g" nats.conf || exit 1
 
 ./kubectl create secret generic nats-certs --from-file=secrets --namespace=$NAMESPACE
 if [ $? != 0 ]; then

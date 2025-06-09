@@ -84,7 +84,7 @@ securityContext:
     runAsUser: 503
     runAsGroup: 500
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
+    readOnlyRootFilesystem: true
   hvsInitFs: # The fsGroup id for init containers for HVS
     fsGroup: 500
   hvsInit: # The security content for init containers
