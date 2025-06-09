@@ -57,6 +57,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
       restartPolicy: OnFailure
       serviceAccountName: cleanup-trusted-workload-sa
       containers:
@@ -86,5 +89,7 @@ spec:
 
           echo "Resource deletion completed."
         securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault

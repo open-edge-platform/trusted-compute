@@ -36,6 +36,7 @@ securityContext:
         - all
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
       
 service:
   directoryName: cms 

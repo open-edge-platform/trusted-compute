@@ -71,8 +71,12 @@ securityContext:
     capabilities:
       drop:
         - all
+    privileged: false
+    seccompProfile:
+      type: RuntimeDefault
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
 
 service: 
   directoryName: authservice

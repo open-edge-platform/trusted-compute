@@ -25,6 +25,10 @@ spec:
       {{- end }}
       {{- end }}
       serviceAccountName: {{ include "factory.name" . }}
+      securityContext:
+        fsGroup: 500
+        runAsNonRoot: true
+        runAsUser: 503
       initContainers:
         - name: wait-for-cms
           {{ include "factory.imageInitContainer" . | nindent 10 | trim }}

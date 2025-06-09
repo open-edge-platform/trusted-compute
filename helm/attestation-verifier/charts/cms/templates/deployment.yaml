@@ -9,6 +9,10 @@
       {{- end }}
       {{- end }}
       serviceAccountName: {{ include "factory.name" . }}
+      securityContext:
+        fsGroup: 500
+        runAsNonRoot: true
+        runAsUser: 503
       initContainers:
         - name: init-script
           image: busybox:latest
@@ -24,6 +28,10 @@
             runAsUser: 0
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+            privileged: false
+            runAsNonRoot: false
         {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
           securityContext:
             {{- toYaml .Values.securityContext.cms | nindent 12 }}

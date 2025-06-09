@@ -9,6 +9,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
       serviceAccountName: cc-operator-controller-manager
       restartPolicy: OnFailure
       initContainers:
@@ -24,9 +27,11 @@ spec:
               done &&
               echo "CRD found, upgrading parent-chart with cc-runtimeclass enabled"
           securityContext:
-            runAsUser: 0
+            runAsNonRoot: true
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
       containers:
         - name: apply-ccruntime
           image: bitnami/kubectl:1.32.3
@@ -92,3 +97,5 @@ spec:
             runAsUser: 0
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
