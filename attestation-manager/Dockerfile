@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Start from the latest Debian bookworm image
-FROM debian:bookworm-slim@sha256:90522eeb7e5923ee2b871c639059537b30521272f10ca86fdbbbb2b75a8c40cd
+FROM debian:bookworm-slim@sha256:4b50eb66f977b4062683ff434ef18ac191da862dbe966961bc11990cf5791a8d
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
