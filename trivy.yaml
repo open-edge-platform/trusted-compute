@@ -2,4 +2,4 @@ scan:
   skip-files:
     - trustagent/templates/daemonset-suefi.yaml
     - attestation-verifier/charts/nats-init/templates/job.yaml
-    - attestation-manager/templates/deployment.yaml
+

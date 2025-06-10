@@ -102,6 +102,8 @@ spec:
               readOnly: true
             - name: flavor-addition-check
               mountPath: /mnt/attestation_mgr/
+            - name: cms-crt
+              mountPath: /mnt/cms-ca-cert
       volumes:
         - name: attestation-manager-token
           hostPath:
@@ -113,6 +115,8 @@ spec:
           hostPath:
             path: /tmp/attestation-manager/
             type: DirectoryOrCreate
+        - name: cms-crt
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

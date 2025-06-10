@@ -50,6 +50,7 @@ securityContext:
      drop:
      - ALL
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
 service:
   type: ClusterIP
