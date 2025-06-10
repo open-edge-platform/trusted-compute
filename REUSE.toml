@@ -3,8 +3,7 @@ version = 1
 [[annotations]]
 path = [
     "REUSE.toml",
-    "trivyignore.yaml",
-    ".trivyignore.yaml",
+    ".trivyignore",
     ".gitleaksignore",
     "trivy.yaml",
     "ci/**",
