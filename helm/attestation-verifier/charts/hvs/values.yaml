@@ -102,7 +102,7 @@ securityContext:
       drop:
         - all
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
+    readOnlyRootFilesystem: true
   aasManager: # The security content for AAS-MANAGER Pod
     runAsUser: 503
     runAsGroup: 500
