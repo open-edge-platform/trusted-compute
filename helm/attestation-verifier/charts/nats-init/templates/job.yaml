@@ -65,9 +65,14 @@ spec:
                 - all
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
+          volumeMounts:
+            - name: secretsdir
+              mountPath: /secrets
       volumes:
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
         {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
+        - name: secretsdir
+          emptyDir: {}
   {{- end }}
 {{- else }}
 apiVersion: batch/v1
@@ -119,5 +124,5 @@ spec:
             {{- include "factory.envBearerToken" . | nindent 12 }}
       volumes:
         {{- include "factory.volumeProjectedSecrets" . | nindent 8 }}
-          {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
+        {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
   {{- end }}

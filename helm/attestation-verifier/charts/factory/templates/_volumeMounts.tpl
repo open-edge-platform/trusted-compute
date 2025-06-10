@@ -57,6 +57,10 @@ Service Base PV Volume Mount
 DB Service Volume Mounts
 */}}
 {{- define "factory.volumeMountsDb" -}}
+- name: tmp-dir
+  mountPath: /tmp
+- name: {{ include "factory.name" . }}db-run
+  mountPath: /var/run/postgresql
 - name: {{ include "factory.name" . }}db-config
   mountPath: /etc/postgresql/config/
   readOnly: true
