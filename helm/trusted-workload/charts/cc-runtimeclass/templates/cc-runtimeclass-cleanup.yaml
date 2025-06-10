@@ -13,6 +13,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
       serviceAccountName: cc-operator-controller-manager
       restartPolicy: OnFailure
       containers:
@@ -90,3 +93,5 @@ spec:
             runAsUser: 0
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault

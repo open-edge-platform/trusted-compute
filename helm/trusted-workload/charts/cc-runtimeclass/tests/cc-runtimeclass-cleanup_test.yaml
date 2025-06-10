@@ -28,6 +28,12 @@ tests:
           path: metadata.annotations["helm.sh/hook-delete-policy"]
           value: hook-succeeded
       - equal:
+          path: spec.template.spec.securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
           path: spec.template.spec.serviceAccountName
           value: cc-operator-controller-manager
       - equal:
@@ -121,3 +127,6 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
           value: false
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.seccompProfile.type
+          value: RuntimeDefault

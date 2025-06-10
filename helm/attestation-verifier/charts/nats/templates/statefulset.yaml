@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       {{- include "factory.labelsSvcSelector" . | nindent 6 }}
-  replicas: 2
+  replicas: 1
   serviceName: "nats"
   template:
     metadata:
@@ -25,7 +25,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: nats-config
+            name: nats-server-config
         - name: pid
           emptyDir: {}
         - name: nats-certs-volume
@@ -59,7 +59,7 @@ spec:
           command:
             - "nats-server"
             - "--config"
-            - "/etc/nats-config/nats.conf"
+            - "/mnt/nats-server-update.conf"
 
           # Required to be able to define an environment variable
           # that refers to other environment variables.  This env var
@@ -77,7 +77,7 @@ spec:
               value: $(POD_NAME).nats.$(POD_NAMESPACE).svc
           volumeMounts:
             - name: config-volume
-              mountPath: /etc/nats-config
+              mountPath: /mnt
             - name: pid
               mountPath: /var/run/nats
             - name: nats-certs-volume
@@ -106,7 +106,7 @@ spec:
   selector:
     matchLabels:
       {{- include "factory.labelsSvcSelector" . | nindent 6 }}
-  replicas: 2
+  replicas: 1
   serviceName: "nats"
   template:
     metadata:
@@ -117,7 +117,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: nats-config
+            name: nats-server-config
         - name: pid
           emptyDir: {}
         - name: nats-certs-volume
@@ -151,7 +151,7 @@ spec:
           command:
             - "nats-server"
             - "--config"
-            - "/etc/nats-config/nats.conf"
+            - "/mnt/nats-server-update.conf"
 
           # Required to be able to define an environment variable
           # that refers to other environment variables.  This env var
@@ -169,7 +169,7 @@ spec:
               value: $(POD_NAME).nats.$(POD_NAMESPACE).svc
           volumeMounts:
             - name: config-volume
-              mountPath: /etc/nats-config
+              mountPath: /mnt
             - name: pid
               mountPath: /var/run/nats
             - name: nats-certs-volume

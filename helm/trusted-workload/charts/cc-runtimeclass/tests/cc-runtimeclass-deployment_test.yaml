@@ -19,6 +19,12 @@ tests:
           path: metadata.namespace
           value: confidential-containers-system
       - equal:
+          path: spec.template.spec.securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
           path: spec.template.spec.serviceAccountName
           value: cc-operator-controller-manager
       - equal:
@@ -45,8 +51,17 @@ tests:
             done &&
             echo "CRD found, upgrading parent-chart with cc-runtimeclass enabled"
       - equal:
-          path: spec.template.spec.initContainers[0].securityContext.runAsUser
-          value: 0
+          path: spec.template.spec.initContainers[0].securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.seccompProfile.type
+          value: RuntimeDefault
       - equal:
           path: spec.template.spec.containers[0].name
           value: apply-ccruntime
@@ -119,3 +134,12 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].securityContext.runAsUser
           value: 0
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.seccompProfile.type
+          value: RuntimeDefault

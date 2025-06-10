@@ -59,6 +59,10 @@ lint:
 	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir lint; done
 	@echo "---END MAKEFILE LINT---"
 
+mdlint: ## lint all markdown README.md files
+	markdownlint --version
+	markdownlint *.md
+
 test:
 	@# Help: Runs test stage in all subprojects
 	@echo "---MAKEFILE TEST---"
