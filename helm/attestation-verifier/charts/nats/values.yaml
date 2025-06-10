@@ -19,6 +19,8 @@ securityContext:
   nats: # The security content for NATS Pod
     runAsUser: 503
     runAsGroup: 500
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
 service:
   directoryName: nats
