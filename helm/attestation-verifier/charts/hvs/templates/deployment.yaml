@@ -59,6 +59,8 @@
           {{- include "factory.volumeMountSvcConfig" . | nindent 12 }}
           {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
           {{- include "factory.volumeMountsSvcDb" . | nindent 12 }}
+            - name: privacyca-aik-dir
+              mountPath: /opt/hvs/privacyca-aik-requests
       volumes:
         {{- include "factory.volumeSvcConfig" . | nindent 8 }}
         {{- include "factory.volumeSvcLogs" . | nindent 8 }}
@@ -68,3 +70,5 @@
         {{- include "factory.volumeDbCredentials" . | nindent 12 }}
         {{- include "factory.volumeCredentials" . | nindent 12 }}
         {{- include "factory.volumeAasBearerToken" . | nindent 12 }}
+        - name: privacyca-aik-dir
+          emptyDir: {}

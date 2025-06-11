@@ -121,6 +121,10 @@ DB Version Upgrade Service Volumes
 DB Service Volumes
 */}}
 {{- define "factory.volumesDb" -}}
+- name: tmp-dir
+  emptyDir: {}
+- name: {{ include "factory.name" . }}db-run
+  emptyDir: {}
 - name: {{ include "factory.name" . }}db-config
   configMap:
     name: {{ include "factory.name" . }}db

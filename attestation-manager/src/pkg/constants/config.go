@@ -40,7 +40,7 @@ func LoadConfig() (*Config, error) {
 	// Initialize the config with default values
 	config := &Config{
 		NodeAgentCertPath:    "/mnt/access_token",
-		CMSCertPath:          "/mnt/cms-ca-cert.pem",
+		CMSCertPath:          "/mnt/cms-ca-cert/cms-ca-cert.pem",
 		OrchestratorCertPath: "/mnt/orch-ca.crt",
 		FlavorUpdateFilePath: "/mnt/attestation_mgr/flavor_update",
 	}
