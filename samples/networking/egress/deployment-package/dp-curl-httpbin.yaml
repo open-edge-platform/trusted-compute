@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: curl-httpbin
+displayName: "curl-httpbin"
+description: "Deployment package deploy curl-httpbin application on K8"
+version: "0.1.0"
+
+applications:
+  - name: curl-httpbin
+    version: 0.1.0
+
+deploymentProfiles:
+  - name: trusted-compute
+    applicationProfiles:
+      - application: curl-httpbin
+        profile: trusted-compute

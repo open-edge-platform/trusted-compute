@@ -1,0 +1,12 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: {{ .Release.Namespace }}-global
+spec:
+  ingress:
+    - action: Allow
+  namespaceSelector: kubernetes.io/metadata.name == {{ .Release.Namespace | quote }}
+  order: 90
+  selector: all()
+  types:
+    - Ingress

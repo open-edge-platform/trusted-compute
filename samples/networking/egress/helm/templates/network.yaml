@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: {{ .Release.Namespace }}-global
+spec:
+  egress:
+    - action: Allow
+  namespaceSelector: kubernetes.io/metadata.name == {{ .Release.Namespace | quote }}
+  order: 90
+  selector: all()
+  types:
+    - Egress
