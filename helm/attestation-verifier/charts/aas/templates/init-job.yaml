@@ -8,6 +8,7 @@ metadata:
   labels:
     {{- include "cms-init.labels" . | nindent 4 }}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:

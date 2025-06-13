@@ -10,6 +10,7 @@ metadata:
   labels:
     {{- include "nats.labels" . | nindent 4 }}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
@@ -83,6 +84,7 @@ metadata:
   labels:
     {{- include "nats.labels" . | nindent 4 }}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
