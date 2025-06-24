@@ -81,10 +81,10 @@ tagent-docker: tagent config-upgrade-binary
 	docker build ${DOCKER_PROXY_FLAGS} --label org.label-schema.build-date=$(BUILDDATE) -f build/image/tagent/Dockerfile -t attestation-verifier/tagent:$(VERSION) .
 
 %-swagger:
-	env GOOS=linux GOSUMDB=off go mod tidy
 	mkdir -p docs/swagger
-	swagger generate spec -w ./docs/shared/$* -o ./docs/swagger/$*-openapi.yml
-	swagger validate ./docs/swagger/$*-openapi.yml
+	env GOBIN=$(PWD) go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+	./swagger generate spec -w ./docs/shared/$* -o ./docs/swagger/$*-openapi.yml
+	./swagger validate ./docs/swagger/$*-openapi.yml
 
 installer: clean $(patsubst %, %-installer, $(TARGETS)) aas-manager isecl-k8s-extensions-installer
 
