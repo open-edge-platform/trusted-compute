@@ -11,6 +11,7 @@ metadata:
     "helm.sh/hook": post-delete
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:

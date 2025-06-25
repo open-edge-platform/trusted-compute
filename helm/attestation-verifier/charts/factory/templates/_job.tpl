@@ -10,6 +10,7 @@ metadata:
   labels:
     {{- include "factory.labelsChart" . | nindent 4 }}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
@@ -214,6 +215,7 @@ metadata:
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-4"
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
@@ -256,6 +258,7 @@ metadata:
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-4"
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
