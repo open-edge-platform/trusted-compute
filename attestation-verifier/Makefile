@@ -61,6 +61,14 @@ test:
 		docker images; \
 	fi
 
+swagger-generate:
+	@# Help: Runs swagger generation stage
+	@echo "---MAKEFILE SWAGGER GENERATE---"
+	cd src; \
+	export VERSION=${VERSION}; \
+	make -C ${PWD}/src aas-swagger cms-swagger hvs-swagger;
+	@echo "---END MAKEFILE SWAGGER GENERATE---"
+
 coverage:
 	@# Help: Runs coverage stage
 	@echo "---MAKEFILE COVERAGE---"

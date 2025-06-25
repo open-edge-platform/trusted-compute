@@ -29,6 +29,10 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "factory.name" . }}
       restartPolicy: Never
+      securityContext:
+        fsGroup: 500
+        runAsNonRoot: true
+        runAsUser: 503
       initContainers:
         - name: wait-for-aas
           image: {{ .Values.global.image.initName }}:{{.Chart.AppVersion }}
@@ -60,12 +64,13 @@ spec:
               value: {{ .Values.config.accountName }}
             {{- include "factory.envBearerToken" . | nindent 12 }}
           securityContext:
-            runAsUser: 0
+            runAsUser: 503
+            runAsGroup: 500
             capabilities:
               drop:
                 - all
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: secretsdir
               mountPath: /secrets
