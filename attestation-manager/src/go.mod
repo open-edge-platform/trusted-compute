@@ -5,7 +5,7 @@ go 1.24.4
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/open-edge-platform/infra-managers/attestationstatus v0.6.0
-	google.golang.org/grpc v1.72.1
+	google.golang.org/grpc v1.73.0
 	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.3
 )
@@ -39,7 +39,7 @@ require (
 	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
