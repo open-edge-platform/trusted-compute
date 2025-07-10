@@ -7,7 +7,6 @@ path = [
     ".gitleaksignore",
     "trivy.yaml",
     "ci/**",
-    "trusted-vm/config-6.12.8-142",
     "attestation-verifier/src/upgrades/manifest/supported_versions",
     "attestation-verifier/src/upgrades/tagent/config/v5.0.0_config.tmpl",
     "**.md",
