@@ -32,7 +32,7 @@ spec:
             - name: URL
               value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
             - name: VERSION
-              value: {{.Chart.AppVersion }}         
+              value: {{.Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
               value: {{ .Values.dependentServices.aas }}
             - name: COMPONENT
