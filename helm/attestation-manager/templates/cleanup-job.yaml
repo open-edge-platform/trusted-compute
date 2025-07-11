@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: cleanup-job-am
-  namespace: {{ .Release.Namespace }}  
+  namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-delete
     "helm.sh/hook-delete-policy": hook-succeeded

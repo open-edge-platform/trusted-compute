@@ -338,7 +338,7 @@ tests:
             value: metadata.namespace
         - equal:
             path: spec.template.spec.containers[0].image
-            value: quay.io/confidential-containers/operator:v0.13.0
+            value: quay.io/confidential-containers/operator:v0.14.0
         - equal:
             path: spec.template.spec.containers[0].livenessProbe.httpGet.path
             value: /healthz
