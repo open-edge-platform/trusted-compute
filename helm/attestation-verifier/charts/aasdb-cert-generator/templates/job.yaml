@@ -41,7 +41,7 @@ spec:
               mountPath: /tmp/certs
       containers:
         - name: aasdb-cert-generator-kubectl
-          image: bitnami/kubectl:1.23
+          image: bitnami/kubectl:1.32
           imagePullPolicy: Always
           securityContext:
             {{- toYaml .Values.securityContext.aasdbCertGenerator | nindent 12 }}
