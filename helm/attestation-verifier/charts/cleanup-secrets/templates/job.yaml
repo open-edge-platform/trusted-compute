@@ -23,7 +23,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: cleanup-secrets
-          image: bitnami/kubectl:1.23
+          image: bitnami/kubectl:1.32
           imagePullPolicy: Always
           securityContext:
             {{- toYaml .Values.securityContext.cleanupSecrets | nindent 12 }}
