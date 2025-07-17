@@ -14,8 +14,9 @@ tw_helm_chart:
     It contains the configuration for the component validation tests.
   name: trusted-workload
   namespace: confidential-containers-system
-  version: 1.4.2
+  version: 1.4.4
   chart_link: oci://registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/charts/trusted-workload
+  previous_version: 1.4.3
 
 sample_workload:
   description: |
@@ -25,35 +26,5 @@ sample_workload:
   namespace: default
   pod_name: nginx-default
   version: 0.1.0
-  chart_link: oci://registry-oci.pid-tc.pid.infra-host.com/tc-sample-workload/nginx-trusted-workload
+  chart_link: oci://registry-oci.pid-tc-dev1.pid.infra-host.com/sample/nginx-trusted-workload
   skip_tls_verify: true
-  local_chart: true
-  file_name: nginx-trusted-workload-0.1.0.tgz
-
-tw_test_cases:
-  - name: "TC1"
-    description: |
-      Standalone trusted workload deployment in the cluster
-  - name: "TC2"
-    description: |
-      Standalone trusted workload deletion in the cluster
-  - name: "TC3"
-    description: |
-      Deployment of sample trusted workload w/o TW deployment
-  - name: "TC4"
-    description: |
-      Deployment of sample trusted workload with TW deployment
-  - name: "TC5"
-    description: |
-      verify K8 pods cmds like get, describe, logs
-  - name: "TC6"
-    description: |
-      verify files permissions and onwership of TW package
-  - name: "TC7"
-    description: |
-      verify rbac rules for TW
-  - name: "TC8"
-    description: |
-      verify upgrade of TW package
-    previous_version: 1.4.2
-
