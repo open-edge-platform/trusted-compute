@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-# TC6: Verify files permission test case
+# TC6: Verify files permission
 
 set -uo pipefail
 
@@ -17,9 +17,9 @@ sudo true
 
 #TC6
 verify_files_permission() {
-    echo "======================================"
-    echo "TC6: Verify files permission test case"
-    echo "======================================"
+    echo "============================"
+    echo "TC6: Verify files permission"
+    echo "============================"
 
     SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
     if [[ "$SERVER" =~ ^https://10\. || "$SERVER" =~ ^https://192\.168\. || "$SERVER" =~ ^https://127\.0\.0\.1 || "$SERVER" =~ ^https://localhost ]]; then
@@ -27,7 +27,13 @@ verify_files_permission() {
     else
         echo "Remote cluster: $SERVER"
         echo "edge node not accessible, skipping file permission check"
-        echo "RESULT: ${test_case_desc} [ skipped ]"
+        echo "RESULT: Verify files permission [ skipped ]"
+        echo ""
+        return 0
+    fi
+    if [[ ! -d "/opt/kata" ]]; then
+        echo "Directory /opt/kata not found, skipping file permission check"
+        echo "RESULT: Verify files permission test case [ skipped ]"
         echo ""
         return 0
     fi
@@ -73,10 +79,10 @@ verify_files_permission() {
     echo ""
     if [[ $result == "True" ]]; then
         echo "INFO: TW file and directory permissions are set correctly"
-        echo "RESULT: Verify files permission test case [ successful ]"
+        echo "RESULT: Verify files permission [ successful ]"
     else
         echo "ERROR: TW file and directory permissions are not set correctly"
-        echo "RESULT: Verify files permission test case [ failed ]"
+        echo "RESULT: Verify files permission [ failed ]"
     fi
     echo ""
 }

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-# TC7: Verify RBAC rules test case
+# TC7: Verify RBAC rules
 
 set -uo pipefail
 
@@ -17,9 +17,9 @@ sudo true
 
 #TC7
 verify_rbac_rules() {
-    echo "================================"
-    echo "TC7: Verify RBAC rules test case"
-    echo "================================"
+    echo "======================"
+    echo "TC7: Verify RBAC rules"
+    echo "======================"
 
     local result="True"
     for role in get list; do
@@ -35,10 +35,10 @@ verify_rbac_rules() {
 
     if [[ $result == "True" ]]; then
         echo "INFO: RBAC rules are set correctly"
-        echo "RESULT: Verify RBAC rules test case [ successful ]"
+        echo "RESULT: Verify RBAC rules [ successful ]"
     else
         echo "ERROR: RBAC rules are not set correctly"
-        echo "RESULT: Verify RBAC rules test case [ failed ]"
+        echo "RESULT: Verify RBAC rules [ failed ]"
     fi
     echo ""
 }
