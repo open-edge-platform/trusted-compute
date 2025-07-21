@@ -1,6 +1,6 @@
-# Trusted Compute Networking Sample Applications
+# Trusted Compute AI Sample Applications
 
 ## Overview
-The workload running in a Trusted Compute environment will involve networking use cases. These samples allow users to validate their setup and provide reference configurations that can be customized to meet specific application requirements:
-1. Often, workloads need to communicate with systems outside the edge cluster, necessitating ingress traffic into the cluster. The [Ingress](ingress) sample application demonstrates how to facilitate communication with workloads from outside the edge cluster.
-2. Similarly, workloads frequently need to communicate with external services located outside the edge cluster, requiring egress traffic from the cluster. The [Egress](egress) sample application illustrates how to enable external communication.
+The workload running in a Trusted Compute environment will involve AI use cases. These samples allow AI Microservices from [Edge AI Libraries](https://github.com/open-edge-platform/edge-ai-libraries/tree/main/microservices) and AI Application from [Edge AI Suites](https://github.com/open-edge-platform/edge-ai-suites) to execute in Trusted Compute environment.
+1. [DL Streamer Pipeline Server](dlstreamer-pipeline-server) is containerized microservice for easy development and deployment of video analytics pipelines. This example demonstrates the deployment of the DL Streamer Pipeline Server in a TC environment, facilitating the isolation of video analytics pipelines.
+2. [Pallet Defect Detection](pdd) Application enables real-time pallet condition monitoring by running inference workflows across multiple AI models. This example demonstrates the deployment of the PDD in a TC environment, facilitating the isolation of PDD pipelines.
