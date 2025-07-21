@@ -27,7 +27,6 @@ all:
 build:
 	@# Help: Runs build stage
 	@echo "---MAKEFILE BUILD---"
-	export GOPRIVATE="github.com/open-edge-platform/*"
 	cd src/ && go mod tidy
 	cd src/cmd/app && go build -o main
 	@echo "---END MAKEFILE Build---"
@@ -65,9 +64,10 @@ lint:
 
 test:
 	@# Help: Runs test stage
-	@echo "---MAKEFILE TEST---"
-	echo $@
-	@echo "---END MAKEFILE TEST---"
+	@echo "---MAKEFILE ATTESTATION MANAGER TEST---"
+	cd src/ && go mod tidy
+	cd src/ && go test  -v ./...
+	@echo "---END MAKEFILE ATTESTATION MANAGER TEST---"
 	
 coverage:
 	@# Help: Runs coverage stage

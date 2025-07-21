@@ -77,14 +77,14 @@ func GetAuthConfig(ctx context.Context, caCertPath string, optionalCert *x509.Ce
 func GetAuthContext(ctx context.Context, tokenPath string) context.Context {
 	file, err := os.OpenFile(tokenPath, os.O_RDONLY, 0)
 	if err != nil {
-		logging.Error("Failed to open token file: %v", err)
+		logging.Error(fmt.Sprintf("Failed to open token file: %v", err))
 		return ctx
 	}
 	defer file.Close()
 
 	tBytes, err := io.ReadAll(file)
 	if err != nil {
-		logging.Error("Failed to read token file: %v", err)
+		logging.Error(fmt.Sprintf("Failed to read token file: %v", err))
 		return ctx
 	}
 	tString := fmt.Sprintf("Bearer %s", strings.TrimSpace(string(tBytes)))
@@ -159,7 +159,7 @@ func UpdateNodeAttestationStatus(cfg *constants.Config, status pb.AttestationSta
 	}
 
 	// Log and return the response message
-	logging.Info("Response from server: %s\n", resp)
+	logging.Info("Response from server: ", resp)
 
 	return " ", nil
 }
