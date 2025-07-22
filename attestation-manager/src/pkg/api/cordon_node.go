@@ -27,7 +27,7 @@ func CordonAndDrainNode() bool {
 
 	logging.Debug("Cordon and drain node started")
 	nodeName := os.Getenv("NODE_NAME")
-	logging.Info("Cordoning ,Node name: ", nodeName)
+	logging.Info(fmt.Sprintf("Cordoning ,Node name: %s", nodeName))
 	// Load kubeconfig
 	// kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	// config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
@@ -36,18 +36,18 @@ func CordonAndDrainNode() bool {
 	// }
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		logging.Error("Error building in-cluster config: %s", err.Error())
+		logging.Error(fmt.Sprintf("Error building in-cluster config: %s", err.Error()))
 	}
 
 	// Create clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		logging.Error("Error creating Kubernetes client: %s", err.Error())
+		logging.Error(fmt.Sprintf("Error creating Kubernetes client: %s", err.Error()))
 	}
 
 	// Cordon the node
 	if err := cordonNode(clientset, nodeName); err != nil {
-		logging.Error("Error cordoning node: %s", err.Error())
+		logging.Error(fmt.Sprintf("Error cordoning node: %s", err.Error()))
 		return false
 	}
 	logging.Debug("Node cordoned successfully")
@@ -57,7 +57,7 @@ func CordonAndDrainNode() bool {
 	time.Sleep(1 * time.Minute)
 	// Drain the node
 	if err := drainNode(clientset, nodeName); err != nil {
-		logging.Error("Error draining node: %s", err.Error())
+		logging.Error(fmt.Sprintf("Error draining node: %s", err.Error()))
 		return false
 	} else {
 		return true
@@ -83,7 +83,7 @@ func drainNode(clientset *kubernetes.Clientset, nodeName string) error {
 			FieldSelector: fields.OneTermEqualSelector("spec.nodeName", nodeName).String(),
 		})
 		if err != nil {
-			logging.Error("Error listing pods: %s", err.Error())
+			logging.Error(fmt.Sprintf("Error listing pods: %s", err.Error()))
 			return err
 		}
 
@@ -97,10 +97,10 @@ func drainNode(clientset *kubernetes.Clientset, nodeName string) error {
 			// 	continue
 			// }
 
-			logging.Info("Evicting pod %s in namespace %s\n", pod.Name, pod.Namespace)
+			logging.Info(fmt.Sprintf("Evicting pod %s in namespace %s\n", pod.Name, pod.Namespace))
 			err := clientset.CoreV1().Pods("default").Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 			if err != nil {
-				logging.Error("Error deleting pod %s: %v", pod.Name, err)
+				logging.Error(fmt.Sprintf("Error deleting pod %s: %v", pod.Name, err))
 			}
 		}
 
