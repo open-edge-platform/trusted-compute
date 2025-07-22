@@ -21,7 +21,7 @@ func main() {
 	// Load configuration
 	cfg, err := constants.LoadConfig()
 	if err != nil {
-		logging.Error("Error loading configuration: %v", err)
+		logging.Error(fmt.Sprintf("Error loading configuration: %v", err))
 	}
 	retryCount := 10
 	retryInterval := 60 * time.Second
