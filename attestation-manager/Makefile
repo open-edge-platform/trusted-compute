@@ -65,8 +65,7 @@ lint:
 test:
 	@# Help: Runs test stage
 	@echo "---MAKEFILE ATTESTATION MANAGER TEST---"
-	cd src/ && go mod tidy
-	cd src/ && go test  -v ./...
+	cd src/ && go mod tidy && go test  -v ./...
 	@echo "---END MAKEFILE ATTESTATION MANAGER TEST---"
 	
 coverage:

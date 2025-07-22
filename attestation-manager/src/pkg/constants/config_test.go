@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2025 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 package constants
 
 import (
@@ -52,6 +57,41 @@ func TestLoadConfig_Success(t *testing.T) {
 		if cfg.AASURL != env["AAS_URL"] {
 			t.Errorf("AASURL mismatch: got %s, want %s", cfg.AASURL, env["AAS_URL"])
 		}
+		if cfg.CMSURL != env["CMS_URL"] {
+			t.Errorf("CMSURL mismatch: got %s, want %s", cfg.CMSURL, env["CMS_URL"])
+		}
+		// Check other fields
+		if cfg.AASPort != env["AAS_PORT"] {
+			t.Errorf("AASPort mismatch: got %s, want %s", cfg.AASPort, env["AAS_PORT"])
+		}
+		if cfg.AASUsername != env["AAS_USERNAME"] {
+			t.Errorf("AASUsername mismatch: got %s, want %s", cfg.AASUsername, env["AAS_USERNAME"])
+		}
+		if cfg.AASPassword != env["AAS_PASSWORD"] {
+			t.Errorf("AASPassword mismatch: got %s, want %s", cfg.AASPassword, env["AAS_PASSWORD"])
+		}
+		if cfg.CMSPort != env["CMS_PORT"] {
+			t.Errorf("CMSPort mismatch: got %s, want %s", cfg.CMSPort, env["CMS_PORT"])
+		}
+		if cfg.HVSURL != env["HVS_URL"] {
+			t.Errorf("HVSURL mismatch: got %s, want %s", cfg.HVSURL, env["HVS_URL"])
+		}
+		if cfg.HVSPort != env["HVS_PORT"] {
+			t.Errorf("HVSPort mismatch: got %s, want %s", cfg.HVSPort, env["HVS_PORT"])
+		}
+		if cfg.HOSTNAME != env["HOSTNAME"] {
+			t.Errorf("HOSTNAME mismatch: got %s, want %s", cfg.HOSTNAME, env["HOSTNAME"])
+		}
+		if cfg.TCHOSTNAME != env["TCHOSTNAME"] {
+			t.Errorf("TCHOSTNAME mismatch: got %s, want %s", cfg.TCHOSTNAME, env["TCHOSTNAME"])
+		}
+		if cfg.AttestationManagerServerAddress != env["Attestation_Manager_SERVER_ADDRESS"] {
+			t.Errorf("AttestationManagerServerAddress mismatch: got %s, want %s", cfg.AttestationManagerServerAddress, env["Attestation_Manager_SERVER_ADDRESS"])
+		}
+		if cfg.AttestationManagerServerPort != env["Attestation_Manager_SERVER_PORT"] {
+			t.Errorf("AttestationManagerServerPort mismatch: got %s, want %s", cfg.AttestationManagerServerPort, env["Attestation_Manager_SERVER_PORT"])
+		}
+		// Check POLLDURATION
 		if cfg.POLLDURATION != 30 {
 			t.Errorf("POLLDURATION mismatch: got %d, want 30", cfg.POLLDURATION)
 		}
@@ -127,6 +167,7 @@ func TestLoadConfig_InvalidPort(t *testing.T) {
 
 func TestLoadConfig_OptionalServerAddress(t *testing.T) {
 	env := validEnv()
+	env["Attestation_Manager_SERVER_ADDRESS"] = "test1234"
 	// Do not set Attestation_Manager_SERVER_ADDRESS
 	withEnv(env, func() {
 		_, err := LoadConfig()
