@@ -495,7 +495,7 @@ type FlavorTemplateFlavorgroupCollection struct {
 // x-sample-call-endpoint: https://hvs.com:8443/hvs/v2/flavor-templates/d6f81340-b033-4fae-8ccf-795430f486e7
 
 // ---
-// swagger:operation POST /flavor-templates/{flavortemplates_id}/flavorgroups  Flavortemplates  Create-FlavorgroupLink
+// swagger:operation POST /flavor-templates/{flavortemplate_id}/flavorgroups  Flavortemplates  Create-FlavorgroupLink
 // ---
 //
 // description: |
@@ -517,7 +517,7 @@ type FlavorTemplateFlavorgroupCollection struct {
 // consumes:
 // - application/json
 // parameters:
-// - name: flavortemplates_id
+// - name: flavortemplate_id
 //   required: true
 //   in: path
 //   type: string
@@ -570,7 +570,7 @@ type FlavorTemplateFlavorgroupCollection struct {
 
 // ---
 
-// swagger:operation GET /flavor-templates/{flavortemplates_id}/flavorgroups/{flavorgroup_id}  Flavor-templates Retrieve-Flavorgrouplink
+// swagger:operation GET /flavor-templates/{flavortemplate_id}/flavorgroups/{flavorgroup_id}  Flavor-templates Retrieve-Flavorgrouplink
 // ---
 //
 // description: |
@@ -582,7 +582,7 @@ type FlavorTemplateFlavorgroupCollection struct {
 // produces:
 // - application/json
 // parameters:
-// - name: flavortemplates_id
+// - name: flavortemplate_id
 //   description: Unique ID of the flavor template.
 //   in: path
 //   required: true

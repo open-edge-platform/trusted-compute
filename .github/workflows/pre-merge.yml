@@ -15,6 +15,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MARKDOWNLINT_CLI_VER: 0.44.0
+
 permissions: {}
 
 jobs:
@@ -99,7 +102,8 @@ jobs:
       run_artifact: false
       project_folder: ${{ matrix.project_folder }}
       version_suffix: "-pr-${{ github.event.number }}"
-    secrets: inherit
+    secrets:  # zizmor: ignore[secrets-inherit]
+      inherit
   final-check:
     runs-on: ubuntu-latest
     if: ${{ always() }}
