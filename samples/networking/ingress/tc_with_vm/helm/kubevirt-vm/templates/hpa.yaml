@@ -1,0 +1,42 @@
+{{ if .Values.virtualMachinePool.hpa.enabled }}
+{{ if .Values.virtualMachinePool.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  creationTimestamp: null
+  name: {{ .Values.virtualMachine.name }}
+  namespace: {{ .Values.virtualMachine.namespace }}
+  labels:
+    kubevirt-manager.io/managed: "true"
+spec:
+  maxReplicas: {{ .Values.virtualMachinePool.hpa.maxReplicas }}
+  minReplicas: {{ .Values.virtualMachinePool.hpa.minReplicas }}
+  scaleTargetRef:
+    apiVersion: pool.kubevirt.io/v1alpha1
+    kind: VirtualMachinePool
+    name: {{ .Values.virtualMachine.name }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+{{- end }}
+{{- end }}

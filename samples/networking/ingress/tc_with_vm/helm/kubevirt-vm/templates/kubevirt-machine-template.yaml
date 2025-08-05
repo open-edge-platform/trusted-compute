@@ -1,0 +1,274 @@
+{{- if eq .Values.virtualMachine.capiMachineTemplate true }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: KubevirtMachineTemplate
+metadata:
+  name: {{ .Values.cluster.name }}-md-0
+  namespace: {{ .Values.cluster.namespace }}
+spec:
+  template:
+    spec:
+      virtualMachineBootstrapCheck:
+        checkStrategy: ssh
+      virtualMachineTemplate:
+        metadata:
+          namespace: {{ .Values.cluster.namespace }}
+          labels:
+          cluster.x-k8s.io/cluster-name: {{ .Values.cluster.name }}
+          cluster.x-k8s.io/role: worker
+        spec:
+          {{- if eq .Values.virtualMachine.machine.instancetype.enabled true }}
+          instancetype:
+            name: {{ .Values.virtualMachine.machine.instancetype.name }}
+            kind: {{ .Values.virtualMachine.machine.instancetype.kind }}
+          {{- end }}
+          runStrategy: {{ .Values.virtualMachine.runStrategy }}
+          template:
+            metadata:
+              creationTimestamp: null
+              labels:
+                kubevirt.io/domain: {{ .Values.virtualMachine.name }}
+                kubevirt-service: {{ .Values.virtualMachine.name }}
+                kubevirt-manager.io/managed: "true"
+            spec:
+              architecture: {{ .Values.virtualMachine.machine.architecture }}
+              domain:
+                machine:
+                  type: {{ .Values.virtualMachine.machine.machineType }}
+                {{- if eq .Values.virtualMachine.clock.enabled true }}
+                clock:
+                  {{- if eq .Values.virtualMachine.clock.timezone "utc" }}
+                  utc: {}
+                  {{ else }}
+                  timezone: {{ .Values.virtualMachine.clock.timezone }}
+                  {{- end }}
+                  timer:
+                    {{- if eq .Values.virtualMachine.clock.hpet.enabled true }}
+                    hpet:
+                      present: {{ .Values.virtualMachine.clock.hpet.present }}
+                    {{- end }}
+                    {{- if eq .Values.virtualMachine.clock.pit.enabled true }}
+                    pit:
+                      tickPolicy: {{ .Values.virtualMachine.clock.pit.tickPolicy }}
+                    {{- end }}
+                    {{- if eq .Values.virtualMachine.clock.rtc.enabled true }}
+                    rtc:
+                      tickPolicy: {{ .Values.virtualMachine.clock.rtc.tickPolicy }}
+                    {{- end }}
+                    {{- if eq .Values.virtualMachine.clock.hyperv true }}
+                    hyperv: {}
+                    {{- end }}
+                    {{- if eq .Values.virtualMachine.clock.kvm true }}
+                    kvm: {}
+                    {{- end }}
+                {{- end }}
+                features:
+                  {{- if eq .Values.virtualMachine.features.kvm.enabled true }}
+                  {{- if eq .Values.virtualMachine.features.kvm.hidden false }}
+                  kvm: {}
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.features.kvm.hidden true }}
+                  kvm:
+                    hidden: {{ .Values.virtualMachine.features.hidden }}
+                  {{- end }}
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.features.acpiEnabled true }}
+                  acpi: {}
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.firmware.smmEnabled true }}
+                  smm:
+                    enabled: true
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.features.hyperv true }}
+                  hyperv:
+                    relaxed: {}
+                    vapic: {}
+                    vpindex: {}
+                    spinlocks:
+                      spinlocks: 8191
+                    synic: {}
+                    synictimer:
+                      direct: {}
+                    tlbflush: {}
+                    frequencies: {}
+                    reenlightenment: {}
+                    ipi: {}
+                    runtime: {}
+                    reset: {}
+                  {{- end }}
+                cpu:
+                  {{- if eq .Values.virtualMachine.machine.pinCores true }}
+                  dedicatedCpuPlacement: true
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.machine.emulatorThread true }}
+                  isolateEmulatorThread: true
+                  {{- end }}
+                  model: {{ .Values.virtualMachine.machine.cpuModel }}
+                  {{- if eq .Values.virtualMachine.machine.instancetype.enabled false }}
+                  sockets: {{ .Values.virtualMachine.machine.sockets }}
+                  cores: {{ .Values.virtualMachine.machine.vCores }}
+                  threads: {{ .Values.virtualMachine.machine.threads }}
+                  {{- end }}
+                {{- if eq .Values.virtualMachine.machine.instancetype.enabled false }}
+                memory:
+                  {{- if eq .Values.virtualMachine.machine.memory.overcommit.enabled false }}
+                  guest: {{ .Values.virtualMachine.machine.memory.base }}
+                  {{ else }}
+                  guest: {{ .Values.virtualMachine.machine.memory.overcommit.limit }}
+                  {{- end }}
+                {{- end }}
+                firmware:
+                {{- if .Values.virtualMachine.firmware.efi.enabled }}
+                  {{- if .Values.virtualMachine.firmware.uuid }}
+                  uuid: {{ .Values.virtualMachine.firmware.uuid }}
+                  {{- end }}
+                  bootloader:
+                    efi:
+                      secureBoot: {{ .Values.virtualMachine.firmware.efi.secureBoot }}
+                {{- else }}
+                  bootloader: {}
+                {{- end }}
+                devices:
+                  {{- with .Values.virtualMachine.interfaces }}
+                  interfaces:
+                  {{- toYaml . | nindent 18 }}
+                  {{- end }}
+                  {{- if eq .Values.virtualMachine.machine.instancetype.enabled false }}
+                  {{- with .Values.virtualMachine.gpus }}
+                  gpus:
+                  {{- toYaml . | nindent 18 }}
+                  {{- end }}
+                  {{- end }}
+                  autoattachPodInterface: {{ .Values.virtualMachine.features.autoattachPodInterface }}
+                  autoattachSerialConsole: {{ .Values.virtualMachine.features.autoattachSerialConsole }}
+                  autoattachGraphicsDevice: {{ .Values.virtualMachine.features.autoattachGraphicsDevice }}
+                  networkInterfaceMultiqueue: {{ .Values.virtualMachine.features.networkInterfaceMultiqueue }}
+                  rng: {}
+                  inputs:
+                  - type: tablet
+                    bus: virtio
+                    name: tablet1
+                  disks:
+                  {{- if or (eq .Values.userDataSecret.enabled true) (eq .Values.cloudinit.enabled true) }}
+                  - name: cloudinitvolume
+                    cdrom:
+                      bus: sata
+                      readonly: true
+                    bootOrder: 1
+                    errorPolicy: report
+                  {{- end }}
+                    {{- range $reg, $props := .Values.disks }}
+                    {{- if ne "hostDisk" $props.type }}
+                    {{- if ne "configmap" $props.type }}
+                    {{- if ne "secret" $props.type }}
+                  - name: {{ $props.name }}
+                    {{ $props.type }}:
+                      bus: {{ $props.bus }}
+                      {{- if eq $props.readonly true }}
+                      readonly: {{ $props.readonly }}
+                      {{- end }}
+                    bootOrder: {{ $props.bootorder }}
+                    errorPolicy: {{ $.Values.diskErrorPolicy }}
+                    {{- end }}
+                    {{- end }}
+                    {{- end }}
+                    {{- if eq $props.type "configmap" }}
+                  - name: {{ $props.name }}
+                    serial: {{ $props.serialNumber }}
+                    cdrom:
+                      bus: sata
+                    {{- end }}
+                    {{- if eq $props.type "secret" }}
+                  - name: {{ $props.name }}
+                    serial: {{ $props.serialNumber }}
+                    {{- end }}
+                    {{- end }}
+                {{- if eq .Values.virtualMachine.machine.instancetype.enabled false }}
+                resources:
+                  {{- if eq .Values.virtualMachine.machine.memory.overcommit.enabled true }}
+                  overcommitGuestOverhead: {{ .Values.virtualMachine.machine.memory.overcommit.overhead }}
+                  {{- end }}
+                  requests:
+                    memory: {{ .Values.virtualMachine.machine.memory.base | quote }}
+                  limits:
+                    {{- if eq .Values.virtualMachine.machine.memory.overcommit.enabled true }}
+                    memory: {{ .Values.virtualMachine.machine.memory.overcommit.limit | quote }}
+                    {{ else }}
+                    memory: {{ .Values.virtualMachine.machine.memory.base | quote }}
+                    {{- end }}
+                {{- end }}
+              {{- with .Values.livenessProbe }}
+              livenessProbe:
+              {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.readinessProbe }}
+              readinessProbe:
+              {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.virtualMachine.networks }}
+              networks:
+              {{- toYaml . | nindent 16 }}
+              {{- end }}
+              terminationGracePeriodSeconds: 0
+              priorityClassName: {{ .Values.virtualMachine.machine.priorityClassName }}
+              volumes:
+                {{- range $reg, $props := .Values.disks }}
+                {{- if ne "cloudinitvolume" $props.name }}
+                {{- if ne "hostDisk" $props.type }}
+                {{- if ne "configmap" $props.type }}
+                {{- if ne "secret" $props.type }}
+                {{- if not $props.ephemeral }}
+                {{- if not $props.image }}
+                - name: {{ $props.name }}
+                  persistentVolumeClaim:
+                    claimName: {{ $props.name }}
+                {{- end }}
+                {{- end }}
+                {{- end }}
+                {{- end }}
+                {{- end }}
+                {{- end }}
+                {{- if eq "configmap" $props.type }}
+                - name: {{ $props.name }}
+                  configMap:
+                    volumeLabel: {{ $props.volumeLabel }}
+                    name: {{ $props.configMap }}
+                {{- end }}
+                {{- if eq "secret" $props.type }}
+                - name: {{ $props.name }}
+                  secret:
+                    secretName: {{ $props.secretName }}
+                {{- end }}
+                {{- if eq "hostDisk" $props.type }}
+                - hostDisk:
+                    capacity: {{ $props.capacity }}
+                    path: {{ $props.path }}
+                    type: {{ $props.type }}
+                  name: {{ $props.name }}
+                {{- end}}
+                {{- if $props.image }}
+                - containerDisk:
+                    image: {{ $props.image }}
+                  name: {{ $props.name }}
+                {{- end }}
+                {{- if $props.ephemeral }}
+                - name: {{ $props.name }}
+                  ephemeral:
+                    persistentVolumeClaim:
+                      claimName: {{ $props.pvc }}
+                {{- end }}
+                {{- end }}
+                {{- if or (eq .Values.userDataSecret.enabled true) (eq .Values.cloudinit.enabled true) }}
+                - name: cloudinitvolume
+                  cloudInitNoCloud:
+                    secretRef:
+                      {{- if eq .Values.userDataSecret.enabled true }}
+                      {{- if eq .Values.cloudinit.enabled false }}
+                      name: {{ .Values.userDataSecret.name }}
+                      {{- end }}
+                      {{- end }}
+                      {{- if eq .Values.cloudinit.enabled true }}
+                      name: {{ .Values.cloudinit.secret_name }}
+                      {{- end }}
+                {{- end }}
+{{- end }}

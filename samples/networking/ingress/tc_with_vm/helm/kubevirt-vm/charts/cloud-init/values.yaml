@@ -1,0 +1,206 @@
+# Not all cloud-init modules are currently supported
+# https://cloudinit.readthedocs.io/en/latest/reference/modules.html
+
+# -- name of secret in which to save the user-data file
+secret_name: max-scrapmetal-user-data
+
+# -- image version
+image: deserializeme/kv-cloud-init:v0.0.1
+
+# -- Choose weather to create a service-account or not. Once a SA has been created
+# you should set this to false on subsequent runs.
+serviceAccount:
+  create: true
+  name: cloud-init-sa
+  existingServiceAccountName: "cloud-init-sa"
+
+# -- Set up mount points. mounts contains a list of lists.
+# The inner list contains entries for an /etc/fstab line
+mounts: []
+
+# -- creates a swap file using human-readable values.
+swap:
+  enabled: false
+  filename: /swapfile
+  size: 1G
+  maxsize: 1G
+
+disk_setup: {}
+  # -- The name of the device.
+#  - name: /dev/vdb
+#    # -- This is a list of values, with the percentage of disk that
+#    # the partition will take. When layout is “true”, it instructs cloud-init
+#    # to single-partition the entire device. When layout is “false” it means
+#    # “don’t partition” or “ignore existing partitioning”.
+#    layout: true
+    # -- “false” is the default which means that the device will be checked for
+#    # a partition table and/or filesystem. “true” is cowboy mode, no checks.
+#    overwrite: false
+#    # -- Supported options ate `gpt` and `mbr`
+#    table_type: 'gpt'
+
+fs_setup: []
+  # -- The device name.
+#  - device: /dev/vdb
+#    # -- The filesystem type. Supports ext{2,3,4} and vfat
+#    filesystem: ext4
+#    # -- The filesystem label to be used. If set to “None”, no label is used.
+#    label: None
+#    # -- Options are `auto|any`, `auto`, or `any`
+#    partition: 'auto|any'
+
+# -- Dont recreate script configmap. Set to true when keeping multiple
+# cloud-init secrets in the same namespace
+existingConfigMap: false
+
+# -- Run envsubst against bootcmd and runcmd fields at the beginning of templating
+# Not an official part of cloid-init
+envsubst: true
+
+extraEnvVars: []
+#  - name: USERNAME
+#    value: max
+#  - name: GITHUB_USER
+#    value: cloudymax
+#  - name: REPO_OWNER
+#    value: buildstar-online
+#  - name: REPO_NAME
+#    value: nvidia-desktops
+#  - name: ACCESS_TOKEN
+#    valueFrom:
+#      secretKeyRef:
+#        name: test
+#        key: "test.yaml"
+
+# -- virtual-machine hostname
+hostname: random
+
+# -- namespace in which to create resources
+namespace: kubevirt
+
+# -- Disable root login over ssh
+disable_root: false
+
+# -- when enabled job sleeps to allow user to exec into the container
+debug: false
+
+# -- salt used for password generation
+salt: "saltsaltlettuce"
+
+# -- networking options
+network:
+  # --  disable cloud-init’s network configuration capability and rely on
+  # other methods such as embedded configuration or other customisations.
+  config: disabled
+
+# -- add wireguard configuration from existing secret or as plain-text
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#wireguard
+wireguard: []
+#  interfaces:
+#    - name: wg0
+#      config_path: /etc/wireguard/wg0.conf
+#      existingSecret:
+#        name: wg0-credentials
+#        key: wg0.conf
+
+# -- user configuration options
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#users-and-groups
+# do NOT use 'admin' as username - it conflicts with multiele cloud-images
+users:
+  - name: pool
+    groups: users, admin, docker, sudo, kvm
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+
+    # -- set user password from existing secret or generate random
+    password:
+      random: true
+    #  random: false
+    #  existingSecret:
+    #    name: admin-password
+    #    key: password
+
+    # -- import user ssh public keys from github, gitlab, or launchpad
+    # See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#ssh
+    ssh_import_id: []
+
+    # -- provider user ssh pub key as plaintext
+    ssh_authorized_keys: []
+
+# -- Add CA certificates
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#ca-certificates
+ca_certs: []
+#  remove_defaults: true
+#  trusted:
+#    - certificate
+
+# -- Run arbitrary commands early in the boot process
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#bootcmd
+boot_cmd: []
+
+# -- Write arbitrary files to disk.
+# Files my be provided as plain-text or downloaded from a url
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#write-files
+write_files: []
+#  - path: /home/${USERNAME}/runner.sh
+#    permissions: "0644"
+#    url: "https://raw.githubusercontent.com/small-hack/smol-metal/refs/heads/main/gha-runner.sh"
+#  - path: /etc/apt-sources.list
+#    permissions: "0644"
+#    url: "https://raw.githubusercontent.com/small-hack/smol-metal/refs/heads/main/etc-apt-sources.list"
+#  - path: /etc/default/laocalw
+#    permissions: "0644"
+#    url: "https://raw.githubusercontent.com/small-hack/smol-metal/refs/heads/main/etc-default-locale"
+#  - path: /etc/default/keyboard
+#    permissions: "0644"
+#    url: "https://raw.githubusercontent.com/small-hack/smol-metal/refs/heads/main/etc-default-keyboard"
+#  - path: /etc/ssh/sshd_config
+#    permissions: "0644"
+#    url: "https://raw.githubusercontent.com/small-hack/smol-metal/refs/heads/main/sshd_config"
+
+# -- Update, upgrade, and install packages
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#package-update-upgrade-install
+package_reboot_if_required: false
+package_update: true
+package_upgrade: false
+packages: []
+#  - ssh-import-id
+#  - curl
+#  - tmux
+#  - apt-transport-https
+#  - ca-certificates
+#  - software-properties-common
+#  - git-extras
+#  - rsyslog
+#  - vim
+#  - gpg
+#  - open-iscsi
+#  - nfs-common
+#  - bc
+#  - zip
+#  - pkg-config
+#  - pipx
+#  - jq
+
+# -- Run arbitrary commands
+# See https://cloudinit.readthedocs.io/en/latest/reference/modules.html#runcmd
+runcmd: []
+#  - mkdir -p /home/${USERNAME}/shared
+#  - chown ${USERNAME}:${USERNAME} /home/${USERNAME}/shared
+#  - sudo -u ${USERNAME} -i ssh-import-id-gh ${GITHUB_USER}
+#  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+#  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+#  - sudo apt-get update
+#  - sudo apt-get install -y docker-ce
+#  - wget https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+#  - chmod +x /install.sh
+#  - chmod 777 /install.sh
+#  - sudo -u ${USERNAME} NONINTERACTIVE=1 /bin/bash /install.sh
+#  - sudo -u ${USERNAME} /home/linuxbrew/.linuxbrew/bin/brew shellenv >> /home/${USERNAME}/.profile
+#  - sudo -u ${USERNAME} /home/linuxbrew/.linuxbrew/opt/python@3.11/libexec/bin >> /home/${USERNAME}/.profile
+#  - sudo -u ${USERNAME} /home/linuxbrew/.linuxbrew/bin/brew install python@3.11
+#  - sudo chown -R ${USERNAME}:${USERNAME} /home/linuxbrew
+#  - sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+#  - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+#  - chmod +x /usr/bin/yq

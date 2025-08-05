@@ -1,0 +1,6 @@
+dependencies:
+- name: cloud-init
+  repository: https://cloudymax.github.io/kubevirt-community-stack
+  version: 0.2.13
+digest: sha256:449360d2de272401b858bcad13890678d0622e5b7e077f9ce0c98d9963401ce8
+generated: "2025-04-02T19:42:29.103359781Z"

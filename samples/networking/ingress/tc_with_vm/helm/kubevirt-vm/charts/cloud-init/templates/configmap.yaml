@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.hostname}}-userdata
+  namespace: {{ .Values.namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-1"
+data:
+  user-data.yaml: |-
+    #cloud-config
+    hostname: {{ .Values.hostname }}
+    disable_root: {{ .Values.disable_root }}
+    {{- with .Values.network }}
+    network:
+        {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.mounts }}
+    mounts:
+        {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if eq .Values.swap.enabled true }}
+    swap:
+      filename: {{ .Values.swap.filename }}
+      size: {{ .Values.swap.size }}
+      maxsize: {{ .Values.swap.maxsize }}
+    {{- end }}
+    {{- range $reg, $props := .Values.disk_setup }}
+    disk_setup:
+      {{ $props.name }}:
+        layout: {{ $props.layout }}
+        overwrite: {{ $props.overwrite }}
+        table_type: {{ $props.table_type }}
+    {{- end }}
+    {{- with .Values.fs_setup }}
+    fs_setup:
+        {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.groups }}
+    groups:
+        {{- toYaml . | nindent 4 }}
+    {{- end }}
+    users:
+      {{- range $reg, $props := .Values.users }}
+      - name: {{ $props.name }}
+        groups: {{ $props.groups }}
+        sudo: {{ $props.sudo }}
+        shell: {{ $props.shell }}
+        lock_passwd: {{ $props.lock_passwd }}
+        {{- if $props.password }}
+        passwd:
+        {{- end }}
+        {{- range $id := $props.ssh_import_id }}
+        ssh_import_id:
+          - {{ $id }}
+        {{- end }}
+        {{- range $key := $props.ssh_authorized_keys }}
+        ssh_authorized_keys:
+          - {{ $key }}
+        {{- end }}
+      {{- end }}
+    {{- with .Values.boot_cmd }}
+    boot_cmd:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- if gt (len .Values.write_files) 0 }}
+    write_files:
+    {{- range $reg, $props := .Values.write_files }}
+      - path: {{ $props.path }}
+        permissions: {{ $props.permissions | quote }}
+      {{- if $props.url }}
+        url: {{ $props.url | quote }}
+      {{- end}}
+      {{- if $props.encoding }}
+        encoding: {{ $props.encoding | quote }}
+      {{- end}}
+      {{- if $props.content }}
+        content: |-
+        {{- with $props.content }}
+          {{- . | nindent 10 }}
+        {{- end }}
+      {{- if $props.append }}
+        append: {{ $props.append }}
+      {{- end}}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+    package_reboot_if_required: {{ .Values.package_reboot_if_required }}
+    package_update: {{ .Values.package_update }}
+    package_upgrade: {{ .Values.package_upgrade }}
+    {{- with .Values.packages }}
+    packages:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.runcmd }}
+    runcmd:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- if .Values.wireguard }}
+    wireguard:
+      interfaces:
+        {{- range $reg, $props := .Values.wireguard.interfaces }}
+        - name: {{ $props.name }}
+          config_path: {{ $props.config_path }}
+        {{- end }}
+    {{- end }}

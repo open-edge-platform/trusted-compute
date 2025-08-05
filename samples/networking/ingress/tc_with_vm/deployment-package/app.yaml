@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+specSchema: "Application"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: httpbin-tc
+version: 0.1.6
+description: "Helm chart to install httpbingo.org on Kubernetes."
+displayName: "HttpBin Go"
+
+helmRegistry: "harbor-helm-oci"
+chartName: "httpbin"
+chartVersion: "0.1.6"
+
+profiles:
+  - name: "default"
+    valuesFileName: "values-httpbin-tc.yaml"
+---
+specSchema: "Application"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: "ubuntu22-nginx-vm"
+version: 0.1.0
+description: "A demo VM running nginx in Ubuntu 22.04"
+
+imageRegistry: "harbor-docker-oci"
+helmRegistry: "harbor-helm-oci"
+chartName: "kubevirt-vm"
+chartVersion: "0.4.18"
+
+profiles:
+  - name: "default"
+    valuesFileName: "values-ubuntu22-nginx-vm.yaml"

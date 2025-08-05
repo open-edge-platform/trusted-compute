@@ -1,0 +1,13 @@
+{{ if eq .Values.existingConfigMap false }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: optimizer-script
+  namespace: {{ .Values.namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-1"
+data:
+  optimize.sh: |
+    {{ .Files.Get "scripts/optimize.sh" | nindent 4}}
+{{- end }}

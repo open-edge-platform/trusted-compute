@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: "tc-with-vm-ingress"
+displayName: "TC with VM Ingress"
+description: "Deployment package for TC with VM Ingress sample"
+version: "0.1.0"
+
+
+applications:
+  - name: "ubuntu22-nginx-vm"
+    version: 0.1.0
+  - name: "httpbin-tc"
+    version: 0.1.6
+
+defaultNamespaces:
+  "httpbin-tc": "httpbin-tc"
+  "ubuntu22-nginx-vm": "ubuntu22-nginx-vm"
+
+deploymentProfiles:
+  - name: "default"
+    applicationProfiles:
+      - application: "httpbin-tc"
+        profile: "default"
+      - application: "ubuntu22-nginx-vm"
+        profile: "default"

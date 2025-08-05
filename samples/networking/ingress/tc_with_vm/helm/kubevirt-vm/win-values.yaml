@@ -1,0 +1,176 @@
+##########################
+# Virtual Machine settings
+virtualMachine:
+  name: win10
+  namespace: windows10
+  runStrategy: "RerunOnFailure"
+
+  features:
+    kvmEnabled: true
+    acpiEnabled: true
+    smmEnabled: false
+    efiEnabled: false
+    secureBoot: false
+    autoattachPodInterface: true
+    autoattachSerialConsole: true
+    autoattachGraphicsDevice: true
+    hyperv: true
+    clock:
+      enabled: true
+      hpet:
+        enabled: true
+        present: false
+      pit:
+        enabled: true
+        tickPolicy: delay
+      rtc:
+        enabled: true
+        tickPolicy: catchup
+      kvm: false
+      hyperv: true
+
+  machine:
+    instancetype:
+      enabled: false
+    priorityClassName: vm-standard
+    machineType: "q35"
+    cpuModel: host-passthrough
+    vCores: 4
+    pinCores: false
+    hyperThreadingEnabled: true
+    memory: 8Gi
+
+  gpus: []
+
+  interfaces:
+    - name: default
+      bridge: {}
+      model: e1000
+
+  networks:
+  - name: default
+    pod: {}
+
+virtualMachinePool:
+  enabled: false
+  replicas: 1
+  hpa:
+    enabled: false
+    maxReplicas: 5
+    minReplicas: 10
+
+disks:
+- name: win2k19-install-iso
+  type: cdrom
+  bus: sata
+  bootorder: 1
+  readonly: true
+  pvsize: 8Gi
+  nodePlacement: bradley
+  pvstorageClass: local-path
+  pvaccessMode: ReadWriteOnce
+  source: pvc
+  pvcnamespace: kubevirt
+  pvcname: windows10-iso
+
+- name: answers
+  type: configmap
+  method: disk
+  bootorder: 3
+  readonly: true
+  configMap: answers
+  serialNumber: CVLY623300HK240D
+
+- name: windows-install-rootdisk
+  type: disk
+  bus: sata
+  bootorder: 2
+  readonly: false
+  pvsize: 32G
+  pvstorageClass: local-path
+  pvaccessMode: ReadWriteOnce
+
+- name: windows-guest-tools
+  type: cdrom
+  bus: sata
+  bootorder: 4
+  readonly: true
+  image: "quay.io/kubevirt/virtio-container-disk:v1.0.0-rc.1-amd64"
+
+service:
+- name: service
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: 22
+      protocol: TCP
+    - name: vnc
+      port: 5900
+      targetPort: 5900
+      protocol: TCP
+    - name: rdp
+      nodePort: 31597
+      port: 3389
+      protocol: TCP
+      targetPort: 3389
+    - name: sunshine0
+      nodePort: 32203
+      port: 47984
+      protocol: TCP
+      targetPort: 47984
+    - name: sunshine1
+      nodePort: 31213
+      port: 47985
+      protocol: TCP
+      targetPort: 47985
+    - name: sunshine2
+      nodePort: 30217
+      port: 47986
+      protocol: TCP
+      targetPort: 47986
+    - name: sunshine3
+      nodePort: 30112
+      port: 47987
+      protocol: TCP
+      targetPort: 47987
+    - name: sunshine4
+      nodePort: 30474
+      port: 47988
+      protocol: TCP
+      targetPort: 47988
+    - name: sunshine5
+      nodePort: 32567
+      port: 47989
+      protocol: TCP
+      targetPort: 47989
+    - name: sunshine6
+      nodePort: 30881
+      port: 47990
+      protocol: TCP
+      targetPort: 47990
+    - name: sunshine7
+      nodePort: 31957
+      port: 47998
+      protocol: UDP
+      targetPort: 47998
+    - name: sunshine8
+      nodePort: 32672
+      port: 47999
+      protocol: UDP
+      targetPort: 47999
+    - name: sunshine9
+      nodePort: 31549
+      port: 48000
+      protocol: UDP
+      targetPort: 48000
+    - name: sunshine10
+      nodePort: 31786
+      port: 48010
+      protocol: TCP
+      targetPort: 48010
+
+# -- enable or disable usage of cloud-init
+cloudinit:
+  enabled: false

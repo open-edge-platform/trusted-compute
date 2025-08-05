@@ -1,0 +1,59 @@
+{{- range $reg, $props := .Values.disks }}
+{{- if $props.pvsize }}
+---
+{{ if ne "containerDisk" $props.type }}
+{{ if $props.source }}
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+{{- else }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+{{- end}}
+metadata:
+  name: {{ $props.name }}
+  namespace: {{ $.Values.virtualMachine.namespace }}
+  annotations:
+    cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+    {{- if $props.nodePlacement }}
+    volume.kubernetes.io/selected-node: {{ $props.nodePlacement }}
+    {{- end }}
+spec:
+  {{- if $props.source }}
+  source:
+    {{- if eq "url" $props.source }}
+    http:
+      certConfigMap: {{ $.Values.virtualMachine.name }}-empty-cert
+      url: {{ $props.url }}
+    {{- end }}
+    {{- if eq "pvc" $props.source }}
+    pvc:
+      namespace: {{ $props.pvcnamespace }}
+      name: {{ $props.pvcname }}
+    {{- end }}
+  pvc:
+    storageClassName: {{ $props.pvstorageClassName }}
+    accessModes: 
+      - {{ $props.pvaccessMode }}
+    resources:
+      requests:
+        storage: {{ $props.pvsize }}
+  {{- else }}
+  storageClassName: {{ $props.pvstorageClassName }}
+  accessModes: 
+    - {{ $props.pvaccessMode }}
+  resources:
+    requests:
+      storage: {{ $props.pvsize }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.virtualMachine.name }}-empty-cert
+  namespace: {{ .Values.virtualMachine.namespace }}
+data:
+  ca.pem: ""
+

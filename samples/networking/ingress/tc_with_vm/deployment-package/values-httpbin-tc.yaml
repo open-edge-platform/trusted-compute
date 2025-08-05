@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
+---
+fullnameOverride: httpbin
+
+runtimeClassName: kata-qemu
+
+service:
+  # -- Service type
+  type: LoadBalancer
+  # -- Service port
+  port: 8080
+
+  # -- Service annotations
+  annotations:
+    service-proxy.app.orchestrator.io/ports: "8080"

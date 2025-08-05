@@ -1,0 +1,31 @@
+{{ if eq .Values.virtualMachine.capiMachineTemplate false }}
+{{- range $reg, $props := .Values.service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $props.name }}
+  namespace: {{ $.Values.virtualMachine.namespace }}
+  labels:
+    kubevirt.io/domain: {{ $.Values.virtualMachine.name }}
+    kubevirt-manager.io/managed: "true"
+spec:
+  externalTrafficPolicy: {{ $props.externalTrafficPolicy }}
+  type: {{ $props.type }}
+  {{- if and (eq $props.type "LoadBalancer") $props.loadBalancerIP }}
+  loadBalancerIP: {{ $props.loadBalancerIP }}
+  {{- end }}
+  ports:
+    {{- range $key, $value := $props.ports }}
+    - name: {{ $value.name }}
+      port: {{ $value.port }}
+      targetPort: {{ $value.targetPort }}
+      protocol: {{ $value.protocol }}
+      {{- if eq $value.type "NodePort" }}
+      nodePort: {{ $value.nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    kubevirt.io/domain: {{ $.Values.virtualMachine.name }}
+{{- end }}
+{{- end }}
