@@ -35,3 +35,17 @@ https://github.com/open-edge-platform/trusted-compute/blob/main/samples/ai/pdd/d
 Deploy the Pallet Defect Detection application in the Kubernetes cluster using Helm. Follow the official deployment instructions:
 
 [Deploy Pallet Defect Detection in the Kubernetes Node](https://github.com/open-edge-platform/edge-ai-suites/tree/v1.0.0/manufacturing-ai-suite/pallet-defect-detection/helm#deploy-pallet-defect-detection-in-the-kubernetes-node)
+
+## Step 5: Verify DL Streamer Launch
+
+### 1. Launch Workload
+
+You can launch any sample workload by following the instructions provided in the **Run Default Sample** section of the [official documentation](https://github.com/open-edge-platform/edge-ai-suites/tree/v1.0.0/manufacturing-ai-suite/pallet-defect-detection/helm#step-2-run-multiple-ai-pipelines).
+
+### 2. Check DL Streamer Logs
+
+To monitor the DL Streamer and see the total frames per second (FPS) count, check the logs of the DL Streamer pod:
+
+```bash
+kubectl logs <dl-streamer-pod-name> -n pdd
+```

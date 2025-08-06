@@ -202,7 +202,7 @@ func GetFlavor(cfg *constants.Config, bearerToken string) (bool, string) {
 
 	readval, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logging.Error("error reading the response body: %v", err)
+		logging.Error("error reading the response body: ", err)
 		return false, ""
 	}
 	logging.Trace("Response Status:", resp.Status)

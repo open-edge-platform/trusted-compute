@@ -38,3 +38,17 @@ https://github.com/open-edge-platform/trusted-compute/blob/main/samples/ai/dlstr
 Follow the steps mentioned in the official documentation to run the Helm chart:
 
 [Steps to Deploy the Helm Chart](https://github.com/open-edge-platform/edge-ai-libraries/tree/main/microservices/dlstreamer-pipeline-server/helm#steps-to-deploy-the-helm-chart)
+
+## Step 5: Verify DL Streamer Launch
+
+### 1. Launch Workload
+
+You can launch any workload by following the instructions provided in the **Run Default Sample** section of the [official documentation](https://github.com/open-edge-platform/edge-ai-libraries/tree/main/microservices/dlstreamer-pipeline-server#run-default-sample).
+
+### 2. Check DL Streamer Logs
+
+To monitor the DL Streamer and see the total frames per second (FPS) count, check the logs of the DL Streamer pod:
+
+```bash
+kubectl logs <dl-streamer-deployment-name> -n apps
+```
