@@ -49,3 +49,6 @@ To monitor the DL Streamer and see the total frames per second (FPS) count, chec
 ```bash
 kubectl logs <dl-streamer-pod-name> -n pdd
 ```
+You can verify the number of FPS and the number of streams running inside the DL Streamer pipeline.
+
+<img width="1204" height="259" alt="image" src="https://github.com/user-attachments/assets/23150332-f18e-4486-a2ee-ba25620b1378" />
