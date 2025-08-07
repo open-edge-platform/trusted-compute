@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dlstreamer-pipeline-server
+  name: dlstreamer-pipeline-server-deployment
+  namespace: {{ $.Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlstreamer-pipeline-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: dlstreamer-pipeline-server
+    spec:
+      runtimeClassName: kata-qemu
+      securityContext:
+        supplementalGroups: [109,110]
+      {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
+      containers:
+      - name: dlstreamer-pipeline-server
+        image: {{ $.Values.DOCKER_REGISTRY }}intel/dlstreamer-pipeline-server:3.0.0
+        imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        {{- if $.Values.privileged_access_required }}
+        securityContext:
+          privileged: true  # Required for direct access to /dev
+        {{- end }}
+        resources:
+          requests:
+            memory: "14Gi"
+            #cpu: "20"
+          limits:
+            memory: "14Gi"
+            #cpu: "20"
+        {{- if $.Values.gpu.enabled }}
+        resources:
+          limits:
+            {{ $.Values.gpu.type }}: {{ $.Values.gpu.count }}
+        {{- end }}
+        env:
+        - name: APPEND_PIPELINE_NAME_TO_PUBLISHER_TOPIC
+          value: "{{ $.Values.env.APPEND_PIPELINE_NAME_TO_PUBLISHER_TOPIC }}"
+        - name: REST_SERVER_PORT
+          value: "{{ $.Values.env.REST_SERVER_PORT }}"
+        - name: CLASSIFICATION_DEVICE
+          value: {{ $.Values.env.CLASSIFICATION_DEVICE }}
+        - name: DETECTION_DEVICE
+          value: {{ $.Values.env.DETECTION_DEVICE }}
+        - name: ENABLE_RTSP
+          value: "{{ $.Values.env.ENABLE_RTSP }}"
+        - name: GST_DEBUG
+          value: '{{ $.Values.env.GST_DEBUG }}'
+        - name: HTTPS
+          value: "{{ $.Values.env.HTTPS }}"
+        - name: RTSP_PORT
+          value: "{{ $.Values.env.RTSP_PORT }}"
+        - name: http_proxy
+          value: {{ $.Values.env.http_proxy }}
+        - name: https_proxy
+          value: {{ $.Values.env.https_proxy }}
+        - name: no_proxy
+          value: {{ $.Values.env.no_proxy }}
+        volumeMounts:
+        - name: dlstreamer-pipeline-server-input
+          mountPath: /home/pipeline-server/config.json
+          subPath: config.json
+        - mountPath: /var/cache/pipeline_root
+          name: vol-pipeline-root-tmpfs0
+        - name: dev
+          mountPath: /dev
+        - name: dev-shm
+          mountPath: /dev/shm
+        - name: tmp
+          mountPath: /tmp
+        - name: var-tmp
+          mountPath: /var/tmp
+        - name: run-udev
+          mountPath: /run/udev
+      volumes:
+      - name: dlstreamer-pipeline-server-input
+        configMap:
+          name: dlstreamer-pipeline-server-config-input
+      - name: vol-pipeline-root-tmpfs0
+        emptyDir: {}
+      - name: dev
+        hostPath:
+          path: /dev
+      - name: dev-shm
+        hostPath:
+          path: /dev/shm
+      - name: tmp
+        hostPath:
+          path: /tmp
+      - name: var-tmp
+        hostPath:
+          path: /var/tmp
+      - name: run-udev
+        hostPath:
+          path: /run/udev
