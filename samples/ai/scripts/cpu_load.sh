@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Initialize variables
 interval=2
 sum=0
