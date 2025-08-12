@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+
 import re
 
 def process_fps_file(filename):
