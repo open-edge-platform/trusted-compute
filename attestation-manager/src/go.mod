@@ -6,7 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/open-edge-platform/infra-managers/attestationstatus v0.6.0
 	google.golang.org/grpc v1.72.1
-	k8s.io/apimachinery v0.33.2
+	k8s.io/apimachinery v0.33.4
 	k8s.io/client-go v0.33.2
 )
 
