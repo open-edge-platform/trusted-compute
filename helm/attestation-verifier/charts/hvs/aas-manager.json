@@ -2,7 +2,7 @@
   {{- if .Values.aas.url }}
   "aas_api_url": "{{ .Values.aas.url }}",
   {{- else }}
-  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1",
+  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1",
   {{- end }}
   {{- if .Values.global }}
   "aas_admin_username": "{{ required "A valid admin username is required!" .Values.global.aas.secret.adminUsername }}",
@@ -21,9 +21,9 @@
                "service": "CMS",
                "name": "CertApprover",
                {{- if .Values.global }}
-               "context":"CN=HVS TLS Certificate;SAN=hvs.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.global.controlPlaneHostname }};certType=TLS"
+               "context":"CN=HVS TLS Certificate;SAN=hvs.{{ .Release.Namespace }}.svc,{{ .Values.global.controlPlaneHostname }};certType=TLS"
                {{- else }}
-	       "context":"CN=HVS TLS Certificate;SAN=hvs.{{ .Release.Namespace }}.svc.cluster.local,{{ .Values.controlPlaneHostname }};certType=TLS"
+	       "context":"CN=HVS TLS Certificate;SAN=hvs.{{ .Release.Namespace }}.svc,{{ .Values.controlPlaneHostname }};certType=TLS"
                {{- end }}
             },
             {

@@ -54,15 +54,15 @@ spec:
               protocol: TCP
           env:
             - name: AAS_URL
-              value: "https://aas.{{ .Release.Namespace }}.svc.cluster.local"
+              value: "https://aas.{{ .Release.Namespace }}.svc"
             - name: AAS_PORT
               value: "{{ .Values.env.aasPort }}"
             - name: CMS_URL
-              value: "https://cms.{{ .Release.Namespace }}.svc.cluster.local"
+              value: "https://cms.{{ .Release.Namespace }}.svc"
             - name: CMS_PORT
               value: "{{ .Values.env.cmsPort }}"
             - name: HVS_URL
-              value: "https://hvs.{{ .Release.Namespace }}.svc.cluster.local"
+              value: "https://hvs.{{ .Release.Namespace }}.svc"
             - name: HVS_PORT
               value: "{{ .Values.env.hvsPort }}"
             - name: TCHOSTNAME

@@ -38,7 +38,7 @@ spec:
           image: {{ .Values.global.image.initName }}:{{.Chart.AppVersion }}
           env:
             - name: URL
-              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
@@ -57,9 +57,9 @@ spec:
             - name: NAMESPACE
               value: {{ .Release.Namespace }}
             - name: CMS_K8S_ENDPOINT_URL
-              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc:{{ .Values.service.cms.containerPort }}/cms/v1
             - name: NATS_CERT_SAN_LIST
-              value: {{ .Values.global.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc.cluster.local
+              value: {{ .Values.global.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc
             - name: NATS_ACCOUNT_NAME
               value: {{ .Values.config.accountName }}
             {{- include "factory.envBearerToken" . | nindent 12 }}
@@ -106,7 +106,7 @@ spec:
           image: {{ .Values.image.initName }}:{{.Chart.AppVersion }}
           env:
             - name: URL
-              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
@@ -123,9 +123,9 @@ spec:
             - name: NAMESPACE
               value: {{ .Release.Namespace }}
             - name: CMS_K8S_ENDPOINT_URL
-              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc:{{ .Values.service.cms.containerPort }}/cms/v1
             - name: NATS_CERT_SAN_LIST
-              value: {{ .Values.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc.cluster.local
+              value: {{ .Values.controlPlaneHostname }},nats.{{ .Release.Namespace }}.svc
             - name: NATS_ACCOUNT_NAME
               value: {{ .Values.config.accountName }}
             {{- include "factory.envBearerToken" . | nindent 12 }}

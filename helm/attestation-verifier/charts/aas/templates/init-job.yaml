@@ -35,7 +35,7 @@ spec:
           {{ include "factory.imageInitContainer" . | nindent 10 | trim }}
           env:
             - name: URL
-              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.cms.containerPort }}/cms/v1/version
+              value: https://{{ .Values.dependentServices.cms }}.{{ .Release.Namespace }}.svc:{{ .Values.service.cms.containerPort }}/cms/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
