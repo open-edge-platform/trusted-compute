@@ -11,7 +11,7 @@ Wait for Database bootstrap
   args:
   - >
     i=0 &&
-    while [ -z $(pg_isready -h {{ include "factory.name" . }}db.{{ .Release.Namespace }}.svc.cluster.local -p {{ .Values.config.dbPort }} -U {{ .Values.secret.dbUsername }} | grep "accepting connections") ] && [ $i -lt 5 ]; do  sleep 2; i=$((i+1)); echo "Waiting for {{ include "factory.name" . }} db connection..."; done &&
+    while [ -z $(pg_isready -h {{ include "factory.name" . }}db.{{ .Release.Namespace }}.svc -p {{ .Values.config.dbPort }} -U {{ .Values.secret.dbUsername }} | grep "accepting connections") ] && [ $i -lt 5 ]; do  sleep 2; i=$((i+1)); echo "Waiting for {{ include "factory.name" . }} db connection..."; done &&
     if [ $i -eq 5 ]; then echo "Error: timeout exceeded for {{ include "factory.name" . }} db: wait-for-{{ include "factory.name" . }}db"; exit 1; fi
 {{- end }}
 

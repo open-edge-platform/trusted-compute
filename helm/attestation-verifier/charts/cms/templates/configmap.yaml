@@ -7,13 +7,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   {{- if .Values.global }}
-  SAN_LIST: {{ .Values.global.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
-  AAS_TLS_SAN: {{ .Values.global.controlPlaneHostname }},{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc.cluster.local
+  SAN_LIST: {{ .Values.global.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc
+  AAS_TLS_SAN: {{ .Values.global.controlPlaneHostname }},{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc
   {{- else }}
-  SAN_LIST: {{ .Values.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
-  AAS_TLS_SAN: {{ .Values.controlPlaneHostname }},{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc.cluster.local
+  SAN_LIST: {{ .Values.controlPlaneHostname }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc
+  AAS_TLS_SAN: {{ .Values.controlPlaneHostname }},{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc
   {{- end }}
-  AAS_API_URL: https://{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1
+  AAS_API_URL: https://{{.Values.dependentServices.aas}}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1
 ---
 # templates/init-script-configmap.yaml
 apiVersion: v1

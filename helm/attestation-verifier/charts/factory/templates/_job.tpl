@@ -46,7 +46,7 @@ spec:
               {{- end }}
             {{- end }}
             - name: URL
-              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+              value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1/version
             - name: VERSION
               value: {{.Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
@@ -147,7 +147,7 @@ spec:
                     {{- end }}
                     {{- end }}
                     - name: URL
-                      value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1/version
+                      value: https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1/version
                     - name: VERSION
                       value: {{.Chart.AppVersion }}
                     - name: DEPENDENT_SERVICE_NAME

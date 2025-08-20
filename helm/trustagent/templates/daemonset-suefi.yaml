@@ -15,7 +15,7 @@ metadata:
           {{ include "factory.imageInitContainer" . | nindent 10 | trim }}
           env:
             - name: URL
-              value: https://{{ .Values.dependentServices.hvs }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.hvs.containerPort }}/hvs/v2/version
+              value: https://{{ .Values.dependentServices.hvs }}.{{ .Release.Namespace }}.svc:{{ .Values.service.hvs.containerPort }}/hvs/v2/version
             - name: VERSION
               value: {{ .Chart.AppVersion }}
             - name: DEPENDENT_SERVICE_NAME
