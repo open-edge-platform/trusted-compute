@@ -129,14 +129,6 @@ for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
 done
 popd
 
-#build nri device injector and copy to artifacts
-"${BUILD_DIR}/build-device-injector.sh"
-mkdir -p "${KATA_ARTIFACT_DIR}/opt/nri/plugins"
-cp "${BUILD_DIR}/10-device-injector" "${KATA_ARTIFACT_DIR}/opt/nri/plugins/"
-chmod 755 "${KATA_ARTIFACT_DIR}/opt/nri/plugins/10-device-injector"
-chown root:root "${KATA_ARTIFACT_DIR}/opt/nri/plugins/10-device-injector"
-rm -rf "${BUILD_DIR}/10-device-injector"
-
 #retar the artifacts
 echo "INFO: Retar the artifacts"
 tar -cJf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
