@@ -1,0 +1,44 @@
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/name: nri-plugin-device-injector
+  name: nri-plugin-device-injector
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nri-plugin-device-injector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nri-plugin-device-injector
+    spec:
+      containers:
+      - args:
+        - -idx
+        - "10"
+        image: ghcr.io/containerd/nri/plugins/device-injector:v0.10.0
+        imagePullPolicy: IfNotPresent
+        name: plugin
+        resources:
+          requests:
+            cpu: 2m
+            memory: 5Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /var/run/nri/nri.sock
+          name: nri-socket
+      priorityClassName: system-node-critical
+      volumes:
+      - hostPath:
+          path: /var/run/nri/nri.sock
+          type: Socket
+        name: nri-socket
