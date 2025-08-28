@@ -2,7 +2,7 @@
   {{- if .Values.aas.url }}
   "aas_api_url": "{{ .Values.aas.url }}",
   {{- else }}
-  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.aas.containerPort }}/aas/v1",
+  "aas_api_url": "https://{{ .Values.dependentServices.aas }}.{{ .Release.Namespace }}.svc:{{ .Values.service.aas.containerPort }}/aas/v1",
   {{- end }}
   {{- if .Values.global }}
   "aas_admin_username": "{{ required "A valid admin username is required!" .Values.global.aas.secret.adminUsername }}",
