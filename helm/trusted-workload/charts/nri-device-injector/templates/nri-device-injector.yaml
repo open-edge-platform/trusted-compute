@@ -17,6 +17,8 @@ spec:
       labels:
         app.kubernetes.io/name: nri-plugin-device-injector
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - args:
         - -idx
@@ -33,6 +35,7 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
         volumeMounts:
         - mountPath: /var/run/nri/nri.sock
           name: nri-socket

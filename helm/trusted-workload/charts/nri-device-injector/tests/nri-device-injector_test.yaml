@@ -61,6 +61,9 @@ tests:
           path: spec.template.spec.containers[0].securityContext.capabilities.drop
           value: 
             - ALL
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
 
   - it: should have correct volume and mount configuration
     asserts:
@@ -85,3 +88,9 @@ tests:
       - equal:
           path: spec.template.spec.priorityClassName
           value: system-node-critical
+
+  - it: should have correct pod security context
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
