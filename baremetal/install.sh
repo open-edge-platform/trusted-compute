@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#/
 
 # Trusted Compute Installation Script
 # This script installs trusted-compute components for K3s

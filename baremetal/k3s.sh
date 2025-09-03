@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#/
+
 set -e
 
 K3S_INSTALL_URL="https://get.k3s.io"
