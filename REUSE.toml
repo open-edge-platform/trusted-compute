@@ -23,6 +23,7 @@ path = [
     "**.yml",
     "**.yaml",
     "**.tpl",
+    "**.tmpl",
     "**.json",
     "**/docs/**",
     "**/pkg/**",
