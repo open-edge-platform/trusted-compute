@@ -6,10 +6,15 @@
 SHELL := /bin/bash
 .ONESHELL:
 
+VERSION_SUFFIX                   ?= ""
+VERSION                          ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
+OCI_REPOSITORY                   ?= edge-orch/trusted-compute
+OCI_REGISTRY                     ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
+INSTALLATION_PACKAGE             ?= ${OCI_REGISTRY}/${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package
 ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)${VERSION_SUFFIX}
 ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)${VERSION_SUFFIX}
-TRUSTED_WORKLOAD_VERSION        ?= $(shell cat ./../trusted-workload/VERSION)${VERSION_SUFFIX}
-KATA_DEPLOY_VERSION            ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)${VERSION_SUFFIX}
+TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)${VERSION_SUFFIX}
+KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)${VERSION_SUFFIX}
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -140,6 +145,10 @@ license:
 	## Check licensing with the reuse tool.
 	reuse --version
 	reuse --root . lint
+
+artifact-publish:
+	@echo "Publishing trusted-compute-installation-package.tgz to Production Release Service."
+	oras push $(INSTALLATION_PACKAGE):$(VERSION) --artifact-type tgz ./trusted-compute-installation-package.tgz
 
 list: 
 	@# Help: displays make targets
