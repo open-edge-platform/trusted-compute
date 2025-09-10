@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trusted-compute
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: confidential-containers-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: attestation-verifier
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/attestation-verifier.tgz
+  targetNamespace: trusted-compute
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: attestation-manager
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/attestation-manager.tgz
+  targetNamespace: trusted-compute
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: trustagent
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/trustagent.tgz
+  targetNamespace: trusted-compute
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: trusted-workload
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/trusted-workload.tgz
+  targetNamespace: confidential-containers-system
