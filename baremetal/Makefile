@@ -100,7 +100,7 @@ build:
 	done
 
 	# create final gzipped tarball in the baremetal directory
-	tar -C "$$STAGEDIR" -czf "$(CURDIR)/$${PKG_TAR}" .
+	tar -C "$$STAGEDIR" --transform "s,^,$${PKG_NAME}/," -czf "$(CURDIR)/$${PKG_TAR}" .
 	echo "Created $(CURDIR)/$${PKG_TAR}"
 	rm -rf "$$STAGEDIR" || true
 	@echo "---END MAKEFILE Build---"
