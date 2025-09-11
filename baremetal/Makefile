@@ -6,15 +6,14 @@
 SHELL := /bin/bash
 .ONESHELL:
 
-VERSION_SUFFIX                   ?= ""
-VERSION                          ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
+VERSION                          ?= $(shell cat ./VERSION)
 OCI_REPOSITORY                   ?= edge-orch/trusted-compute
 OCI_REGISTRY                     ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 INSTALLATION_PACKAGE             ?= ${OCI_REGISTRY}/${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package
-ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)${VERSION_SUFFIX}
-ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)${VERSION_SUFFIX}
-TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)${VERSION_SUFFIX}
-KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)${VERSION_SUFFIX}
+ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)
+ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)
+TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
+KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -148,6 +147,7 @@ license:
 
 artifact-publish:
 	@echo "Publishing trusted-compute-installation-package.tgz to Production Release Service."
+	aws ecr create-repository --region us-west-2 --repository-name $(INSTALLATION_PACKAGE) || true
 	oras push $(INSTALLATION_PACKAGE):$(VERSION) --artifact-type tgz ./trusted-compute-installation-package.tgz
 
 list: 

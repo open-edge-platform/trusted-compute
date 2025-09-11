@@ -14,25 +14,32 @@
 
 ### Installation Steps
 
-1. **Copy and Unzip Trusted Compute Package:**
-	 - Transfer `trusted-compute-installation-package.tgz` to your edge node (using scp, USB, etc.).
-	 - Extract the package:
-		 ```bash
-		 tar -xvf trusted-compute-installation-package.tgz
-		 cd trusted-compute-installation-package
-		 ```
+1. **Download Trusted Compute Installation Package (using ORAS):**
+	```bash
+	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package
+	```
+	- The command will download the `trusted-compute-installation-package.tgz` file into your current directory.
+	- Ensure that you have ``oras`` available on your system or follow the instructions in the [oras documentation](https://oras.land/docs/installation) to install it.
 
-2. **Install k3s:**
-	 - Run the provided script to install k3s:
-		 ```bash
-		 sudo ./k3s/k3s.sh --install
-		 ```
+2. **Copy and Unzip Trusted Compute Package:**
+	- Transfer `trusted-compute-installation-package.tgz` to your edge node (using scp, USB, etc.), or use the file downloaded with `oras`.
+	- Extract the package:
+	```bash
+	tar -xvf trusted-compute-installation-package.tgz
+	cd trusted-compute-installation-package
+	```
 
-3. **Install Trusted Compute Extension:**
-	 - Execute the installation script:
-		 ```bash
-		 sudo ./install.sh
-		 ```
+3. **Install k3s:**
+	- Run the provided script to install k3s:
+	```bash
+	sudo ./k3s/k3s.sh --install
+	```
+
+4. **Install Trusted Compute Extension:**
+	- Execute the installation script:
+	```bash
+	sudo ./install.sh
+	```
 
 ---
 
