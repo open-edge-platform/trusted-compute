@@ -148,6 +148,7 @@ license:
 
 artifact-publish:
 	@echo "Publishing trusted-compute-installation-package.tgz to Production Release Service."
+	aws ecr create-repository --region us-west-2 --repository-name $(INSTALLATION_PACKAGE) || true
 	oras push $(INSTALLATION_PACKAGE):$(VERSION) --artifact-type tgz ./trusted-compute-installation-package.tgz
 
 list: 
