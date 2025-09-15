@@ -42,8 +42,7 @@ jobs:
         env:
           changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
-          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples"]'
-
+          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs"]'
           filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           other_changed_projects=$(echo "$changed_projects" | jq -cr --argjson filtered_projects "$filtered_projects" 'map(select(. as $item | $filtered_projects | index($item) | not))')
 
