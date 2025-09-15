@@ -101,6 +101,12 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
+#build kata binary and copy to artifacts
+"${BUILD_DIR}/build-kata-binary.sh"
+cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
+
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
 chown root:bm-agents "${KATA_ARTIFACT_DIR}/opt/kata"
@@ -122,6 +128,14 @@ for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
 	fi
 done
 popd
+
+#build nri device injector and copy to artifacts
+"${BUILD_DIR}/build-device-injector.sh"
+mkdir -p "${KATA_ARTIFACT_DIR}/opt/nri/plugins"
+cp "${BUILD_DIR}/10-device-injector" "${KATA_ARTIFACT_DIR}/opt/nri/plugins/"
+chmod 755 "${KATA_ARTIFACT_DIR}/opt/nri/plugins/10-device-injector"
+chown root:root "${KATA_ARTIFACT_DIR}/opt/nri/plugins/10-device-injector"
+rm -rf "${BUILD_DIR}/10-device-injector"
 
 #retar the artifacts
 echo "INFO: Retar the artifacts"
