@@ -43,9 +43,11 @@ podSecurityContext:
      drop:
      - ALL
   runAsUser: 503
+  runAsGroup: 500
 
 securityContext:
-    runAsUser: 0
+    runAsUser: 503
+    runAsGroup: 500
     capabilities:
      drop:
      - ALL
