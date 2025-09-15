@@ -16,7 +16,7 @@
 
 1. **Download Trusted Compute Installation Package (using ORAS):**
 	```bash
-	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package
+	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:<tag>
 	```
 	- The command will download the `trusted-compute-installation-package.tgz` file into your current directory.
 	- Ensure that you have ``oras`` available on your system or follow the instructions in the [oras documentation](https://oras.land/docs/installation) to install it.
