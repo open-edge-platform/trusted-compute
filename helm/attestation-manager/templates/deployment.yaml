@@ -113,7 +113,7 @@ spec:
             path: /etc/intel_edge_node/orch-ca-cert/orch-ca.crt
         - name: flavor-addition-check
           hostPath:
-            path: /tmp/attestation-manager/
+            path: /tmp/
             type: DirectoryOrCreate
         - name: cms-crt
           emptyDir: {}

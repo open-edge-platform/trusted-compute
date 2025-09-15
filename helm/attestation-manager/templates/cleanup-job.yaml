@@ -14,7 +14,7 @@ spec:
       containers:
       - name: cleanup-am
         image: debian:bullseye-slim
-        command: ["sh", "-c", "rm -rf /tmp/attestation-manager/*"]
+        command: ["sh", "-c", "rm -rf /tmp/attestation-manager/flavor_update"]
         volumeMounts:
         - name: host-volume
           mountPath: /tmp/attestation-manager
@@ -22,4 +22,4 @@ spec:
       volumes:
       - name: host-volume
         hostPath:
-          path: /tmp/attestation-manager
+          path: /tmp/
