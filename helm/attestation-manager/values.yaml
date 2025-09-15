@@ -68,6 +68,7 @@ env:
   amServerAddressType: "DNS" # The address type of the attestation manager server, can be DNS or IP 
   amServerPort: "443" # The port of the traefik
   pollDuration: "60" # duration in minutes
+  InformAMServer: "true" # Whether to inform the attestation manager server about attestation results
 
 dependentServices: # The dependent Service Name for deploying  Certificate Management Service chart, default is the chart name and override is from nameOverride value.
   aas: aas

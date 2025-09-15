@@ -25,6 +25,10 @@ metadata:
 spec:
   chart: https://%{KUBERNETES_API}%/static/charts/attestation-manager.tgz
   targetNamespace: trusted-compute
+  valuesContent: |-
+    env:
+      pollDuration: 5
+      InformAMServer: "false"
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
