@@ -71,6 +71,8 @@ spec:
               value: "{{ .Values.env.logLevel }}"
             - name: POLL_DURATION
               value: "{{ .Values.env.pollDuration }}"
+            - name: INFORM_AM_SERVER
+              value: "{{ .Values.env.InformAMServer }}"
             - name: AAS_USERNAME
               valueFrom:
                 secretKeyRef:
