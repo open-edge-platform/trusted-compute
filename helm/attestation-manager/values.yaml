@@ -5,9 +5,9 @@ replicaCount: 1
 
 image:
   repository: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-manager
-  pullPolicy: Always 
+  pullPolicy: IfNotPresent
   aasManager:
-    pullPolicy: Always # The pull policy for pulling from container registry<br> (Allowed values: `Always`/`IfNotPresent`)
+    pullPolicy: IfNotPresent # The pull policy for pulling from container registry<br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
     initName: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait # The image name of init container
     dbVersionUpgradeImage: # The name of PostgresDB version upgrade image. Can be left empty during helm installation without upgrades, might be required during upgrades, refer product guide for more information

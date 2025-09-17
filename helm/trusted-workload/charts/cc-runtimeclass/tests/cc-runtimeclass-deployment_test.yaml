@@ -120,6 +120,7 @@ tests:
                       type: ""
                     name: host
                 payloadImage: "registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:map[]"
+                imagePullPolicy: IfNotPresent
                 runtimeClasses:
                   - name: kata-qemu
                     pulltype: ""

@@ -14,12 +14,12 @@ secret:
 
 image:
   svc:
-    pullPolicy: Always # The pull policy for pulling from container registry for tagent aas manager <br> (Allowed values: `Always`/`IfNotPresent`)
+    pullPolicy: IfNotPresent # The pull policy for pulling from container registry for tagent aas manager <br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
     initName: <user input>
   aasManager:
     name: <user input> # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
-    pullPolicy: Always # The pull policy for pulling from container registry for AAS Manager<br> (Allowed values: `Always`/`IfNotPresent`)
+    pullPolicy: IfNotPresent # The pull policy for pulling from container registry for AAS Manager<br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
 
 securityContext:
