@@ -109,6 +109,7 @@ download-eca:
 	mkdir -p certs/
 	wget https://download.microsoft.com/download/D/6/5/D65270B2-EAFD-43FD-B9BA-F65CA00B153E/TrustedTpm.cab -O certs/TrustedTpm.cab
 	cabextract certs/TrustedTpm.cab -d certs
+	wget https://tsDE.intel.com/content/OnDieCA/certs/PTL_DBG00014_ZE_ODCA_CA2.cer -O certs/PTL_DBG00014_ZE_ODCA_CA2.cer
 	find certs/ \( -name '*.der' -or -name '*.crt' -or -name '*.cer' \) | sed 's| |\\ |g' | xargs -L1 openssl x509 -inform DER -outform PEM -in >> build/linux/hvs/external-eca.pem 2> /dev/null || true
 	rm -rf certs
 
