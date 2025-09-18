@@ -41,7 +41,7 @@ spec:
               mountPath: /tmp/certs
       containers:
         - name: hvsdb-cert-generator-kubectl
-          image: bitnami/kubectl:1.32
+          image: bitnamilegacy/kubectl:1.33.0
           imagePullPolicy: Always
           securityContext:
             {{- toYaml .Values.securityContext.hvsdbCertGenerator | nindent 12 }}

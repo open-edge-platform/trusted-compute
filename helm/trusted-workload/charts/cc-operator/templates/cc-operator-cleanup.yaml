@@ -65,7 +65,7 @@ spec:
       serviceAccountName: cleanup-trusted-workload-sa
       containers:
       - name: cleanup-trusted-workload
-        image: bitnami/kubectl:1.33.0
+        image: bitnamilegacy/kubectl:1.33.0
         command: ["/bin/sh", "-c"]
         args:
         - |
