@@ -3,26 +3,47 @@
 # * SPDX-License-Identifier: BSD-3-Clause
 # */
 
-FROM debian:bookworm-slim@sha256:6ac2c08566499cc2415926653cf2ed7c3aedac445675a013cc09469c9e118fdd
+# Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
+FROM golang:1.24.7-bookworm AS builder
 
-COPY nats/download-tls-certs.sh /download-tls-certs.sh
-COPY nats/entrypoint.sh /entrypoint.sh
+# allow optional CFSSL_TAG override at build time; if empty, resolve latest
+ARG CFSSL_TAG
+RUN set -eux; \
+    apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates && \
+    CFSSL_TAG="${CFSSL_TAG:-$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/cloudflare/cfssl/releases/latest | sed -E 's:.*/::')}" && \
+    echo "Building cfssl ${CFSSL_TAG}" && \
+    git clone --depth 1 --branch "${CFSSL_TAG}" https://github.com/cloudflare/cfssl.git /src/cfssl && \
+    cd /src/cfssl && \
+    # ensure modules on and update x/crypto to latest to avoid CVEs
+    go env -w GO111MODULE=on && \
+    go get golang.org/x/crypto@latest && \
+    go mod tidy && \
+    go mod vendor && \
+    # build binaries into /out
+    mkdir -p /out && \
+    go build -o /out/cfssl ./cmd/cfssl && \
+    go build -o /out/cfssljson ./cmd/cfssljson && \
+    chmod 0755 /out/cfssl /out/cfssljson && \
+    # cleanup builder apt caches
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get -yq install --no-install-recommends curl ca-certificates wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    curl -LO https://dl.k8s.io/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
-    chmod +x kubectl && \
-    wget -O /usr/local/bin/cfssl http://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
-    wget -O /usr/local/bin/cfssljson http://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
-    chmod +x /usr/local/bin/cfssl /usr/local/bin/cfssljson && \
-    mkdir -p /secrets && \
-    touch /.container-env && \
-    chmod +x /entrypoint.sh && \
-    chmod +x /download-tls-certs.sh
+FROM debian:bookworm-slim@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+ARG KUBECTL_VER
 
-# Add a user and switch to it
+RUN set -eux; \
+    apt-get update && \
+    apt-get -yq install --no-install-recommends ca-certificates curl && \
+    : ${KUBECTL_VER:=$(curl -fsSL https://dl.k8s.io/release/stable.txt)} && \
+    curl -fsSLo /tmp/kubectl "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl" && \
+    curl -fsSLo /tmp/kubectl.sha256 "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl.sha256" && \
+    echo "$(cat /tmp/kubectl.sha256)  /tmp/kubectl" | sha256sum -c - && \
+    install -m 0755 /tmp/kubectl /usr/local/bin/kubectl && rm -f /tmp/kubectl /tmp/kubectl.sha256 && \
+    mkdir -p /secrets && touch /.container-env && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# copy the cfssl binaries from builder stage (no Go runtime or sources remain)
+COPY --from=builder --chown=root:root --chmod=0755 /out/cfssl /usr/local/bin/cfssl
+COPY --from=builder --chown=root:root --chmod=0755 /out/cfssljson /usr/local/bin/cfssljson
+
 USER 503
-
-ENTRYPOINT [ "/entrypoint.sh"]
+ENTRYPOINT [ "/entrypoint.sh" ]

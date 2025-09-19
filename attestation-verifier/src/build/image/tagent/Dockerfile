@@ -1,12 +1,12 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 
-FROM debian:bookworm-slim@sha256:6ac2c08566499cc2415926653cf2ed7c3aedac445675a013cc09469c9e118fdd
+FROM debian:bookworm-slim@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
 
 LABEL org.label-schema.name="Trustagent Agent" \
     org.label-schema.vendor="Intel Corporation" \
     org.label-schema.license="BSD-3-Clause" \
-    org.label-schema.url="https://github.com/intel-secl/intel-secl"
+    org.label-schema.url="https://github.com/open-edge-platform/trusted-compute"
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends libtss2-esys-3.0.2-0 && \
