@@ -21,7 +21,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: cleanup-ccruntime
-          image: bitnami/kubectl:1.33.0
+          image: bitnamilegacy/kubectl:1.33.0
           command: ["/bin/sh", "-c"]
           args:
             - |

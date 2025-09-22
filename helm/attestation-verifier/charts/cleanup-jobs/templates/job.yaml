@@ -23,7 +23,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: cleanup-jobs
-          image: bitnami/kubectl:1.32
+          image: bitnamilegacy/kubectl:1.33.0
           imagePullPolicy: Always
           securityContext:
             {{- toYaml .Values.securityContext.cleanupJobs | nindent 12 }}

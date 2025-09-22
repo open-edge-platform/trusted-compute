@@ -44,7 +44,7 @@ tests:
           value: cleanup-ccruntime
       - equal:
           path: spec.template.spec.containers[0].image
-          value: bitnami/kubectl:1.33.0
+          value: bitnamilegacy/kubectl:1.33.0
       - equal:
           path: spec.template.spec.containers[0].command
           value:

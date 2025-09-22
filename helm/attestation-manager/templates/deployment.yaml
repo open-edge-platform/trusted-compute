@@ -32,7 +32,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: wait-for-verifier
-          image: bitnami/kubectl:latest
+          image: bitnamilegacy/kubectl:1.33.0
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           command: ["/bin/sh", "-c"]
