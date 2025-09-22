@@ -15,6 +15,7 @@ if [ -z "$1" ]; then
 fi
 
 BUILD_PARAM=$1
+GO_VER=go1.24.7
 
 #Installing Pre-requisites
 set -ex
@@ -34,16 +35,16 @@ ln -s /usr/bin/pip3 /usr/bin/pip
 
 
 #Installing go
-wget https://dl.google.com/go/go1.23.9.linux-amd64.tar.gz  &> /dev/null
+wget https://dl.google.com/go/$GO_VER.linux-amd64.tar.gz  &> /dev/null
 if  [ $? -ne 0 ]; then
     echo "Failed to download the go package"
     exit 1
 fi
-tar -xzf go1.23.9.linux-amd64.tar.gz
+tar -xzf $GO_VER.linux-amd64.tar.gz
 mv go /usr/local
 export GOROOT=/usr/local/go
 export PATH=$GOROOT/bin:$PATH
-rm -rf go1.23.9.linux-amd64.tar.gz
+rm -rf $GO_VER.linux-amd64.tar.gz
 
 apt update &> /dev/null
 apt  install -y \
