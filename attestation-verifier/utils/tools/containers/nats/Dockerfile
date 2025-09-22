@@ -6,6 +6,8 @@
 # Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
 FROM golang:1.24.7-bookworm AS builder
 
+WORKDIR /src/cfssl
+
 # allow optional CFSSL_TAG override at build time; if empty, resolve latest
 ARG CFSSL_TAG
 RUN set -eux; \
@@ -13,10 +15,10 @@ RUN set -eux; \
     CFSSL_TAG="${CFSSL_TAG:-$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/cloudflare/cfssl/releases/latest | sed -E 's:.*/::')}" && \
     echo "Building cfssl ${CFSSL_TAG}" && \
     git clone --depth 1 --branch "${CFSSL_TAG}" https://github.com/cloudflare/cfssl.git /src/cfssl && \
-    cd /src/cfssl && \
     # ensure modules on and update x/crypto to latest to avoid CVEs
     go env -w GO111MODULE=on && \
     go get golang.org/x/crypto@latest && \
+    go get google.golang.org/protobuf@latest && \
     go mod tidy && \
     go mod vendor && \
     # build binaries into /out
@@ -44,6 +46,8 @@ RUN set -eux; \
 # copy the cfssl binaries from builder stage (no Go runtime or sources remain)
 COPY --from=builder --chown=root:root --chmod=0755 /out/cfssl /usr/local/bin/cfssl
 COPY --from=builder --chown=root:root --chmod=0755 /out/cfssljson /usr/local/bin/cfssljson
+COPY --chmod=0755 nats/download-tls-certs.sh /download-tls-certs.sh
+COPY --chmod=0755 nats/entrypoint.sh /entrypoint.sh
 
 USER 503
 ENTRYPOINT [ "/entrypoint.sh" ]
