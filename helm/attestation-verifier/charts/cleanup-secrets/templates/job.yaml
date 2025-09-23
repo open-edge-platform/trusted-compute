@@ -24,7 +24,7 @@ spec:
       containers:
         - name: cleanup-secrets
           image: bitnamilegacy/kubectl:1.33.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           securityContext:
             {{- toYaml .Values.securityContext.cleanupSecrets | nindent 12 }}
           command: ["/bin/sh", "-c"]

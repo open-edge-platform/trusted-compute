@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/logging"
 )
@@ -33,6 +34,7 @@ type Config struct {
 	AttestationManagerServerPort    string
 	TCHOSTNAME                      string
 	POLLDURATION                    int
+	InformAMServer                  bool
 }
 
 // LoadConfig loads the configuration from environment variables
@@ -59,6 +61,20 @@ func LoadConfig() (*Config, error) {
 		"Attestation_Manager_SERVER_ADDRESS": &config.AttestationManagerServerAddress,
 		"Attestation_Manager_SERVER_PORT":    &config.AttestationManagerServerPort,
 		"TCHOSTNAME":                         &config.TCHOSTNAME,
+	}
+
+	// Read INFORM_AM_SERVER env var. Default to true when unset or invalid.
+	informStr := os.Getenv("INFORM_AM_SERVER")
+	if strings.TrimSpace(informStr) == "" {
+		config.InformAMServer = true
+	} else {
+		informVal, err := strconv.ParseBool(informStr)
+		if err != nil {
+			logging.Info("Invalid INFORM_AM_SERVER value, defaulting to true")
+			config.InformAMServer = true
+		} else {
+			config.InformAMServer = informVal
+		}
 	}
 
 	// Handle POLLDURATION separately as it requires conversion
