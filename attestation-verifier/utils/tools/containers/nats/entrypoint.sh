@@ -9,12 +9,12 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-aas_pod=$(./kubectl get pod -n $NAMESPACE -l app.kubernetes.io/name=aas -o jsonpath="{.items[0].metadata.name}")
+aas_pod=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/name=aas -o jsonpath="{.items[0].metadata.name}")
 if [ $? != 0 ]; then
     echo "Error while retrieving AAS pod name"
     exit 1
 fi
-credentials=$(./kubectl exec -n $NAMESPACE --stdin $aas_pod -- authservice setup create-credentials --force)
+credentials=$(kubectl exec -n $NAMESPACE --stdin $aas_pod -- authservice setup create-credentials --force)
 if [ $? != 0 ]; then
     echo "Error while executing create-credentials setup task"
     exit 1
@@ -37,7 +37,7 @@ fi
 #sed -i "s#operator:.*#operator: $nats_operator#g" nats.conf || exit 1
 #sed -i "s#resolver_preload:.*#resolver_preload: { $resolver_jwt }#g" nats.conf || exit 1
 
-./kubectl create secret generic nats-certs --from-file=secrets --namespace=$NAMESPACE
+kubectl create secret generic nats-certs --from-file=secrets --namespace=$NAMESPACE
 if [ $? != 0 ]; then
     echo "Failed to create NATS certificates"
     exit 1
