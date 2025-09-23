@@ -167,31 +167,43 @@ func main() {
 		if !secureBootStatus {
 			logging.Info("SecureBoot Disabled, Informing Attestation Manager Server")
 			var attestationDetails string = "SecureBoot Disabled"
-			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestationDetails)
-			if err != nil {
-				logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+			if cfg.InformAMServer {
+				message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestationDetails)
+				if err != nil {
+					logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+				} else {
+					logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				}
 			} else {
-				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				logging.Info("Skipping informing Attestation Manager Server (cfg.InformAMServer=false)")
 			}
 			logging.Info("Step 7: SecureBoot Disabled, cordoning the node")
 			cordonDrainNode(cfg, attestToken)
 		} else if !parseSuccess {
 			// var attestationDetails string = "Attestation Fail"
-			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestStatus)
-			if err != nil {
-				logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+			if cfg.InformAMServer {
+				message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(2), hardwareGuid, attestStatus)
+				if err != nil {
+					logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+				} else {
+					logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				}
 			} else {
-				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				logging.Info("Skipping informing Attestation Manager Server (cfg.InformAMServer=false)")
 			}
 			cordonDrainNode(cfg, attestToken)
 		} else {
 			logging.Info("Step 7: Trust report parsed successfully")
 			// Inform Attestation  Manager Server Server on successful attestation first time
-			message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(1), hardwareGuid, attestStatus)
-			if err != nil {
-				logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+			if cfg.InformAMServer {
+				message, err := api.InformToAttestationManagerServer(cfg, attestationstatusnmgr_sb.AttestationStatus(1), hardwareGuid, attestStatus)
+				if err != nil {
+					logging.Error(fmt.Sprintf("Failed to inform Attestation  Manager Server service: %v", err))
+				} else {
+					logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				}
 			} else {
-				logging.Info(fmt.Sprintf("Successfully informed Attestation  Manager Server service: %s", message))
+				logging.Info("Skipping informing Attestation Manager Server (cfg.InformAMServer=false)")
 			}
 		}
 

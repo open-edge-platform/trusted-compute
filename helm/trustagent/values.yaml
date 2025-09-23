@@ -19,12 +19,12 @@ dependentServices: # The dependent Service Name for deploying  TA chart, default
 image:
   svc:
     name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/tagent # The image registry where TA image is pushed<br> (**REQUIRED**)
-    pullPolicy: Always # The pull policy for pulling from container registry for TA <br> (Allowed values: `Always`/`IfNotPresent`)
+    pullPolicy: IfNotPresent # The pull policy for pulling from container registry for TA <br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret: # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
     initName:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait
   aasManager:
     name:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager # The image registry where AAS Manager image is pushed<br> (**REQUIRED**)
-    pullPolicy: Always # The pull policy for pulling from container registry for AAS Manager <br> (Allowed values: `Always`/`IfNotPresent`)
+    pullPolicy: IfNotPresent # The pull policy for pulling from container registry for AAS Manager <br> (Allowed values: `Always`/`IfNotPresent`)
     imagePullSecret:  # The image pull secret for authenticating with image registry, can be left empty if image registry does not require authentication
     initName:  registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/init-wait  # The image name of init container
 

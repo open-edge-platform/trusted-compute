@@ -24,7 +24,7 @@ spec:
       containers:
         - name: cleanup-jobs
           image: bitnamilegacy/kubectl:1.33.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           securityContext:
             {{- toYaml .Values.securityContext.cleanupJobs | nindent 12 }}
           command: ["/bin/sh", "-c"]

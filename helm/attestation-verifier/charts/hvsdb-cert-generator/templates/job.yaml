@@ -25,7 +25,7 @@ spec:
       initContainers:
         - name: hvsdb-cert-generator-cfssl
           image: cfssl/cfssl:1.6.1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           securityContext:
             {{- toYaml .Values.securityContext.hvsdbCertGenerator | nindent 12 }}
           command: ["/bin/sh", "-c"]
@@ -42,7 +42,7 @@ spec:
       containers:
         - name: hvsdb-cert-generator-kubectl
           image: bitnamilegacy/kubectl:1.33.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           securityContext:
             {{- toYaml .Values.securityContext.hvsdbCertGenerator | nindent 12 }}
           command: ["/bin/sh", "-c"]

@@ -83,6 +83,7 @@ spec:
                         type: ""
                       name: host
                   payloadImage: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: IfNotPresent
                   runtimeClasses:
                     - name: kata-qemu
                       pulltype: ""
