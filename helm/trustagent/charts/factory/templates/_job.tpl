@@ -55,8 +55,8 @@ spec:
               if [ -z "$BEARER_TOKEN" ]; then exit 1; fi &&
               INSTALLATION_TOKEN=`echo $BEARER_TOKEN | cut -d " " -f1` &&
               if [ -z "$INSTALLATION_TOKEN" ]; then exit 1; fi &&
-              ./kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found  &&
-              ./kubectl create secret generic {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --from-literal=BEARER_TOKEN=$INSTALLATION_TOKEN &&
+              kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found  &&
+              kubectl create secret generic {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --from-literal=BEARER_TOKEN=$INSTALLATION_TOKEN &&
               exit 0
           volumeMounts:
             - name: {{ include "factory.name" . }}-aas-json
