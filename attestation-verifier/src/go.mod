@@ -27,7 +27,7 @@ require (
 	github.com/russellhaering/goxmldsig v1.5.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.20.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/vmware/govmomi v0.52.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.42.0
