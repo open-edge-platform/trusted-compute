@@ -8,11 +8,7 @@ LABEL org.label-schema.name="Trustagent Agent" \
     org.label-schema.license="BSD-3-Clause" \
     org.label-schema.url="https://github.com/open-edge-platform/trusted-compute"
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends libtss2-esys-3.0.2-0 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /opt/trustagent/var/system-info/ /opt/trustagent/var/ramfs /var/log/trustagent /config/
+RUN mkdir -p /opt/trustagent/var/system-info/ /opt/trustagent/var/ramfs /var/log/trustagent /config/
 
 # Copy files in a single layer to reduce image size
 COPY cmd/tagent/tagent /usr/bin/tagent
@@ -23,7 +19,11 @@ COPY pkg/lib/common/upgrades/config_upgrade.sh /config_upgrade.sh
 COPY pkg/lib/common/upgrades/config-upgrade /config-upgrade
 
 # Set permissions in a single RUN command
-RUN touch /.container-env && \
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends libtss2-esys-3.0.2-0 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    touch /.container-env && \
     chmod +x /entrypoint.sh /container_upgrade.sh /config_upgrade.sh && \
     chmod -R +x /config /config-upgrade
 

@@ -28,13 +28,13 @@ build:
 	@# Help: Runs build stage
 	@echo "---MAKEFILE BUILD---"
 	cd src/ && go mod tidy
-	cd src/cmd/app && go build -o main
+	cd src/cmd/app && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o attestation-manager
 	@echo "---END MAKEFILE Build---"
 
 clean:
 	@# Help: Runs clean stage
 	@echo "---MAKEFILE CLEAN---"
-	rm -rf src/cmd/app/main
+	rm -rf src/cmd/app/attestation-manager
 	rm -rf src/go.sum
 	@echo "---END MAKEFILE CLEAN---"
 .PHONY: docker-push

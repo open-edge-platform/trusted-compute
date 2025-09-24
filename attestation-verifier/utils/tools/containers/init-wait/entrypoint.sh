@@ -6,6 +6,16 @@ export WAIT_INTERVAL=${WAIT_INTERVAL:-2}
 export ITERATIONS=${ITERATIONS:-100}
 i=0
 
+# Validate numeric, positive integer values
+if ! [[ "$WAIT_INTERVAL" =~ ^[0-9]+$ ]] || [ "$WAIT_INTERVAL" -le 0 ]; then
+  echo "Invalid WAIT_INTERVAL: $WAIT_INTERVAL" >&2
+  exit 1
+fi
+if ! [[ "$ITERATIONS" =~ ^[0-9]+$ ]] || [ "$ITERATIONS" -le 0 ]; then
+  echo "Invalid ITERATIONS: $ITERATIONS" >&2
+  exit 1
+fi
+
 # Waits for $ITERATIONS * $WAIT_INTERVAL for any service with given API with $URL
 while [[ $i -lt $ITERATIONS ]]; do
   resp=$(curl -k -sw '%{http_code}' --connect-timeout 1 "$URL" -o /dev/null)
