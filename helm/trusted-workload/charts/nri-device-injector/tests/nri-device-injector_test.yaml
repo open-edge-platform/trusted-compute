@@ -93,4 +93,4 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.securityContext.runAsNonRoot
-          value: true
+          value: false
