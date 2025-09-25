@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: nri-plugin-device-injector
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
       containers:
       - args:
         - -idx
