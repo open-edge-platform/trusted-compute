@@ -1,10 +1,10 @@
-# Trusted Compute DL Streamer Pipeline Server Sample Applications
+# Trusted Compute Smart City Intersection
 
 ## Description
 
 The Smart Intersection is a sample application that unifies the analytics of a traffic intersection.
 
-DL Streamer Pipeline Server is containerized microservice for easy development and deployment of video analytics pipelines. This example demonstrates the deployment of the DL Streamer Pipeline Server in a TC environment, facilitating the isolation of video analytics pipelines.
+Deep Learning Streamer Pipeline Server (DL Streamer Pipeline Server) utilizes a pre-trained object detection model to generate object detection metadata and and a local NTP server for synchronized timestamps. This metadata is published to the MQTT broker. This example demonstrates the deployment of the DL Streamer Pipeline Server in a TC environment, facilitating the isolation of video analytics pipelines.
 
 ## Steps to Deploy
 
@@ -23,7 +23,7 @@ cd edge-ai-suites/metro-ai-suite/metro-vision-ai-app-recipe/
 
 ### Step 2: Replace the Deployment YAML
 
-Inside the `smart-intersection/chart/templates/dlstreamer-pipeline-server/` directory, replace the `https://github.com/open-edge-platform/trusted-compute/tree/main/samples/ai/smart-intersection/deployment.yaml` with the YAML file provided in this repository.
+Inside the `smart-intersection/chart/templates/dlstreamer-pipeline-server/` directory, replace the `https://github.com/open-edge-platform/edge-ai-suites/blob/main/metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/chart/templates/dlstreamer-pipeline-server/deployment.yaml` with the YAML file provided in this repository.
 
 ```bash
 # Navigate to the templates directory
@@ -42,22 +42,26 @@ We have configured resource allocation to allocate CPU cores and memory. You can
 Follow the steps mentioned in the official documentation to run the Helm chart:
 
 [Steps to Deploy the Helm Chart](https://github.com/open-edge-platform/edge-ai-suites/blob/main/metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/docs/user-guide/how-to-deploy-helm.md)
-metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/docs/user-guide/how-to-deploy-helm.md
 
 ## Step 5: Verify DL Streamer Launch
 
 ### 1. Verify the DL Streamer Launch in TC
 
-To  Verify the DL Streamer Launch in TC run the following command you will be able to see the VM info.
+To confirm that the DL Streamer has successfully launched in the Trusted Compute environment, you can check if the virtual machine associated with it is running.
 
 ```bash
 ps aux | grep qemu
 ```
+If DL Streamer is running correctly, you should see a process entry for the corresponding QEMU instance.
+This entry typically includes:
+- The command used to launch the VM
+- The amount of CPU/memory it is using
+- The process ID (PID) of the VM
 
 ### 2. Check DL Streamer Logs
 
-To monitor the DL Streamer and see the total frames per second (FPS) count, check the logs of the DL Streamer pod:
+To monitor the DL Streamer and see the total frames per second (FPS) count, postdecode timestamp, check the logs of the DL Streamer pod:
 
 ```bash
-kubectl logs <dl-streamer-deployment-name> -n apps
+kubectl logs <dl-streamer-deployment-name> -n smart-intersection
 ```
