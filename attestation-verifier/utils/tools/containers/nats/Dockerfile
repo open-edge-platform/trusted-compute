@@ -4,7 +4,7 @@
 # */
 
 # Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
-FROM golang:1.24.7-bookworm AS builder
+FROM golang:1.25.1-bookworm AS builder
 
 WORKDIR /src/cfssl
 
