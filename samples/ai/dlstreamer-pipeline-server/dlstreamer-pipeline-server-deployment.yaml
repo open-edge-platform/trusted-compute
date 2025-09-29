@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       labels:
-        app: dlstreamer-pipeline-server
+        app:  dlstreamer-pipeline-server
     spec:
       runtimeClassName: kata-qemu
       securityContext:
