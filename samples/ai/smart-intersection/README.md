@@ -8,6 +8,16 @@ Deep Learning Streamer Pipeline Server (DL Streamer Pipeline Server) utilizes a 
 
 ## Steps to Deploy
 
+## Tools Installed:
+```bash
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    chmod +x get_helm.sh
+    ./get_helm.sh
+    # Verify the installation.
+    helm version
+```
+
+
 ### Step 1: Clone the Repository
 
 Clone and navigate to the  Smart Intersection Helm repository:
