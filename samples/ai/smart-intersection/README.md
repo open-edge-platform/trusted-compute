@@ -9,7 +9,7 @@ Deep Learning Streamer Pipeline Server (DL Streamer Pipeline Server) utilizes a 
 ## Steps to Deploy
 
 ## Tools Installed:
-install k3s
+Install K3s if it is not already available on the system.
 ```bash
     # Install K3s
     curl -sfL https://get.k3s.io | sh -
