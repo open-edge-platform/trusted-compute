@@ -9,14 +9,33 @@ Deep Learning Streamer Pipeline Server (DL Streamer Pipeline Server) utilizes a 
 ## Steps to Deploy
 
 ## Tools Installed:
+install k3s
+```bash
+    # Install K3s
+    curl -sfL https://get.k3s.io | sh -
+    # Verify K3s Installation
+    sudo systemctl status k3s
+    # Wait a moment for K3s to fully start, then check nodes
+    sudo k3s kubectl get nodes
+    # Set up Kubeconfig
+    mkdir -p ~/.kube
+    sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+    sudo chown $USER:$USER ~/.kube/config
+    chmod 600 ~/.kube/config
+    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
+    source ~/.bashrc  
+```
+
+Install helm:
 ```bash
     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
     chmod +x get_helm.sh
+    # Execute the script to install Helm.
     ./get_helm.sh
     # Verify the installation.
     helm version
 ```
-
 
 ### Step 1: Clone the Repository
 
