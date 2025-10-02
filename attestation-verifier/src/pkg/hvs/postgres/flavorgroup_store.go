@@ -48,7 +48,7 @@ func (f *FlavorGroupStore) Create(fg *hvs.FlavorGroup) (*hvs.FlavorGroup, error)
 		return nil, errors.Wrap(err, "postgres/flavorgroup_store:Create() failed to create Flavorgroup")
 	}
 	// Add default flavorgroup templates if they are missing
-	if fg.FlavorTemplateIds == nil || len(fg.FlavorTemplateIds) == 0 {
+	if len(fg.FlavorTemplateIds) == 0 {
 		defaultFlavorGroup, err := f.Search(&models.FlavorGroupFilterCriteria{NameEqualTo: models.FlavorGroupsAutomatic.String()})
 		if err != nil {
 			return nil, errors.Wrap(err, "postgres/flavorgroup_store:Create() failed to search default flavorgroup")
@@ -207,9 +207,17 @@ func (f *FlavorGroupStore) AddFlavors(fgId uuid.UUID, fIds []uuid.UUID) ([]uuid.
 		return nil, errors.New("postgres/flavorgroup_store:AddFlavors()- invalid input : must have flavorId and flavorgroupId to associate flavorgroup with the flavor")
 	}
 
+	seen := make(map[uuid.UUID]struct{}, len(fIds))
 	fgfValues := []string{}
 	fgfValueArgs := []interface{}{}
 	for _, fId := range fIds {
+		if fId == uuid.Nil {
+			continue // skip invalid flavor id
+		}
+		if _, ok := seen[fId]; ok {
+			continue // skip duplicates
+		}
+		seen[fId] = struct{}{}
 		fgfValues = append(fgfValues, "(?, ?)")
 		fgfValueArgs = append(fgfValueArgs, fgId)
 		fgfValueArgs = append(fgfValueArgs, fId)
@@ -257,14 +265,25 @@ func (f *FlavorGroupStore) SearchFlavors(fgId uuid.UUID) ([]uuid.UUID, error) {
 	defaultLog.Trace("postgres/flavorgroup_store:SearchFlavors() Entering")
 	defer defaultLog.Trace("postgres/flavorgroup_store:SearchFlavors() Leaving")
 
+	if fgId == uuid.Nil {
+		return nil, errors.New("postgres/flavorgroup_store:SearchFlavors() invalid fgId")
+	}
+
 	// filter by flavorgroup id
 	tx := f.Store.Db.Model(&flavorgroupFlavor{})
 	tx = tx.Select("flavor_id").Where("flavorgroup_id = ?", fgId)
-	if tx == nil {
-		return nil, errors.New("postgres/flavorgroup_store:SearchFlavors() Unexpected Error. Could not build" +
-			" a gorm query object in FlavorGroupsFlavors Search function.")
+
+	if tx.Error != nil {
+		return nil, errors.Wrap(tx.Error, "postgres/flavorgroup_store:SearchFlavors() failed to build query")
 	}
 
+	// Prefer Pluck to fill the slice directly
+	var flavorIds []uuid.UUID
+	if err := tx.Pluck("flavor_id", &flavorIds).Error; err == nil {
+		return flavorIds, nil
+	}
+
+	// Fallback to Rows+Scan if needed
 	rows, err := tx.Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "postgres/flavorgroup_store:SearchFlavors() failed to retrieve records from db")
@@ -275,8 +294,6 @@ func (f *FlavorGroupStore) SearchFlavors(fgId uuid.UUID) ([]uuid.UUID, error) {
 			defaultLog.WithError(derr).Error("Error closing rows")
 		}
 	}()
-
-	flavorIds := []uuid.UUID{}
 
 	for rows.Next() {
 		flavorId := uuid.UUID{}
@@ -364,12 +381,23 @@ func (f *FlavorGroupStore) searchFlavorGroups(flavorId *uuid.UUID) ([]uuid.UUID,
 	defaultLog.Trace("postgres/flavorgroup_store:searchFlavorGroups() Entering")
 	defer defaultLog.Trace("postgres/flavorgroup_store:searchFlavorGroups() Leaving")
 
+	if flavorId == nil || *flavorId == uuid.Nil {
+		return nil, errors.New("postgres/flavorgroup_store:searchFlavorGroups() invalid flavorId")
+	}
+
 	// filter by flavorgroup id
-	tx := f.Store.Db.Model(&flavorgroupFlavor{})
-	tx = tx.Select("flavorgroup_id").Where("flavor_id = ?", flavorId)
-	if tx == nil {
-		return nil, errors.New("postgres/flavorgroup_store:searchFlavorGroups() Unexpected Error. Could not build" +
-			" a gorm query object in FlavorGroupsFlavors Search function.")
+	tx := f.Store.Db.Model(&flavorgroupFlavor{}).
+		Select("flavorgroup_id").
+		Where("flavor_id = ?", flavorId)
+
+	if tx.Error != nil {
+		return nil, errors.Wrap(tx.Error, "postgres/flavorgroup_store:searchFlavorGroups() failed to build query")
+	}
+
+	// prefer Pluck if supported; fallback to Rows+Scan if not
+	flavorGroupIds := []uuid.UUID{}
+	if err := tx.Pluck("flavorgroup_id", &flavorGroupIds).Error; err == nil {
+		return flavorGroupIds, nil
 	}
 
 	rows, err := tx.Rows()
@@ -383,7 +411,6 @@ func (f *FlavorGroupStore) searchFlavorGroups(flavorId *uuid.UUID) ([]uuid.UUID,
 		}
 	}()
 
-	flavorGroupIds := []uuid.UUID{}
 	for rows.Next() {
 		flavorGroupId := uuid.UUID{}
 		if err := rows.Scan(&flavorGroupId); err != nil {
@@ -427,9 +454,22 @@ func (f *FlavorGroupStore) AddFlavorTemplates(fgId uuid.UUID, ftIds []uuid.UUID)
 	defer defaultLog.Trace("postgres/flavorgroup_store:AddFlavorTemplates() Leaving")
 
 	defaultLog.Debugf("postgres/flavorgroup_store:AddFlavorTemplates() Linking flavorgroup %v with flavor-templates %+q", fgId, ftIds)
+
+	if len(ftIds) <= 0 || fgId == uuid.Nil {
+		return errors.New("postgres/flavorgroup_store:AddFlavorTemplates()- invalid input : must have flavorgroupId and flavorTemplateId to create the association")
+	}
+
+	seen := make(map[uuid.UUID]struct{}, len(ftIds))
 	var hfgValues []string
 	var hfgValueArgs []interface{}
 	for _, ftId := range ftIds {
+		if ftId == uuid.Nil {
+			continue // skip invalid flavor template id
+		}
+		if _, ok := seen[ftId]; ok {
+			continue // skip duplicates
+		}
+		seen[ftId] = struct{}{}
 		hfgValues = append(hfgValues, "(?, ?)")
 		hfgValueArgs = append(hfgValueArgs, ftId)
 		hfgValueArgs = append(hfgValueArgs, fgId)

@@ -293,9 +293,22 @@ func (hs *HostStore) AddFlavorgroups(hId uuid.UUID, fgIds []uuid.UUID) error {
 	defer defaultLog.Trace("postgres/host_store:AddFlavorgroups() Leaving")
 
 	defaultLog.Debugf("postgres/host_store:AddFlavorgroups() Linking host %v with flavorgroups %+q", hId, fgIds)
+
+	if len(fgIds) <= 0 || hId == uuid.Nil {
+		return errors.New("postgres/host_store:AddFlavorgroups()- invalid input : must have flavorgroupId and hostId to create the trust cache")
+	}
+
+	seen := make(map[uuid.UUID]struct{}, len(fgIds))
 	var hfgValues []string
 	var hfgValueArgs []interface{}
 	for _, fgId := range fgIds {
+		if fgId == uuid.Nil {
+			continue // skip invalid flavorgroup id
+		}
+		if _, ok := seen[fgId]; ok {
+			continue // skip duplicates
+		}
+		seen[fgId] = struct{}{}
 		hfgValues = append(hfgValues, "(?, ?)")
 		hfgValueArgs = append(hfgValueArgs, hId)
 		hfgValueArgs = append(hfgValueArgs, fgId)
@@ -376,9 +389,17 @@ func (hs *HostStore) AddTrustCacheFlavors(hId uuid.UUID, fIds []uuid.UUID) ([]uu
 		return nil, errors.New("postgres/host_store:AddTrustCacheFlavors()- invalid input : must have flavorId and hostId to create the trust cache")
 	}
 
+	seen := make(map[uuid.UUID]struct{}, len(fIds))
 	trustCacheValues := []string{}
 	trustCacheValueArgs := []interface{}{}
 	for _, fId := range fIds {
+		if fId == uuid.Nil {
+			continue // skip invalid flavor id
+		}
+		if _, ok := seen[fId]; ok {
+			continue // skip duplicates
+		}
+		seen[fId] = struct{}{}
 		trustCacheValues = append(trustCacheValues, "(?, ?)")
 		trustCacheValueArgs = append(trustCacheValueArgs, fId)
 		trustCacheValueArgs = append(trustCacheValueArgs, hId)
@@ -457,9 +478,17 @@ func (hs *HostStore) AddHostUniqueFlavors(hId uuid.UUID, fIds []uuid.UUID) ([]uu
 		return nil, errors.New("postgres/host_store:AddHostUniqueFlavors()- invalid input : must have flavorId and hostId associate flavors ")
 	}
 
+	seen := make(map[uuid.UUID]struct{}, len(fIds))
 	uniqueFlavorsValues := []string{}
 	uniqueFlavorsValueArgs := []interface{}{}
 	for _, fId := range fIds {
+		if fId == uuid.Nil {
+			continue // skip invalid flavor id
+		}
+		if _, ok := seen[fId]; ok {
+			continue // skip duplicates
+		}
+		seen[fId] = struct{}{}
 		uniqueFlavorsValues = append(uniqueFlavorsValues, "(?, ?)")
 		uniqueFlavorsValueArgs = append(uniqueFlavorsValueArgs, hId)
 		uniqueFlavorsValueArgs = append(uniqueFlavorsValueArgs, fId)
