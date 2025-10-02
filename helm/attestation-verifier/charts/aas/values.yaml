@@ -35,7 +35,7 @@ secret:
 image:
   db:
     registry: dockerhub.io # The image registry where PostgreSQL image is pulled from
-    name: postgres:14.2 # The image name of PostgreSQL
+    name: postgres:14.19-alpine3.22 # The image name of PostgreSQL
     pullPolicy: IfNotPresent # The pull policy for pulling from container registry for PostgreSQL image<br> (Allowed values: `Always`/`IfNotPresent`)
     dbVersionUpgradeImage: # The image name of PostgresDB version upgrade
   svc:

@@ -131,7 +131,7 @@ Wait job for service upgrades
 */}}
 {{- define "factory.waitForUpgradeService" -}}
 - name: {{ include "factory.name" . }}-wait-for-upgrade-job
-  image: bitnamilegacy/kubectl:1.33.0
+  image: alpine/kubectl:1.34.1
   command: ["/bin/sh", "-c"]
   args:
     - >

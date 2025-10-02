@@ -17,7 +17,7 @@ spec:
       restartPolicy: OnFailure
       initContainers:
         - name: wait-for-dependencies
-          image: bitnamilegacy/kubectl:1.33.0
+          image: alpine/kubectl:1.34.1
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -35,7 +35,7 @@ spec:
               type: RuntimeDefault
       containers:
         - name: apply-ccruntime
-          image: bitnamilegacy/kubectl:1.33.0
+          image: alpine/kubectl:1.34.1
           command: ["/bin/sh", "-c"]
           args:
             - |
