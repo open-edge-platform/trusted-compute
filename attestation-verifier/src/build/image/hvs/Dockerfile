@@ -24,7 +24,7 @@ COPY pkg/lib/common/upgrades/container_upgrade.sh /container_upgrade.sh
 COPY pkg/lib/common/upgrades/config_upgrade.sh /config_upgrade.sh
 COPY upgrades/hvs/db/out/* /database/
 
-RUN RUN apt-get update && \
+RUN apt-get update && \
     apt-get upgrade -y --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \

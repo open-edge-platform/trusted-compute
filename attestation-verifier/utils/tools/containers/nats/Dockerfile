@@ -46,6 +46,7 @@ RUN set -eux; \
     cp /usr/bin/cut /out/bin/; \
     cp /usr/bin/sed /out/bin/; \
     cp /usr/bin/cat /out/bin/; \
+    cp /usr/bin/tr /out/bin/; \
     cp /bin/sleep /out/bin/ || true; \
     # create a relative symlink 'sh' -> 'bash' so copying /out/bin to /bin yields /bin/sh -> /bin/bash
     ln -sf bash /out/bin/sh; \
