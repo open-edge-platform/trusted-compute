@@ -36,6 +36,7 @@ Install helm:
     # Verify the installation.
     helm version
 ```
+### Prerequisites: Trusted Compute must be installed and running.
 
 ### Step 1: Clone the Repository
 
