@@ -60,6 +60,8 @@ cd smart-intersection/chart/templates/dlstreamer-pipeline-server/
 
 # Replace the deployment file with your custom version
 # Copy the custom deployment.yaml to this location
+
+# Update the WEBRTC_SIGNALING_SERVER: "ws://localhost:8443" in `edge-ai-suites/metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/chart/templates/dlstreamer-pipeline-server/configmap.yaml` with  `WEBRTC_SIGNALING_SERVER: "ws://<Host_IP>:8443"` <Host_IP> is the Host IP of the machine where the application is running.
 ```
 
 ### Step 3: Configure Resource Allocation
