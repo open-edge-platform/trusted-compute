@@ -70,7 +70,7 @@ type TpmEventLog struct {
 	TpmEvent []EventLog `json:"tpm_events"` // KWT:  TpmEvents
 }
 
-//PCR - To store PCR index with respective PCR bank.
+// PCR - To store PCR index with respective PCR bank.
 type Pcr struct {
 	// Valid PCR index is from 0 to 23.
 	Index int `json:"index"`
@@ -535,7 +535,7 @@ type c interface {
 	GetPcrBanks() []SHAAlgorithm
 }
 
-//getHash method returns the hash based on the pcr bank
+// getHash method returns the hash based on the pcr bank
 func getHash(pcrBank SHAAlgorithm) hash.Hash {
 	var hash hash.Hash
 
@@ -553,7 +553,7 @@ func getHash(pcrBank SHAAlgorithm) hash.Hash {
 	return hash
 }
 
-//getCumulativeHash method returns the cumulative hash based on the pcr bank
+// getCumulativeHash method returns the cumulative hash based on the pcr bank
 func getCumulativeHash(pcrBank SHAAlgorithm) ([]byte, error) {
 	var cumulativeHash []byte
 
@@ -573,23 +573,23 @@ func getCumulativeHash(pcrBank SHAAlgorithm) ([]byte, error) {
 	return cumulativeHash, nil
 }
 
-//getTemplateHash method returns the hash based on the pcr bank
+// getTemplateHash method returns the hash based on the pcr bank
 func (imaNGTemplate *ImaNGTemplate) getTemplateHash(fileName string, fileHash []byte) ([]byte, error) {
-	var paddedHash []byte
+	var paddedSHA256Hash []byte
 	var templateHash []byte
 
-	paddedHash = make([]byte, sha256.Size)
-	paddedHash1 := make([]byte, sha1.Size)
-	if bytes.Compare(fileHash, paddedHash) == 0 || bytes.Compare(fileHash, paddedHash1) == 0 {
-		copy(paddedHash, SUFFIX_SHA256)
-		return paddedHash, nil
+	paddedSHA256Hash = make([]byte, sha256.Size)
+	paddedSHA1Hash := make([]byte, sha1.Size)
+	if bytes.Equal(fileHash, paddedSHA256Hash) || bytes.Equal(fileHash, paddedSHA1Hash) {
+		copy(paddedSHA256Hash, SUFFIX_SHA256)
+		return paddedSHA256Hash, nil
 	}
 	templateHash = sha256Templatehash(SHA256_ALGONAME, fileName, fileHash)
 
 	return templateHash, nil
 }
 
-//getEndian true = big endian, false = little endian
+// getEndian true = big endian, false = little endian
 func getEndian() (ret bool) {
 	var i int = 0x1
 	bs := (*[unsafe.Sizeof(i)]byte)(unsafe.Pointer(&i))
@@ -600,7 +600,7 @@ func getEndian() (ret bool) {
 	}
 }
 
-//calculate sha256 template hash for sha256 file hash
+// calculate sha256 template hash for sha256 file hash
 func sha256Templatehash(algoName string, fileName string, fileHash []byte) []byte {
 
 	const suffix = "\x00"
@@ -618,7 +618,7 @@ func sha256Templatehash(algoName string, fileName string, fileHash []byte) []byt
 		binary.LittleEndian.PutUint32(fileNameLenStr, fileNameLen)
 	}
 
-	h := sha1.New()
+	h := sha256.New()
 	ss := append(fileHashAlgoLenStr, algoName...)
 	ss = append(ss, fileHash...)
 	ss = append(ss, fileNameLenStr...)
