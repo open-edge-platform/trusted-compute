@@ -30,7 +30,7 @@ const (
 	FlavorPartIma        FlavorPartName = "IMA"
 )
 
-//FlavorPartsNotFilteredForLatestFlavor is a list of flavor parts that do not need to be cleaned up
+// FlavorPartsNotFilteredForLatestFlavor is a list of flavor parts that do not need to be cleaned up
 // from host-trustcache when custom flavors belonging to these groups are created
 var FlavorPartsNotFilteredForLatestFlavor = map[FlavorPartName]bool{
 	FlavorPartAssetTag:   true,
@@ -80,7 +80,7 @@ func (flavorPart *FlavorPartName) Parse(flavorPartString string) error {
 
 // Filter Unique flavor parts from input slice of flavor parts
 func FilterUniqueFlavorParts(flavorParts []FlavorPartName) []FlavorPartName {
-	if flavorParts != nil && len(flavorParts) > 0 {
+	if len(flavorParts) > 0 {
 		flavorPartMap := make(map[string]bool)
 		filteredParts := []FlavorPartName{}
 		for _, entry := range flavorParts {

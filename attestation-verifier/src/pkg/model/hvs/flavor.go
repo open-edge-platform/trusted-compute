@@ -58,7 +58,7 @@ func (flavor *Flavor) getFlavorDigest() ([]byte, error) {
 		return nil, errors.Wrap(err, "An error occurred attempting to convert the flavor to json")
 	}
 
-	if flavorJSON == nil || len(flavorJSON) == 0 {
+	if len(flavorJSON) == 0 {
 		return nil, errors.New("The flavor json was not provided")
 	}
 

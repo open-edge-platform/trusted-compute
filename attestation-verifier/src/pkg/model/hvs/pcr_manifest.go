@@ -390,7 +390,7 @@ func (eventLogEntry *TpmEventLog) Subtract(eventsToSubtract *TpmEventLog) (*TpmE
 
 				}
 			}
-			if events.Tags != nil && len(events.Tags) != 0 && len(eventLog.Tags) != 0 {
+			if len(events.Tags) != 0 && len(eventLog.Tags) != 0 {
 				if !reflect.DeepEqual(events.Tags, eventLog.Tags) {
 					misMatch = true
 				}
