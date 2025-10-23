@@ -725,28 +725,26 @@ func (a *App) Setup(args []string) error {
 			jsonOut = "./populate-users.json"
 		}
 		fmt.Println("\n\nWriting Output to json file - ", jsonOut)
-		outFile, err := cos.OpenFileSafe(jsonOut, "", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0)
+		outFile, err := cos.OpenFileSafe(jsonOut, "", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			fmt.Println("could not open output json file - %s for writing" + jsonOut)
+			return fmt.Errorf("failed to open output json file for writing")
 		}
 		defer func() {
-			derr := outFile.Close()
-			if derr != nil {
-				fmt.Println("Error closing file" + derr.Error())
+			if outFile != nil {
+				derr := outFile.Close()
+				if derr != nil {
+					fmt.Fprintf(os.Stderr, "warning: failed to close output json file %s\n", jsonOut)
+				}
 			}
 		}()
 		enc := json.NewEncoder(outFile)
 		enc.SetIndent("", "    ")
-		err = enc.Encode(as)
-		if err != nil {
-			err = fmt.Errorf("could not encode data - %s", err.Error())
-			if err != nil {
-				fmt.Println("\n Error printing errors")
-			}
+		if err := enc.Encode(as); err != nil {
+			return fmt.Errorf("failed to write JSON output")
 		}
 	}
-	return nil
 
+	return nil
 }
 func (a *App) Run(args []string) error {
 

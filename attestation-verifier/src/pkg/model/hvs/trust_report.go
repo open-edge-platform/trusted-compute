@@ -190,7 +190,7 @@ func (r *RuleResult) equals(target RuleResult) bool {
 }
 
 func (r *RuleResult) IsTrusted() bool {
-	if r.Faults == nil || len(r.Faults) == 0 {
+	if len(r.Faults) == 0 {
 		return true
 	}
 	return false

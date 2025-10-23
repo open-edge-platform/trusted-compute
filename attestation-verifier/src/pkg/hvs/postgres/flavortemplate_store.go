@@ -190,7 +190,7 @@ func (ft *FlavorTemplateStore) buildFlavorTemplateSearchQuery(tx *gorm.DB, crite
 		tx = tx.Where("deleted = ?", false)
 	}
 
-	if criteria.Ids != nil && len(criteria.Ids) > 0 {
+	if len(criteria.Ids) > 0 {
 		tx = tx.Where("id IN (?)", criteria.Ids)
 	}
 	if criteria.Label != "" {
@@ -211,9 +211,23 @@ func (ft *FlavorTemplateStore) AddFlavorgroups(ftId uuid.UUID, fgIds []uuid.UUID
 	defer defaultLog.Trace("postgres/flavortemplate_store:AddFlavorgroups() Leaving")
 
 	defaultLog.Debugf("postgres/flavortemplate_store:AddFlavorgroups() Linking flavor-template %v with flavorgroups %+q", ftId, fgIds)
+
+	if len(fgIds) <= 0 || ftId == uuid.Nil {
+		return errors.New("postgres/flavortemplate_store:AddFlavorgroups()- invalid input : must have flavorgroupId and flavorTemplateId to create the association")
+	}
+
+	seen := make(map[uuid.UUID]struct{}, len(fgIds))
+
 	var hfgValues []string
 	var hfgValueArgs []interface{}
 	for _, fgId := range fgIds {
+		if fgId == uuid.Nil {
+			continue // skip invalid flavorgroup id
+		}
+		if _, ok := seen[fgId]; ok {
+			continue // skip duplicates
+		}
+		seen[fgId] = struct{}{}
 		hfgValues = append(hfgValues, "(?, ?)")
 		hfgValueArgs = append(hfgValueArgs, ftId)
 		hfgValueArgs = append(hfgValueArgs, fgId)

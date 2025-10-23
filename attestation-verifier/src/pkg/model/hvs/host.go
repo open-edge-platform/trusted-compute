@@ -70,7 +70,7 @@ type OrderType string
 
 const (
 	Ascending  OrderType = "asc"
-	Descending           = "desc"
+	Descending OrderType = "desc"
 )
 
 func (ot OrderType) String() string {
