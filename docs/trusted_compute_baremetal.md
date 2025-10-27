@@ -14,11 +14,13 @@
 
 ### Installation Steps
 
-1. **Download Trusted Compute Installation Package (using ORAS):**
+1. **Get the Latest Trusted Compute Package Tag and Download (using ORAS):**
 	```bash
-	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:<tag>
+	TAG=$(oras repo tags registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:$TAG
 	```
-	- The command will download the `trusted-compute-installation-package.tgz` file into your current directory.
+	- The first command fetches the latest version tag and stores it in the `TAG` variable.
+	- The second command downloads the `trusted-compute-installation-package.tgz` file using the latest tag.
 	- Ensure that you have ``oras`` available on your system or follow the instructions in the [oras documentation](https://oras.land/docs/installation) to install it.
 
 2. **Copy and Unzip Trusted Compute Package:**
