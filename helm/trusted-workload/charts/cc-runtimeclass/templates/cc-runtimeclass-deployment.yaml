@@ -28,7 +28,7 @@ spec:
               done &&
               echo "CRD found, upgrading parent-chart with cc-runtimeclass enabled"
           securityContext:
-            runAsNonRoot: true
+            runAsNonRoot: false
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             seccompProfile:
