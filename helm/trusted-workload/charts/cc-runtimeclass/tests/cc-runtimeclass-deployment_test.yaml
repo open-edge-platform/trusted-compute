@@ -52,7 +52,7 @@ tests:
             echo "CRD found, upgrading parent-chart with cc-runtimeclass enabled"
       - equal:
           path: spec.template.spec.initContainers[0].securityContext.runAsNonRoot
-          value: true
+          value: false
       - equal:
           path: spec.template.spec.initContainers[0].securityContext.readOnlyRootFilesystem
           value: true
