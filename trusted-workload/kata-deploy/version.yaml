@@ -13,9 +13,9 @@ kata-deploy:
 
 kernel:
     description: "Edge Microvisor kernel image"
-    name : "vmlinuz-6.12.44-1.emt3"
-    version: 6.12.44-1.emt3
-    config: "config-6.12.44-1.emt3"
+    name : "vmlinuz-6.12.44-2.emt3"
+    version: 6.12.44-2.emt3
+    config: "config-6.12.44-2.emt3"
 
 rootfs:
     description: "Edge Microvisor initrd image"
