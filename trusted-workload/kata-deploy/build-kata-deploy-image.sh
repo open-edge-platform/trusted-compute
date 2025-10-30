@@ -57,6 +57,9 @@ if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
 	echo "INFO: Starting edge microvisor kernel and rootfs build"
 	pushd $(realpath "${BUILD_DIR}/../../trusted-vm")
 	make build
+	# List files in current directory after build for debug
+	echo "INFO: Listing files in build folder after edge microvisor build:"
+	ls -alh build
 	popd 
 fi
 
