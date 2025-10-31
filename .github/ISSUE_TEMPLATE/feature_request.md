@@ -1,20 +1,29 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+name: Feature Request
+description: File a feature request. 
+title: '[FEATURE]: <Software> - <Summary>'
+labels: ['feature','triage']
+type: feature
+body:
 
----
+  - type: markdown
+    attributes:
+      value: |
+        <br>To expedite issue processing please search open and closed issues before submitting a new one. Existing issues often contain information about workarounds, resolution, or progress updates.
+        <br>The Design Proposal process is described in the [Design Proposal](https://github.com/open-edge-platform/edge-manageability-framework/design-proposals/README.md)
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+  - type: textarea
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the problem or missing capability. 
+    validations:
+      required: true
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+  - type: textarea
+    attributes:
+      label: Solution Description
+      description: If you have a solution in mind, please describe it.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+  - type: textarea
+    attributes:
+      label: Alternative Description
+      description: Have you considered any alternative solutions or workarounds?
