@@ -34,8 +34,8 @@ cat > "${KATA_BUILD_DIR}/build_kata_in_container.sh" <<'EOF'
 set -euo pipefail
 apt-get update
 apt-get install -y wget make git build-essential curl
-wget -q https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.25.0.linux-amd64.tar.gz
+wget -q https://go.dev/dl/go1.25.3.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.25.3.linux-amd64.tar.gz
 export PATH="/usr/local/go/bin:${PATH}"
 export GOPATH="${HOME}/go"
 git config --global --add safe.directory /workspace/kata-containers
