@@ -1,0 +1,26 @@
+From b2a2ea3a2afdc745a19c973bf2073aee58205b78 Mon Sep 17 00:00:00 2001
+From: "Kumar, Anand" <anand.kumar@intel.com>
+Date: Wed, 21 May 2025 07:22:01 +0000
+Subject: [PATCH] remove excutable permission for binaries
+
+Signed-off-by: Kumar, Anand <anand.kumar@intel.com>
+---
+ tools/packaging/kata-deploy/scripts/kata-deploy.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/packaging/kata-deploy/scripts/kata-deploy.sh b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+index c557a7d4b..af05c9604 100755
+--- a/tools/packaging/kata-deploy/scripts/kata-deploy.sh
++++ b/tools/packaging/kata-deploy/scripts/kata-deploy.sh
+@@ -389,7 +389,7 @@ function install_artifacts() {
+ 
+ 	mkdir -p ${host_install_dir}
+ 	cp -au /opt/kata-artifacts/opt/kata/* ${host_install_dir}/
+-	chmod +x ${host_install_dir}/bin/*
++	#chmod +x ${host_install_dir}/bin/*
+ 	[ -d ${host_install_dir}/runtime-rs/bin ] && \
+ 		chmod +x ${host_install_dir}/runtime-rs/bin/*
+ 
+-- 
+2.34.1
+
