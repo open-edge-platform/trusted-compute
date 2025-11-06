@@ -18,3 +18,8 @@ CVE-2025-58186
 CVE-2025-58187
 CVE-2025-58188
 CVE-2025-61724
+
+# TODO: Remove once kata-container release with upgraded runc is available.
+CVE-2025-31133
+CVE-2025-52565
+CVE-2025-52881
