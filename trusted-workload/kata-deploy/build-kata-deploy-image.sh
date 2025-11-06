@@ -168,4 +168,3 @@ rm -rf "${KATA_ARTIFACT_DIR}"
 rm -rf "${KATA_CONTAINERS_DIR}"
 rm -f "${KATA_ARTIFACT_FILE_NAME}"
 rm -f "${KATA_ARTIFACT_NEW_NAME}"
-docker rmi -f ubuntu:24.04 || true
