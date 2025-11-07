@@ -10,3 +10,16 @@ CVE-2024-3056
 CVE-2025-6020
 CVE-2025-47906
 CVE-2025-47907
+
+# TODO: Remove once kubectl and kata-container release with upgraded go is available.
+CVE-2025-47912
+CVE-2025-58183
+CVE-2025-58186
+CVE-2025-58187
+CVE-2025-58188
+CVE-2025-61724
+
+# TODO: Remove once kata-container release with upgraded runc is available.
+CVE-2025-31133
+CVE-2025-52565
+CVE-2025-52881
