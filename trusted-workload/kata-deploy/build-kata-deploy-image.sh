@@ -32,10 +32,10 @@ fi
 KATA_DEPLOY_IMAGE_VERSION="$VERSION"
 
 
-KATA_ARTIFACT_RELEASE_URL="https://github.com/kata-containers/kata-containers/releases/download/${KATA_CONTAINERS_TAG}/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.xz"
+KATA_ARTIFACT_RELEASE_URL="https://github.com/kata-containers/kata-containers/releases/download/${KATA_CONTAINERS_TAG}/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.zst"
 KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")
-KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.xz}"
-KATA_ARTIFACT_NEW_NAME="kata-static.tar.xz"
+KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
+KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
 KATA_PATCH_DIR="patch/${KATA_CONTAINERS_TAG}"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
@@ -57,6 +57,9 @@ if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
 	echo "INFO: Starting edge microvisor kernel and rootfs build"
 	pushd $(realpath "${BUILD_DIR}/../../trusted-vm")
 	make build
+	# List files in current directory after build for debug
+	echo "INFO: Listing files in build folder after edge microvisor build:"
+	ls -alh build
 	popd 
 fi
 
@@ -131,7 +134,7 @@ popd
 
 #retar the artifacts
 echo "INFO: Retar the artifacts"
-tar -cJf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
+tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 
 #remove kata repo if it exists
 [ -d "${KATA_CONTAINERS_DIR}" ] && rm -rf "${KATA_CONTAINERS_DIR}"

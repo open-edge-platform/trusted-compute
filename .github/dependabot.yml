@@ -12,7 +12,6 @@ updates:
     labels:
       - "dependencies"
     reviewers:
-      - "cgoea"
       - "srinivasmusti"
       - "pchand20"
       - "vtcao297"
@@ -36,7 +35,6 @@ updates:
     labels:
       - "docker"
     reviewers:
-      - "cgoea"
       - "srinivasmusti"
       - "pchand20"
       - "vtcao297"
@@ -52,7 +50,6 @@ updates:
     labels:
       - "gha"
     reviewers:
-      - "cgoea"
       - "srinivasmusti"
       - "pchand20"
       - "vtcao297"
