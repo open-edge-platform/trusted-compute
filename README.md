@@ -1,5 +1,8 @@
 # Trusted Compute
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-edge-platform/trusted-compute/badge)](https://scorecard.dev/viewer/?uri=github.com/open-edge-platform/trusted-compute)
+
 ## Overview
 
 Trusted Compute is a set of software-defined security extensions that utilize
