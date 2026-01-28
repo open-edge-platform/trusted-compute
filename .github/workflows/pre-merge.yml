@@ -110,7 +110,7 @@ jobs:
     permissions:
       contents: read
     needs: pre-checks
-    if: ${{ contains(fromJson(needs.pre-checks.outputs.filtered_projects), 'baremetal') || contains(fromJson(needs.pre-checks.outputs.filtered_projects), 'helm') }}
+    if: ${{ needs.pre-checks.outputs.filtered_projects != '[]' }}
     strategy:
       fail-fast: false
       matrix:
