@@ -6,7 +6,6 @@ metadata:
   name: {{ include "factory.name" . }}-base
   namespace: {{ .Release.Namespace }}
 spec:
-  storageClassName: manual
   accessModes:
     - {{ .Values.storage.hostPath.accessModes }}
   resources:
