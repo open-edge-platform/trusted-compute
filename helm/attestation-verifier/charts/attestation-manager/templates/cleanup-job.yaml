@@ -5,8 +5,8 @@ metadata:
   name: cleanup-job-am
   namespace: {{ .Release.Namespace }}
   annotations:
-    "helm.sh/hook": post-delete
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook": post-delete, pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 300
   template:
