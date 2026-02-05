@@ -8,8 +8,8 @@ metadata:
   labels:
     {{- include "cleanup-host.labels" . | nindent 4 }}
   annotations:
-    "helm.sh/hook": post-delete
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook": post-delete, pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 300
   template:
@@ -17,8 +17,6 @@ spec:
       labels:
         {{- include "cleanup-host.labels" . | nindent 8 }}
     spec:
-      securityContext:
-        {{- toYaml .Values.securityContext.cleanupHostInit | nindent 8 }}
       serviceAccountName: {{ include "factory.name" . }}
       restartPolicy: Never
       containers:

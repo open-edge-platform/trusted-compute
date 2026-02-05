@@ -9,7 +9,7 @@ metadata:
     {{- include "cleanup-jobs.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-upgrade,pre-rollback
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 300
   template:
@@ -31,4 +31,7 @@ spec:
           args:
             - >
               echo starting &&
-              kubectl delete jobs --all -n {{ .Release.Namespace }}
+              kubectl delete jobs --all -n {{ .Release.Namespace }} --ignore-not-found=true &&
+              kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }} -o name |
+              grep -Ev 'cleanup-jobs|cleanup-secrets|cleanup-host|cleanup-job-trustagent' |
+              xargs -r kubectl delete -n {{ .Release.Namespace }} --ignore-not-found=true
