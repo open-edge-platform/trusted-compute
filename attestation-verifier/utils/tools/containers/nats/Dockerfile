@@ -29,7 +29,7 @@ RUN set -eux; \
     # cleanup builder apt caches
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM debian:bookworm-slim@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+FROM debian:bookworm-slim@sha256:98f4b71de414932439ac6ac690d7060df1f27161073c5036a7553723881bffbe
 ARG KUBECTL_VER
 
 RUN set -eux; \
