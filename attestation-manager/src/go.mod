@@ -1,6 +1,6 @@
 module github.com/open-edge-platform/trusted-compute/attestation-manager/src
 
-go 1.25.5
+go 1.25.7
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.0

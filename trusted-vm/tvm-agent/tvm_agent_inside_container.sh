@@ -38,7 +38,7 @@ echo "INFO: Getting Go version from versions.yaml"
 GO_VERSION=$(yq e '.languages.golang.version' "${KATA_CONTAINER_DIR}/versions.yaml")
 if [ -z "${GO_VERSION}" ]; then
     echo "ERROR: Failed to get Go version from versions.yaml"
-    GO_VERSION=1.25.5
+    GO_VERSION=1.25.7
     echo "INFO: Installing default Go version : ${GO_VERSION}"
 else
     echo "INFO: Installing Go version from versions.yaml : ${GO_VERSION}"
