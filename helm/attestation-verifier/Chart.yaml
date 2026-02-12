@@ -39,7 +39,13 @@ dependencies:
     version: 0.0.8
   - name: trustagent-aas-manager
     repository: file://./charts/trustagent-aas-manager
-    version: 0.0.8    
+    version: 0.0.8
+  - name: attestation-manager
+    repository: file://./charts/attestation-manager/
+    version: 0.0.8
+  - name: trustagent
+    repository: file://./charts/trustagent/
+    version: 0.0.8
 description: A Helm chart for Deploying Attestation Verifier
 name: attestation-verifier
 type: application

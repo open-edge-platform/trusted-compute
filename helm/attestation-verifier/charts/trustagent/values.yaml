@@ -104,4 +104,3 @@ service:
   ta:
     containerPort:  # The containerPort on which TA can listen
     port:  # The externally exposed NodePort on which TA can listen to external traffic
-

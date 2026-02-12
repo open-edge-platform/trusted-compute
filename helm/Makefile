@@ -15,7 +15,7 @@ HELM_REPOSITORY      ?= edge-orch/trusted-compute
 HELM_REGISTRY        ?= oci://080137407410.dkr.ecr.us-west-2.amazonaws.com/
 HELM_CHART_BUILD_DIR ?= build/_output/
 
-HELM_TARGETS := attestation-manager attestation-verifier trustagent trusted-workload
+HELM_TARGETS := attestation-verifier trusted-workload
 
 all: build lint test unittest
 	@# Help: Runs build, lint, test stages for all subprojects
@@ -70,11 +70,6 @@ docker-build:
 docker-push: ## Push docker images.
 	@echo "This is a dummy docker-push target."
 
-.update-version-attestation-manager:
-	@echo "Updating the version of attestation-manager to ${ATTESTATION_MANAGER_VERSION}"
-	yq eval -i '.appVersion = "${ATTESTATION_MANAGER_VERSION}"' attestation-manager/Chart.yaml
-	yq eval -i '.version = "${ATTESTATION_MANAGER_VERSION}"' attestation-manager/Chart.yaml
-
 .update-version-attestation-verifier:
 	@echo "Updating the version of attestation-verifier to ${ATTESTATION_VERIFIER_VERSION}"
 	yq eval -i '.appVersion = "${ATTESTATION_VERIFIER_VERSION}"' attestation-verifier/Chart.yaml
@@ -86,12 +81,8 @@ docker-push: ## Push docker images.
 		sed -i "s/^version:.*/version: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
 		sed -i "s/^\(\s*version:\).*/\1 ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
 	done; \
+	yq eval -i '.config.imaAllowlist |= sub("<ATTESTATION_VERIFIER_VERSION>", "${ATTESTATION_VERIFIER_VERSION}")' attestation-verifier/charts/trustagent/values.yaml
 
-.update-version-trustagent:
-	@echo "Updating the version of trustagent to ${ATTESTATION_VERIFIER_VERSION}"
-	yq eval -i '.appVersion = "${ATTESTATION_VERIFIER_VERSION}"' trustagent/Chart.yaml
-	yq eval -i '.version = "${ATTESTATION_VERIFIER_VERSION}"' trustagent/Chart.yaml
-	yq eval -i '.config.imaAllowlist |= sub("<ATTESTATION_VERIFIER_VERSION>", "${ATTESTATION_VERIFIER_VERSION}")' trustagent/values.yaml
 
 .update-version-trusted-workload:
 	@echo "Updating the version of trusted-workload to ${TRUSTED_WORKLOAD_VERSION}"
