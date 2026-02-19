@@ -13,7 +13,7 @@
   {{- end }}
    "users_and_roles":[
       {
-            "username": "{{ .Values.secret.serviceUsername }}",
+            "username": "{{ .Values.secret.installAdminUsername }}",
             "password": "{{ randAlphaNum 16 }}",
             "print_bearer_token": true,
             "roles":[

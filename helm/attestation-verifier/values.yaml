@@ -30,11 +30,9 @@ hvs:
     serviceUsername: serviceUsername # Service Username for HVS
     servicePassword:  # Service Password for HVS
 
-trustagent-aas-manager: # Provide values for trustagent-aas-manager if enabled, this is a job that creates service account for trustagent
-  createTAServiceAccount: true # Set this to true, only when trustagent is not deployed through helm
-  secret:
-    serviceUsername: installAdminUsernameTa # Service Username for Tagent
-    servicePassword:  # Service Password for Tagent
+trustagent:
+  image:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/tagent
 
 nats:
   clientPort: 30222
