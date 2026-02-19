@@ -25,5 +25,5 @@ appVersion: "0.0.8"
 
 dependencies:
   - name: factory
-    repository: file://./charts/factory/
+    repository: file://../../charts/factory/
     version: 0.0.8

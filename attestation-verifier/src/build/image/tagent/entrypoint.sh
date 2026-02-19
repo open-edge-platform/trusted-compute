@@ -37,6 +37,7 @@ if [ ! -z "$TA_SERVICE_MODE" ] && [ "$TA_SERVICE_MODE" == "outbound" ]; then
 fi
 
 if [ ! -f $CONFIG_DIR/.setup_done ]; then
+  echo "*** Performing initial setup for tagent ***"
   for directory in $PRODUCT_BIN_DIR $CA_CERTS_DIR $CERTDIR_TRUSTEDJWTCERTS $CREDENTIALS_DIR $CONSTANTS_VAR_DIR $SYSTEM_INFO_DIR $RAMFS_DIR; do
     mkdir -p $directory
     if [ $? -ne 0 ]; then
@@ -53,6 +54,7 @@ if [ ! -f $CONFIG_DIR/.setup_done ]; then
   fi
 
   touch $CONFIG_DIR/.setup_done
+  echo "*** Initial setup for tagent completed ***"
 fi
 
   # Create /opt/ima_policy
