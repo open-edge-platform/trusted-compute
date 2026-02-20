@@ -39,9 +39,6 @@ podSecurityContext:
   seccompProfile:
     type: RuntimeDefault
   fsGroup: 500
-  capabilities:
-     drop:
-     - ALL
   runAsUser: 503
   runAsGroup: 500
 

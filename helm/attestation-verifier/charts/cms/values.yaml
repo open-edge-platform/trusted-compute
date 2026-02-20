@@ -23,7 +23,7 @@ storage:
     path: /opt # The path for storing persistent data on NFS
     configSize: 10Mi # The configuration size for storing config for CMS in NFS path
     logsSize: 1Gi # The logs size for storing logs for CMS in NFS path
-    baseSize: 1.1Gi # The base volume size (configSize + logSize)
+    baseSize: 1127Mi # The base volume size (configSize + logSize)
  
 securityContext:
   init: # The fsGroup id for init containers
