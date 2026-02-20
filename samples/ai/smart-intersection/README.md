@@ -8,24 +8,7 @@ Deep Learning Streamer Pipeline Server (DL Streamer Pipeline Server) utilizes a 
 
 ## Steps to Deploy
 
-## Tools Installed:
-Install K3s if it is not already available on the system.
-```bash
-    # Install K3s
-    curl -sfL https://get.k3s.io | sh -
-    # Verify K3s Installation
-    sudo systemctl status k3s
-    # Wait a moment for K3s to fully start, then check nodes
-    sudo k3s kubectl get nodes
-    # Set up Kubeconfig
-    mkdir -p ~/.kube
-    sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-    sudo chown $USER:$USER ~/.kube/config
-    chmod 600 ~/.kube/config
-    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-    echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
-    source ~/.bashrc  
-```
+Follow the given documentation to install TC by following the procedure outlined in the Installation Steps section: [TC Installation Documentation](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md)
 
 Install helm:
 ```bash
