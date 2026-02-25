@@ -3,7 +3,7 @@ module github.com/open-edge-platform/trusted-compute/attestation-manager/src
 go 1.25.7
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/open-edge-platform/infra-managers/attestationstatus v0.7.0
 	google.golang.org/grpc v1.78.0
 	k8s.io/apimachinery v0.34.1
