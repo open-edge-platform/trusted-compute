@@ -19,7 +19,7 @@ require (
 	github.com/mattermost/xml-roundtrip-validator v0.1.0
 	github.com/nats-io/jwt/v2 v2.8.0
 	github.com/nats-io/nats.go v1.49.0
-	github.com/nats-io/nkeys v0.4.12
+	github.com/nats-io/nkeys v0.4.15
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.0
