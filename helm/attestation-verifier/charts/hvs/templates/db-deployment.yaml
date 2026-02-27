@@ -6,8 +6,6 @@
         {{- toYaml .Values.securityContext.hvsdbInit | nindent 8 }}
       initContainers:
         {{- include "factory.initCommonSpecLinkDBVolumes" . | nindent 8 }}
-          securityContext:
-            {{- toYaml .Values.securityContext.hvsdb | nindent 12 }}
       containers:
         - name: {{ include "factory.name" . }}db
           {{ include "factory.imageDb" . | nindent 10 | trim }}
