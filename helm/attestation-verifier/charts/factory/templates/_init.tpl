@@ -55,10 +55,26 @@ Associate db volume with appropriate version
 {{- define "factory.initCommonSpecLinkDBVolumes" -}}
 - name: link-db-volumes
   image: busybox:1.32
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   command: ["/bin/sh", "-c"]
   args:
     - >
-      cd {{ .Values.service.directoryName }} && ln -sfT {{.Chart.AppVersion }}/db db
+      set -e;
+      cd {{ .Values.service.directoryName }};
+      mkdir -p {{.Chart.AppVersion }};
+      chown -R 503:500 . {{.Chart.AppVersion }};
+      chmod 775 . {{.Chart.AppVersion }};
+      rm -rf db;
+      rm -rf {{.Chart.AppVersion }}/db;
+      mkdir -p {{.Chart.AppVersion }}/db;
+      ln -sfn {{.Chart.AppVersion }}/db db;
+      if [ -d {{.Chart.AppVersion }}/db ]; then
+        chown -R 503:500 {{.Chart.AppVersion }}/db;
+      fi
   volumeMounts:
     - name: {{ include "factory.name" . }}-base
       mountPath: /{{ .Values.service.directoryName }}/
