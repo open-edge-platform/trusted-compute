@@ -10,6 +10,7 @@ metadata:
   labels:
     {{- include "factory.labelsChart" . | nindent 4 }}
 spec:
+  backoffLimit: 10
   ttlSecondsAfterFinished: 300
   template:
     metadata:
@@ -82,13 +83,16 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - >
-              echo starting &&
+              echo "[aas-manager] Starting user/role bootstrap" &&
+              echo "[aas-manager] Invoking populate-users" &&
               BEARER_TOKEN=$(populate-users --use_json=true --in_json_file=/etc/secrets/populate-users.json | grep BEARER_TOKEN | cut -d '=' -f2) &&
-              if [ -z "$BEARER_TOKEN" ]; then exit 1; fi &&
+              if [ -z "$BEARER_TOKEN" ]; then echo "[aas-manager] ERROR: BEARER_TOKEN not found in populate-users output"; exit 1; fi &&
               INSTALLATION_TOKEN=`echo $BEARER_TOKEN | cut -d " " -f1` &&
-              if [ -z "$INSTALLATION_TOKEN" ]; then exit 1; fi &&
-              kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found  &&
+              if [ -z "$INSTALLATION_TOKEN" ]; then echo "[aas-manager] ERROR: INSTALLATION_TOKEN extraction failed"; exit 1; fi &&
+              echo "[aas-manager] Updating bearer token secret {{ include "factory.name" . }}-bearer-token" &&
+              kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found=true &&
               kubectl create secret generic {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --from-literal=BEARER_TOKEN=$INSTALLATION_TOKEN &&
+              echo "[aas-manager] Bearer token secret updated successfully" &&
               exit 0
           volumeMounts:
             - name: {{ include "factory.name" . }}-aas-json
@@ -179,13 +183,16 @@ spec:
                 command: ["/bin/sh", "-c"]
                 args:
                   - >
-                    echo starting &&
+                    echo "[aas-manager-cron] Starting user/role bootstrap" &&
+                    echo "[aas-manager-cron] Invoking populate-users" &&
                     BEARER_TOKEN=$(populate-users --use_json=true --in_json_file=/etc/secrets/populate-users.json | grep BEARER_TOKEN | cut -d '=' -f2) &&
-                    if [ -z "$BEARER_TOKEN" ]; then exit 1; fi &&
+                    if [ -z "$BEARER_TOKEN" ]; then echo "[aas-manager-cron] ERROR: BEARER_TOKEN not found in populate-users output"; exit 1; fi &&
                     INSTALLATION_TOKEN=`echo $BEARER_TOKEN | cut -d " " -f1` &&
-                    if [ -z "$INSTALLATION_TOKEN" ]; then exit 1; fi &&
-                    kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found  &&
+                    if [ -z "$INSTALLATION_TOKEN" ]; then echo "[aas-manager-cron] ERROR: INSTALLATION_TOKEN extraction failed"; exit 1; fi &&
+                    echo "[aas-manager-cron] Updating bearer token secret {{ include "factory.name" . }}-bearer-token" &&
+                    kubectl delete secret {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --ignore-not-found=true &&
                     kubectl create secret generic {{ include "factory.name" . }}-bearer-token -n {{ .Release.Namespace }} --from-literal=BEARER_TOKEN=$INSTALLATION_TOKEN &&
+                    echo "[aas-manager-cron] Bearer token secret updated successfully" &&
                     exit 0
                 volumeMounts:
                   - name: {{ include "factory.name" . }}-aas-json
