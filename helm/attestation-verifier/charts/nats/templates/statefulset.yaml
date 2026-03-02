@@ -18,6 +18,8 @@ spec:
   serviceName: "nats"
   template:
     metadata:
+      annotations:
+        rollout.ts: {{ now | unixEpoch | quote }}
       labels:
         {{- include "factory.labelsSvcSelector" . | nindent 8 }}
     spec:
@@ -110,6 +112,8 @@ spec:
   serviceName: "nats"
   template:
     metadata:
+      annotations:
+        rollout.ts: {{ now | unixEpoch | quote }}
       labels:
         {{- include "factory.labelsSvcSelector" . | nindent 8 }}
     spec:

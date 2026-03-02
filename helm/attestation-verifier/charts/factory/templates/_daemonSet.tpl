@@ -20,6 +20,8 @@ spec:
       {{- include "factory.labelsSvcSelector" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        rollout.ts: {{ now | unixEpoch | quote }}
       labels:
         {{- include "factory.labelsSvcSelector" . | nindent 8 }}
 {{- end -}}
