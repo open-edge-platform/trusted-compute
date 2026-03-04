@@ -17,6 +17,7 @@
         {{- toYaml .Values.securityContext.aasInit | nindent 8 }}
       serviceAccountName: {{ include "factory.name" . }}
       initContainers:
+        {{- include "factory.initResetPvOnDbCredMismatch" . | nindent 8 }}
         {{- include "factory.initWaitForDb" . | nindent 8 }}
         {{- include "factory.initCommonSpecLinkServiceVolumes" . | nindent 8 }}
           securityContext:
