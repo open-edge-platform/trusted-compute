@@ -48,6 +48,75 @@ Wait for CMS-TLS-SHA384, BEARER-TOKEN
       readOnly: true
 {{- end }}
 
+{{/*
+Reset service PV contents when DB credentials in config.yml do not match current secret values
+*/}}
+{{- define "factory.initResetPvOnDbCredMismatch" -}}
+- name: reset-pv-on-db-cred-mismatch
+  image: busybox:1.32
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+  env:
+    - name: DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "factory.name" . }}db-credentials
+          key: {{ .Values.config.envVarPrefix }}_DB_USERNAME
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "factory.name" . }}db-credentials
+          key: {{ .Values.config.envVarPrefix }}_DB_PASSWORD
+  command: ["/bin/sh", "-c"]
+  args:
+    - >
+      set -e;
+      CONFIG_FILE="/etc/{{ .Values.service.directoryName }}/config.yml";
+      if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Config file not present, skipping credential mismatch cleanup";
+        exit 0;
+      fi;
+      CFG_DB_USERNAME=$(awk '
+        /^[[:space:]]*db:[[:space:]]*$/ {in_db=1; next}
+        in_db && /^[^[:space:]]/ {in_db=0}
+        in_db && /^[[:space:]]*username:[[:space:]]*/ {
+          sub(/^[[:space:]]*username:[[:space:]]*/, "", $0);
+          gsub(/["\047]/, "", $0);
+          print $0;
+          exit
+        }
+      ' "$CONFIG_FILE");
+      CFG_DB_PASSWORD=$(awk '
+        /^[[:space:]]*db:[[:space:]]*$/ {in_db=1; next}
+        in_db && /^[^[:space:]]/ {in_db=0}
+        in_db && /^[[:space:]]*password:[[:space:]]*/ {
+          sub(/^[[:space:]]*password:[[:space:]]*/, "", $0);
+          gsub(/["\047]/, "", $0);
+          print $0;
+          exit
+        }
+      ' "$CONFIG_FILE");
+      if [ -z "$DB_USERNAME" ] || [ -z "$DB_PASSWORD" ] || [ -z "$CFG_DB_USERNAME" ] || [ -z "$CFG_DB_PASSWORD" ]; then
+        echo "Credential values are incomplete, skipping cleanup";
+        exit 0;
+      fi;
+      if [ "$CFG_DB_USERNAME" != "$DB_USERNAME" ] || [ "$CFG_DB_PASSWORD" != "$DB_PASSWORD" ]; then
+        echo "DB credentials changed, purging PV contents";
+        find "/etc/{{ .Values.service.directoryName }}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +;
+        find "/var/log/{{ .Values.service.directoryName }}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +;
+      else
+        echo "DB credentials unchanged, skipping cleanup";
+      fi
+  volumeMounts:
+    {{- include "factory.volumeMountSvcConfig" . | nindent 4 }}
+    {{- include "factory.volumeMountSvcLogs" . | nindent 4 }}
+    {{- include "factory.volumeMountsBasePv" . | nindent 4 }}
+    {{- include "factory.volumeMountSecrets" . | nindent 4 }}
+{{- end }}
+
 
 {{/*
 Associate db volume with appropriate version
