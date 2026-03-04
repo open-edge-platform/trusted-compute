@@ -158,10 +158,13 @@ Associate config and log volumes with appropriate version
   command: ["/bin/sh", "-c"]
   args:
     - >
-      cd {{ .Values.service.directoryName }} &&
-      ln -sfT {{.Chart.AppVersion }}/config config &&
-      if [ -d "{{.Chart.AppVersion }}/opt" ]; then ln -sfT {{.Chart.AppVersion }}/opt opt ; fi &&
-      ln -sfT {{.Chart.AppVersion }}/logs logs
+      set -e;
+      cd {{ .Values.service.directoryName }};
+      rm -rf config logs;
+      if [ -e opt ] && [ ! -L opt ]; then rm -rf opt; fi;
+      ln -sfn {{.Chart.AppVersion }}/config config;
+      if [ -d "{{.Chart.AppVersion }}/opt" ]; then ln -sfn {{.Chart.AppVersion }}/opt opt; fi;
+      ln -sfn {{.Chart.AppVersion }}/logs logs
   volumeMounts:
     - name: {{ include "factory.name" . }}-base
       mountPath: /{{ .Values.service.directoryName }}/
