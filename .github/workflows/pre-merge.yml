@@ -90,7 +90,7 @@ jobs:
         exclude:
           - project_folder: baremetal
           - project_folder: helm
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@62938ba48f3686d4d4db1c1d1152e84d67785ba5  # 2026.0.13
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@73772e343f84a82a88d8c4dc56b18a0703bb547d  # 2026.0.13
     with:
       run_security_scans: true
       run_version_check: false
