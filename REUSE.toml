@@ -1,5 +1,40 @@
 version = 1
 
+# Binary files cannot contain inline SPDX headers and cause read errors when
+# python-debian attempts to parse them. Use "override" precedence so that the
+# REUSE tool uses only the annotation below and skips reading file contents.
+[[annotations]]
+path = [
+    "**.zip",
+    "**.tar.gz",
+    "**.bin",
+    "**.qcow2",
+    "**.qcow2_enc",
+    "attestation-verifier/src/pkg/lib/common/3rd_party_component_licenses.zip",
+    "attestation-verifier/src/pkg/lib/common/test/cirros-x86.qcow2",
+    "attestation-verifier/src/pkg/lib/common/test/cirros-x86.qcow2_enc",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/misc/smbios2",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/misc/SecureBootZeroFile",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/purley/DMI",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/purley/TPM2",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/whitley/DMI",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/whitley/TPM2",
+    "attestation-verifier/src/pkg/lib/hostinfo/test_data/whitley/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/incomplete_tcg_spec_event.bin",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/tpm2_invalid_address",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/tpm2_invalid_file_length",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/tpm2_invalid_signature",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/tpm2_valid",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/tpm2_valid1",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/txt-logs.bin",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/txt_heap_info.bin",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/uefi_event_log.bin",
+    "attestation-verifier/src/pkg/tagent/test/eventlog/uefi_event_log_invalid.bin",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Intel Corporation"
+SPDX-License-Identifier = "Apache-2.0"
+
 [[annotations]]
 path = [
     "REUSE.toml",
@@ -35,9 +70,7 @@ path = [
     "**.sql",
     "**.conf",
     "venv/**",
-    "**.zip",
     ".gitattributes",
-    "**.tar.gz",
     "**/kata_keeplist.txt",
 ]
 precedence = "aggregate"
