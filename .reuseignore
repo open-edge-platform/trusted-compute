@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+**/*.zip
+**/*.bin
+**/*.qcow2
+**/*.qcow2_enc
+
+attestation-verifier/src/pkg/lib/hostinfo/test_data/**
+attestation-verifier/src/pkg/tagent/test/eventlog/**
