@@ -1,0 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: *.zip *.qcow2 *.qcow2_enc *.bin
+Copyright: Intel Corporation
+License: Apache-2.0
+
+Files: src/pkg/lib/hostinfo/test_data/*
+Copyright: Intel Corporation
+License: Apache-2.0
