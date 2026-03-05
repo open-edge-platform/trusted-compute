@@ -145,7 +145,7 @@ Config Daemonset Volume
 {{- define "factory.volumeSvcConfigDaemonset" -}}
 - name: {{ include "factory.name" . }}-config
   hostPath:
-    path: /etc/{{ include "factory.name" . }}/{{ .Chart.AppVersion }}
+    path: /opt/{{ include "factory.name" . }}/{{ .Chart.AppVersion }}
     type: DirectoryOrCreate
 {{- end}}
 

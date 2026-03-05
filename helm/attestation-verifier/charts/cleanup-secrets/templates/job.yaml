@@ -9,7 +9,7 @@ metadata:
     {{- include "cleanup-secrets.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-delete
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 300
   template:
@@ -31,4 +31,5 @@ spec:
           args:
             - >
               echo starting &&
-              kubectl delete secrets -n {{ .Release.Namespace }} --field-selector=type=Opaque && kubectl delete cm --all -n {{ .Release.Namespace }}
+              kubectl delete secrets -n {{ .Release.Namespace }} --field-selector=type=Opaque --ignore-not-found=true &&
+              kubectl delete cm --all -n {{ .Release.Namespace }} --ignore-not-found=true

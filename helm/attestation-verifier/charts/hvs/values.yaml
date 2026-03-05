@@ -75,7 +75,7 @@ storage:
     dbSize: 1Gi # The DB size for storing DB data for AAS in NFS path
     configSize: 10Mi # The configuration size for storing config for AAS in NFS path
     logsSize: 1Gi # The logs size for storing logs for AAS in NFS path
-    baseSize: 2.1Gi # The base volume size (configSize + logSize + dbSize)
+    baseSize: 2151Mi # The base volume size (configSize + logSize + dbSize)
 
 securityContext:
   hvsdbInit: # The fsGroup id for init containers for HVS DB

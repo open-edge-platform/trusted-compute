@@ -48,6 +48,75 @@ Wait for CMS-TLS-SHA384, BEARER-TOKEN
       readOnly: true
 {{- end }}
 
+{{/*
+Reset service PV contents when DB credentials in config.yml do not match current secret values
+*/}}
+{{- define "factory.initResetPvOnDbCredMismatch" -}}
+- name: reset-pv-on-db-cred-mismatch
+  image: busybox:1.32
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+  env:
+    - name: DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "factory.name" . }}db-credentials
+          key: {{ .Values.config.envVarPrefix }}_DB_USERNAME
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "factory.name" . }}db-credentials
+          key: {{ .Values.config.envVarPrefix }}_DB_PASSWORD
+  command: ["/bin/sh", "-c"]
+  args:
+    - >
+      set -e;
+      CONFIG_FILE="/etc/{{ .Values.service.directoryName }}/config.yml";
+      if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Config file not present, skipping credential mismatch cleanup";
+        exit 0;
+      fi;
+      CFG_DB_USERNAME=$(awk '
+        /^[[:space:]]*db:[[:space:]]*$/ {in_db=1; next}
+        in_db && /^[^[:space:]]/ {in_db=0}
+        in_db && /^[[:space:]]*username:[[:space:]]*/ {
+          sub(/^[[:space:]]*username:[[:space:]]*/, "", $0);
+          gsub(/["\047]/, "", $0);
+          print $0;
+          exit
+        }
+      ' "$CONFIG_FILE");
+      CFG_DB_PASSWORD=$(awk '
+        /^[[:space:]]*db:[[:space:]]*$/ {in_db=1; next}
+        in_db && /^[^[:space:]]/ {in_db=0}
+        in_db && /^[[:space:]]*password:[[:space:]]*/ {
+          sub(/^[[:space:]]*password:[[:space:]]*/, "", $0);
+          gsub(/["\047]/, "", $0);
+          print $0;
+          exit
+        }
+      ' "$CONFIG_FILE");
+      if [ -z "$DB_USERNAME" ] || [ -z "$DB_PASSWORD" ] || [ -z "$CFG_DB_USERNAME" ] || [ -z "$CFG_DB_PASSWORD" ]; then
+        echo "Credential values are incomplete, skipping cleanup";
+        exit 0;
+      fi;
+      if [ "$CFG_DB_USERNAME" != "$DB_USERNAME" ] || [ "$CFG_DB_PASSWORD" != "$DB_PASSWORD" ]; then
+        echo "DB credentials changed, purging PV contents";
+        find "/etc/{{ .Values.service.directoryName }}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +;
+        find "/var/log/{{ .Values.service.directoryName }}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +;
+      else
+        echo "DB credentials unchanged, skipping cleanup";
+      fi
+  volumeMounts:
+    {{- include "factory.volumeMountSvcConfig" . | nindent 4 }}
+    {{- include "factory.volumeMountSvcLogs" . | nindent 4 }}
+    {{- include "factory.volumeMountsBasePv" . | nindent 4 }}
+    {{- include "factory.volumeMountSecrets" . | nindent 4 }}
+{{- end }}
+
 
 {{/*
 Associate db volume with appropriate version
@@ -55,10 +124,26 @@ Associate db volume with appropriate version
 {{- define "factory.initCommonSpecLinkDBVolumes" -}}
 - name: link-db-volumes
   image: busybox:1.32
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
   command: ["/bin/sh", "-c"]
   args:
     - >
-      cd {{ .Values.service.directoryName }} && ln -sfT {{.Chart.AppVersion }}/db db
+      set -e;
+      cd {{ .Values.service.directoryName }};
+      mkdir -p {{.Chart.AppVersion }};
+      chown -R 503:500 . {{.Chart.AppVersion }};
+      chmod 775 . {{.Chart.AppVersion }};
+      rm -rf db;
+      rm -rf {{.Chart.AppVersion }}/db;
+      mkdir -p {{.Chart.AppVersion }}/db;
+      ln -sfn {{.Chart.AppVersion }}/db db;
+      if [ -d {{.Chart.AppVersion }}/db ]; then
+        chown -R 503:500 {{.Chart.AppVersion }}/db;
+      fi
   volumeMounts:
     - name: {{ include "factory.name" . }}-base
       mountPath: /{{ .Values.service.directoryName }}/
@@ -73,10 +158,13 @@ Associate config and log volumes with appropriate version
   command: ["/bin/sh", "-c"]
   args:
     - >
-      cd {{ .Values.service.directoryName }} &&
-      ln -sfT {{.Chart.AppVersion }}/config config &&
-      if [ -d "{{.Chart.AppVersion }}/opt" ]; then ln -sfT {{.Chart.AppVersion }}/opt opt ; fi &&
-      ln -sfT {{.Chart.AppVersion }}/logs logs
+      set -e;
+      cd {{ .Values.service.directoryName }};
+      rm -rf config logs;
+      if [ -e opt ] && [ ! -L opt ]; then rm -rf opt; fi;
+      ln -sfn {{.Chart.AppVersion }}/config config;
+      if [ -d "{{.Chart.AppVersion }}/opt" ]; then ln -sfn {{.Chart.AppVersion }}/opt opt; fi;
+      ln -sfn {{.Chart.AppVersion }}/logs logs
   volumeMounts:
     - name: {{ include "factory.name" . }}-base
       mountPath: /{{ .Values.service.directoryName }}/
