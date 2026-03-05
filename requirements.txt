@@ -9,4 +9,4 @@ yamllint~=1.29.0
 
 # license checking
 python-debian==0.1.44
-reuse~=5.0.0
+reuse~=6.0.0
