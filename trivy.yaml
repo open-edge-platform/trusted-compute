@@ -1,5 +1,5 @@
 scan:
   skip-files:
-    - attestation-verifier/charts/trustagent/templates/daemonset-suefi.yaml
+    - helm/attestation-verifier/charts/trustagent/templates/daemonset-suefi.yaml
 
 ignorefile: ".trivyignore"
