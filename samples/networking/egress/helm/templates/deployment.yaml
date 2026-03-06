@@ -18,18 +18,22 @@ spec:
       {{- if .Values.runtimeClassName }}
       runtimeClassName: {{ .Values.runtimeClassName | quote }}
       {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: curl-httpbin
         image: curlimages/curl
         imagePullPolicy: Always
         command: ["sh", "-c", "while true; do curl -sS http://httpbin.org/headers; sleep 5; done"]
-      securityContext:
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-      capabilities:
-        drop:
-          - ALL
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
       resources:
         requests:
           cpu: "100m"
