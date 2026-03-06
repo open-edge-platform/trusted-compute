@@ -16,28 +16,11 @@ metadata:
 spec:
   chart: https://%{KUBERNETES_API}%/static/charts/attestation-verifier.tgz
   targetNamespace: trusted-compute
----
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-  name: attestation-manager
-  namespace: kube-system
-spec:
-  chart: https://%{KUBERNETES_API}%/static/charts/attestation-manager.tgz
-  targetNamespace: trusted-compute
   valuesContent: |-
-    env:
-      pollDuration: 5
-      InformAMServer: "false"
----
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-  name: trustagent
-  namespace: kube-system
-spec:
-  chart: https://%{KUBERNETES_API}%/static/charts/trustagent.tgz
-  targetNamespace: trusted-compute
+    attestation-manager:
+      env:
+        pollDuration: 5
+        InformAMServer: "false"
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
