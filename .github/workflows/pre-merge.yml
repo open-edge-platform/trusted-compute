@@ -28,6 +28,8 @@ jobs:
     outputs:
       filtered_projects: ${{ steps.filter-changes.outputs.filtered_projects }}
       other_changed_projects: ${{ steps.filter-changes.outputs.other_changed_projects }}
+      docker_projects: ${{ steps.filter-changes.outputs.docker_projects }}
+      no_docker_projects: ${{ steps.filter-changes.outputs.no_docker_projects }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
         with:
@@ -43,11 +45,16 @@ jobs:
           changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
           folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs"]'
+          no_docker_candidates='["baremetal", "helm"]'
           filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           other_changed_projects=$(echo "$changed_projects" | jq -cr --argjson filtered_projects "$filtered_projects" 'map(select(. as $item | $filtered_projects | index($item) | not))')
+          docker_projects=$(echo "$filtered_projects" | jq -cr --argjson no_docker_candidates "$no_docker_candidates" 'map(select(. as $item | $no_docker_candidates | index($item) | not))')
+          no_docker_projects=$(echo "$filtered_projects" | jq -cr --argjson no_docker_candidates "$no_docker_candidates" 'map(select(. as $item | $no_docker_candidates | index($item)))')
 
           echo "filtered_projects=$filtered_projects" >> $GITHUB_OUTPUT
           echo "other_changed_projects=$other_changed_projects" >> $GITHUB_OUTPUT
+          echo "docker_projects=$docker_projects" >> $GITHUB_OUTPUT
+          echo "no_docker_projects=$no_docker_projects" >> $GITHUB_OUTPUT
   pre-merge-root:
     permissions:
       contents: read
@@ -82,14 +89,11 @@ jobs:
     permissions:
       contents: read
     needs: pre-checks
-    if: ${{ needs.pre-checks.outputs.filtered_projects != '[]' }}
+    if: ${{ needs.pre-checks.outputs.docker_projects != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-        exclude:
-          - project_folder: baremetal
-          - project_folder: helm
+        project_folder: ${{ fromJson(needs.pre-checks.outputs.docker_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@582cb262491c89e19904164eb24887b01f6925b2  # 2026.0.15
     with:
       run_security_scans: true
@@ -110,11 +114,11 @@ jobs:
     permissions:
       contents: read
     needs: pre-checks
-    if: ${{ needs.pre-checks.outputs.filtered_projects != '[]' }}
+    if: ${{ needs.pre-checks.outputs.no_docker_projects != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        project_folder: [baremetal, helm]
+        project_folder: ${{ fromJson(needs.pre-checks.outputs.no_docker_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@582cb262491c89e19904164eb24887b01f6925b2  # 2026.0.15
     with:
       run_security_scans: true
