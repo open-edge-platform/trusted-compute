@@ -26,3 +26,7 @@ CVE-2025-52881
 
 # TODO: Remove once kata-container release with upgreaded containerd is available
 CVE-2024-25621
+CVE-2025-68121
+CVE-2026-24051
+CVE-2025-61726
+CVE-2025-61730
