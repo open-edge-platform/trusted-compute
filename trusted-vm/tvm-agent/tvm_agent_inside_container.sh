@@ -11,7 +11,7 @@ set -euo pipefail
 echo "INFO: Updating package list and installing dependencies"
 apt update
 apt install -o Acquire::Retries=3 -y --no-install-recommends make gcc g++ curl wget ca-certificates \
-    libc6-dev musl-tools libseccomp-dev libclang-dev
+    libc6-dev musl-tools libseccomp-dev libclang-dev git sudo gnupg dirmngr
 
 # Update CA certificates
 echo "INFO: Updating CA certificates"
