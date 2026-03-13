@@ -27,12 +27,6 @@ version: 1.4.9-dev
 appVersion: "1.4.9-dev"
 
 dependencies:
-  - name: cc-operator
-    version: 0.1.0
-    repository: file://./charts/cc-operator
-  - name: cc-runtimeclass
-    version: 0.1.0
-    repository: file://./charts/cc-runtimeclass
   - name: nri-device-injector
     version: 0.1.0
     repository: file://./charts/nri-device-injector

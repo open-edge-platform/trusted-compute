@@ -88,7 +88,6 @@ docker-push: ## Push docker images.
 	@echo "Updating the version of trusted-workload to ${TRUSTED_WORKLOAD_VERSION}"
 	yq eval -i '.appVersion = "${TRUSTED_WORKLOAD_VERSION}"' trusted-workload/Chart.yaml
 	yq eval -i '.version = "${TRUSTED_WORKLOAD_VERSION}"' trusted-workload/Chart.yaml
-	yq eval -i '.image.tag = "${KATA_DEPLOY_VERSION}"' trusted-workload/charts/cc-runtimeclass/values.yaml
 
 helm-build-%:
 	rm -rf ${HELM_CHART_BUILD_DIR}$*.tgz;

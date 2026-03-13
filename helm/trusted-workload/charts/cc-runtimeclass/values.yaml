@@ -1,6 +1,0 @@
-# Copyright (C) 2025 Intel Corporation
-# SPDX-License-Identifier: BSD-3-Clause
----
-image:
-  repository: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy 
-  tag: {kata_deploy_version}
