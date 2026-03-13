@@ -8,7 +8,7 @@ set -euo pipefail
 
 KATA_BUILD_DIR="${PWD}"
 KATA_REPO_URL="https://github.com/kata-containers/kata-containers.git"
-KATA_REPO_TAG="3.21.0"
+KATA_REPO_TAG="3.27.0"
 KATA_DIR="${KATA_BUILD_DIR}/kata-containers"
 PATCH_FILE="${KATA_BUILD_DIR}/increase_prefetch_memory_size.patch"
 

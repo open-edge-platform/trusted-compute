@@ -36,7 +36,6 @@ KATA_ARTIFACT_RELEASE_URL="https://github.com/kata-containers/kata-containers/re
 KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")
 KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
 KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
-KATA_PATCH_DIR="patch/${KATA_CONTAINERS_TAG}"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
 KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
@@ -142,19 +141,6 @@ tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 #clone the kata containers repo
 echo "INFO: Cloning Kata Containers repo"
 git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
-
-#apply all the patch to the kata repo from patch directory
-if [ -d "$KATA_PATCH_DIR" ]; then
-    echo "INFO: Apply patches from ${KATA_PATCH_DIR}"
-	patches=($(find "$KATA_PATCH_DIR" -maxdepth 1 -name '*.patch' | sort -t- -k1,1n))
-	echo "INFO: Found ${#patches[@]} patches"
-	for patch in "${patches[@]}"; do
-		echo "INFO: Apply $patch"
-		patch -d "${KATA_CONTAINERS_DIR}" -p1 < "$patch" || { echo >&2 "ERROR: Not applied. Exiting..."; exit 1; }
-	done
-else
-    echo "INFO: No patches found in ${KATA_PATCH_DIR}"
-fi
 
 #copy the build artifacts to the kata repo
 echo "INFO: Copying build artifacts to Kata Containers repo"

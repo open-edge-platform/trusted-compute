@@ -8,11 +8,11 @@ BUILD_DIR := $(shell pwd)/build
 
 EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
 EDGE_MICROVISOR_BRANCH?=3.0
-EDGE_MICROVISOR_COMMIT?="3.0.20250910"
+EDGE_MICROVISOR_COMMIT?="25.06.01-20260227"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
-KATA_CONTAINERS_TAG?=3.21.0
+KATA_CONTAINERS_TAG?=3.27.0
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
 
 MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
