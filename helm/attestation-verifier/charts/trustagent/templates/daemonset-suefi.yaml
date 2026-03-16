@@ -38,7 +38,7 @@ metadata:
           command: ["/bin/sh", "-c"]
           args:
             - >
-              chown -R 503:500 /opt/verifier/* && chmod -R 751 /opt/verifier/*
+              chown -R 503:500 /opt/verifier/* && chmod -R 751 /opt/verifier/* &&
               chown -R 0:500 /opt/kata/*
           securityContext:
             runAsUser: 0
