@@ -14,6 +14,8 @@ ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSIO
 ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)
 TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
 KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
+KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
+KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -67,6 +69,10 @@ build:
 	if [ -d "$(CURDIR)/../helm/build/_output" ]; then \
 		cp -a "$(CURDIR)/../helm/build/_output/." "$$STAGEDIR"/charts/; \
 	fi
+
+	# Pull kata-deploy chart from OCI into the staged charts directory
+	@echo "Pulling kata-deploy chart $(KATA_DEPLOY_CHART_OCI):$(KATA_DEPLOY_CHART_VERSION)"
+	helm pull "$(KATA_DEPLOY_CHART_OCI)" --version "$(KATA_DEPLOY_CHART_VERSION)" --destination "$$STAGEDIR/charts"
 
 	# Pull and export images to staging images folder
 	# List of images to pull and export
