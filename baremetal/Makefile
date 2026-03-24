@@ -16,6 +16,8 @@ TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
 KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
+CLUSTER_EXTENSIONS_VERSION       ?= v1.5.11
+KATA_DEPLOY_VALUES_URL           ?= https://raw.githubusercontent.com/open-edge-platform/cluster-extensions/refs/tags/$(CLUSTER_EXTENSIONS_VERSION)/deployment-package/trusted-compute/values-kata-deploy-default.yaml
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -51,7 +53,15 @@ build:
 		-e 's/attestation-manager\.tgz/attestation-manager-$(ATTESTATION_MANAGER_VERSION).tgz/g' \
 		-e 's/trustagent\.tgz/trustagent-$(ATTESTATION_VERIFIER_VERSION).tgz/g' \
 		-e 's/trusted-workload\.tgz/trusted-workload-$(TRUSTED_WORKLOAD_VERSION).tgz/g' \
+		-e 's/kata-deploy\.tgz/kata-deploy-$(KATA_DEPLOY_CHART_VERSION).tgz/g' \
 		"$$STAGEDIR/manifests/trusted-compute.yaml"
+
+	# Patch kata-deploy valuesContent from external values YAML
+	KATA_DEPLOY_VALUES_FILE="$$STAGEDIR/manifests/values-kata-deploy-default.yaml"
+	curl -fsSL "$(KATA_DEPLOY_VALUES_URL)" -o "$$KATA_DEPLOY_VALUES_FILE"
+	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("'"$$KATA_DEPLOY_VALUES_FILE"'")' "$$STAGEDIR/manifests/trusted-compute.yaml"
+	rm -f "$$KATA_DEPLOY_VALUES_FILE"
+
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
 	# Readme points to docs/trusted_compute_baremetal.md

@@ -6,7 +6,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: confidential-containers-system
+  name: kata-deploy
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
@@ -29,4 +29,14 @@ metadata:
   namespace: kube-system
 spec:
   chart: https://%{KUBERNETES_API}%/static/charts/trusted-workload.tgz
-  targetNamespace: confidential-containers-system
+  targetNamespace: kata-deploy
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kata-deploy
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/kata-deploy.tgz
+  targetNamespace: kata-deploy
+
