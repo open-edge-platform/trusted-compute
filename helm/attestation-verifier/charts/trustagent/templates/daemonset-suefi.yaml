@@ -136,6 +136,14 @@ metadata:
             - configMapRef:
                 name: {{ include "factory.name" . }}
           env:
+            - name: CURRENT_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SAN_LIST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             {{- include "factory.envBearerToken" . | nindent 12 }}
             {{- include "factory.envCmsSha384" . | nindent 12 }}
           readinessProbe:
