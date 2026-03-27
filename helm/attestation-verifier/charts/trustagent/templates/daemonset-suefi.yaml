@@ -154,6 +154,10 @@ metadata:
             initialDelaySeconds: 5
             failureThreshold: 60
             periodSeconds: 15
+          ports:
+            - name: https
+              containerPort: 1443
+              protocol: TCP
           volumeMounts:
             {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
             - name: {{ include "factory.name" . }}-config

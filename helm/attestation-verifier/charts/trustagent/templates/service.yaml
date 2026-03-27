@@ -1,0 +1,9 @@
+{{- include "factory.headers" . }}
+---
+{{ include "factory.serviceCommonSpec" . }}
+  type: ClusterIP
+  ports:
+    - port: 1443
+      targetPort: 1443
+      protocol: TCP
+      name: https

@@ -102,5 +102,5 @@ service:
     containerPort: 8443 # The containerPort on which HVS can listen
     port: 30443
   ta:
-    containerPort:  # The containerPort on which TA can listen
+    containerPort: 1443 # The containerPort on which TA can listen
     port:  # The externally exposed NodePort on which TA can listen to external traffic
