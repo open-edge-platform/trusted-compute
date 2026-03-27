@@ -34,7 +34,7 @@ config:
   tpmOwnerSecret: # The TPM owner secret if TPM is already owned
   tpmEndorsementSecret: # The TPM endorsement secret if TPM is already owned
   nats:
-    enabled: true # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
+    enabled: false # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
     servers:  # NATS Server IP/Hostname
     serviceMode: outbound # The model for TA<br> (Allowed values: `outbound`)
   imaPolicy: |
