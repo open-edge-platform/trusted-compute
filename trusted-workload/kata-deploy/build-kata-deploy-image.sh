@@ -131,6 +131,12 @@ for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
 done
 popd
 
+#copy kata-docker-deploy script to the artifacts
+echo "INFO: Copying kata-docker-deploy script to the artifacts"
+cp -a "${BUILD_DIR}/kata-docker-deploy.sh" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+chmod 700 "${KATA_ARTIFACT_DIR}/opt/kata/bin/kata-docker-deploy.sh"
+chown root:root "${KATA_ARTIFACT_DIR}/opt/kata/bin/kata-docker-deploy.sh"
+
 #retar the artifacts
 echo "INFO: Retar the artifacts"
 tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
