@@ -1,0 +1,143 @@
+# SPDX-FileCopyrightText: 2026 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+name: Virtual Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - main-pass-validation
+  pull_request:
+    branches:
+      - "*"
+    types:
+      - opened
+      - synchronize
+      - reopened
+  merge_group:
+
+concurrency:
+  group: ${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-on-prem:
+    permissions:
+      contents: read
+    name: Deploy On-Prem Orchestrator and Run Golden Suite Core Foundation Tests
+    runs-on: ubuntu-24.04-16core-64GB
+    timeout-minutes: 90
+    env:
+      KUBECONFIG: ${{ github.workspace }}/terraform/orchestrator/files/kubeconfig
+    steps:
+      - name: Checkout Trusted Compute repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Deploy On-Prem Orchestrator
+        id: deploy-on-prem
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_on_prem@0790503ea3374cae8eea55ee345f159c092473b2
+        timeout-minutes: 60
+        with:
+          orch_version: ${{ github.event.pull_request.head.sha || github.sha }}
+          docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+          docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
+
+      - name: Read test-automation dependency version
+        id: read-test-automation-version
+        shell: bash
+        run: |
+          cat /proc/cpuinfo
+          version=$(yq '.test-automation.version' ${{ github.workspace }}/.test-dependencies.yaml | tr -d '\n' | xargs)
+          echo "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Run E2E tests
+        env:
+          E2E_SVC_DOMAIN: cluster.onprem
+          EDGE_CLUSTER_NAME: test-cluster
+        run: mage -v test:e2eOnPrem
+
+      - name: Checkout edge-manage-test-automation repository with submodules
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: open-edge-platform/edge-manage-test-automation
+          path: edge-manage-test-automation
+          ref: ${{ steps.read-test-automation-version.outputs.version }}
+          submodules: recursive
+          token: ${{ secrets.SYS_EMF_GH_TOKEN }}
+          persist-credentials: false
+
+      - name: Install vEN dependencies
+        working-directory: edge-manage-test-automation
+        run: git submodule update --init --recursive
+
+      - name: Setup virtual environment
+        working-directory: edge-manage-test-automation
+        run: |
+          make asdf-install
+          make venv_edge-manage-test-automation
+
+          # Install required versions for Pico
+          pushd repos/ven/pico
+          asdf install
+          popd
+
+      - name: Run Golden Suite Robot Framework Tests
+        id: robot-tests
+        timeout-minutes: 30
+        working-directory: edge-manage-test-automation
+        env:
+          KUBECONFIG: ${{ github.workspace }}/terraform/orchestrator/files/kubeconfig
+          REQUESTS_CA_BUNDLE: /usr/local/share/ca-certificates/orch-ca.crt
+          LIBVIRT_DEFAULT_URI: qemu:///system
+        run: |
+          KC_ADMIN_PWD=$(kubectl -n orch-platform get secrets platform-keycloak -o jsonpath='{.data.admin-password}' | base64 -d)
+          # Add the password to the orchestrator config
+          yq eval ".orchestrator.admin_password = \"${KC_ADMIN_PWD}\"" -i orchestrator-configs/on-prem.yaml
+
+          source venv_edge-manage-test-automation/bin/activate
+          robot -L DEBUG --pythonpath . \
+            --name "Golden Suite: Core Foundation" \
+            -d robot_output/core_foundation \
+            -V orchestrator-configs/on-prem.yaml \
+            --exitonfailure \
+            --exclude cf6 \
+            --exclude cf8 \
+            tests/core_foundation/core_foundation.robot
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: on-prem-${{ github.event_name }}-${{ github.event.number }}-robot-report
+          path: edge-manage-test-automation/robot_output/**/*
+
+      - name: Collect diagnostics
+        if: always()
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/collect_diagnostics@0790503ea3374cae8eea55ee345f159c092473b2
+        timeout-minutes: 15
+        with:
+          k8s_diagnostics_args: "--errors-only --include-logs --output-html --output-json"
+
+      - name: Print on-prem vEN console log
+        if: always()
+        run: |
+          sudo ls -lrt /var/log/libvirt/qemu/ || true
+          sudo cat /var/log/libvirt/qemu/libvirt-pico-node-console.log || true
+
+      - name: Collect Bootkit and caddy log
+        if: always()
+        continue-on-error: true
+        run: |
+          kubectl get workflow -n orch-infra || true
+          kubectl -n orch-infra describe deployment onboarding-manager | grep TINKER_ARTIFACT_NAME || true
+          chmod +x ./ci/kpi/bootkit-log.sh
+          ./ci/kpi/bootkit-log.sh "cluster.onprem" "project-1" "p-edge-operator-1" "Samp1ePassw@rd"
