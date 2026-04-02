@@ -36,17 +36,12 @@ jobs:
     env:
       KUBECONFIG: ${{ github.workspace }}/terraform/orchestrator/files/kubeconfig
     steps:
-      - name: Checkout Trusted Compute repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          persist-credentials: false
-
       - name: Deploy On-Prem Orchestrator
         id: deploy-on-prem
         uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_on_prem@0790503ea3374cae8eea55ee345f159c092473b2
         timeout-minutes: 60
         with:
-          orch_version: ${{ github.event.pull_request.head.sha || github.sha }}
+          orch_version: ${{ inputs.emf-branch || 'main' }}
           docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
 
