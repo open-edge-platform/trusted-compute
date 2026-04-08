@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - main-pass-validation
   pull_request:
     branches:
       - "*"
@@ -30,7 +29,7 @@ jobs:
   deploy-on-prem:
     permissions:
       contents: read
-    name: Deploy On-Prem Orchestrator and Run Golden Suite Core Foundation Tests
+    name: Deploy On-Prem Orchestrator and Run Golden Suite Trusted Compute Tests
     runs-on: ubuntu-24.04-16core-64GB
     timeout-minutes: 90
     env:
@@ -38,7 +37,7 @@ jobs:
     steps:
       - name: Deploy On-Prem Orchestrator
         id: deploy-on-prem
-        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_on_prem@0790503ea3374cae8eea55ee345f159c092473b2
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_on_prem@d5c1881292e7b2a4b5e0103ae0eb4bd2bfab5d77
         timeout-minutes: 60
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
@@ -65,7 +64,7 @@ jobs:
         with:
           repository: open-edge-platform/edge-manage-test-automation
           path: edge-manage-test-automation
-          ref: ${{ steps.read-test-automation-version.outputs.version }}
+          ref: tc_ven
           submodules: recursive
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
           persist-credentials: false
@@ -82,12 +81,15 @@ jobs:
 
           # Install required versions for Pico
           pushd repos/ven/pico
-          asdf install
+          while read -r plugin version; do
+            asdf plugin add "$plugin" || true
+            asdf install "$plugin" "$version"
+          done < .tool-versions
           popd
 
-      - name: Run Golden Suite Robot Framework Tests
+      - name: Run Golden Suite Trusted Compute Tests
         id: robot-tests
-        timeout-minutes: 30
+        timeout-minutes: 50
         working-directory: edge-manage-test-automation
         env:
           KUBECONFIG: ${{ github.workspace }}/terraform/orchestrator/files/kubeconfig
@@ -100,13 +102,11 @@ jobs:
 
           source venv_edge-manage-test-automation/bin/activate
           robot -L DEBUG --pythonpath . \
-            --name "Golden Suite: Core Foundation" \
-            -d robot_output/core_foundation \
+            --name "Golden Suite: Trusted Compute" \
+            -d robot_output/trusted_compute \
             -V orchestrator-configs/on-prem.yaml \
             --exitonfailure \
-            --exclude cf6 \
-            --exclude cf8 \
-            tests/core_foundation/core_foundation.robot
+            tests/extended_capabilities/trusted_compute.robot
 
       - name: Upload test artifacts
         if: always()
