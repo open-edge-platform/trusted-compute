@@ -3,3 +3,9 @@ scan:
     - helm/attestation-verifier/charts/trustagent/templates/daemonset-suefi.yaml
 
 ignorefile: ".trivyignore"
+
+# Skip CIS checks for kata-deploy privileged installer container
+skip:
+  checks:
+    - CIS-4.1  # Requires root for host filesystem installation
+    - CIS-4.4  # Packages pre-built artifacts
