@@ -44,14 +44,18 @@ build:
 
 	# Copy existing files from repo
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
+	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/k3s.sh" "$$STAGEDIR/k3s/k3s.sh"
 	cp -a "$(CURDIR)/trusted-compute.yaml" "$$STAGEDIR/manifests/trusted-compute.yaml"
+
+	# Create docker directory and copy tw-docker-deploy.yaml, updating image and version
+	mkdir -p "$$STAGEDIR/docker"
+	cp -a "$(CURDIR)/tw-docker-deploy.yaml" "$$STAGEDIR/docker/tw-docker-deploy.yaml"
+	sed -i 's|\(kata-deploy:\).*|\1$(KATA_DEPLOY_VERSION)|g' "$$STAGEDIR/docker/tw-docker-deploy.yaml"
 
 	# Replace hardcoded chart versions in the staged manifest with Makefile vars using sed
 	sed -i \
 		-e 's/attestation-verifier\.tgz/attestation-verifier-$(ATTESTATION_VERIFIER_VERSION).tgz/g' \
-		-e 's/attestation-manager\.tgz/attestation-manager-$(ATTESTATION_MANAGER_VERSION).tgz/g' \
-		-e 's/trustagent\.tgz/trustagent-$(ATTESTATION_VERIFIER_VERSION).tgz/g' \
 		-e 's/trusted-workload\.tgz/trusted-workload-$(TRUSTED_WORKLOAD_VERSION).tgz/g' \
 		-e 's/kata-deploy\.tgz/kata-deploy-$(KATA_DEPLOY_CHART_VERSION).tgz/g' \
 		"$$STAGEDIR/manifests/trusted-compute.yaml"
