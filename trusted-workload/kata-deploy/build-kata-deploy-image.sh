@@ -132,12 +132,18 @@ done
 popd
 
 #build tc-docker-deploy wrapper and copy to artifacts
-echo "INFO: Building tc-docker-deploy wrapper in container"
-docker run --rm -v "${BUILD_DIR}/tc-docker-deploy:/workspace" -w /workspace rust:1.90 bash -c "rustup target add x86_64-unknown-linux-musl && cargo build --release --target x86_64-unknown-linux-musl"
+echo "INFO: Building tc-docker-deploy binary using rust:1.90 container"
+docker run --rm \
+	-v "${BUILD_DIR}/tc-docker-deploy:/workspace" \
+	-w /workspace \
+	rust:1.90 \
+	bash -c "rustup target add x86_64-unknown-linux-musl && \
+		cargo build --release --target x86_64-unknown-linux-musl"
+
 cp "${BUILD_DIR}/tc-docker-deploy/target/x86_64-unknown-linux-musl/release/tc-docker-deploy" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
 chmod 755 "${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
 chown root:root "${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
-echo "INFO: tc-docker-deploy wrapper built and added to artifacts"
+echo "INFO: tc-docker-deploy binary installed to ${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
 
 #retar the artifacts
 echo "INFO: Retar the artifacts"
