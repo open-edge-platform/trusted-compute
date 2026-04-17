@@ -252,9 +252,12 @@ fn main() -> Result<()> {
     }
 
     // Copy shim binary to /usr/bin
-    if let Err(e) = install_shim_binary() {
-        warn!("Failed to copy shim binary: {}", e);
-        // Don't fail the installation if binary copy fails
+    match install_shim_binary() {
+        Ok(_) => info!("Shim binary installation completed successfully"),
+        Err(e) => {
+            error!("Failed to copy required shim binary: {}", e);
+            std::process::exit(1);
+        }
     }
 
     // Copy configuration file to /etc/kata-containers
