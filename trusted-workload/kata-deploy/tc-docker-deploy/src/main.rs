@@ -247,6 +247,13 @@ fn main() -> Result<()> {
         Ok(_) => info!("Artifact installation completed successfully"),
         Err(e) => {
             error!("Failed to copy artifacts: {}", e);
+            warn!("Installation failed; attempting best-effort cleanup of partial artifacts");
+            if let Err(cleanup_err) = cleanup_artifacts() {
+                error!(
+                    "Failed to clean up partial artifacts after install failure: {}",
+                    cleanup_err
+                );
+            }
             std::process::exit(1);
         }
     }
