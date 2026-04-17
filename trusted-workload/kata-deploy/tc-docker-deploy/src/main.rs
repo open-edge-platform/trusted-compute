@@ -37,8 +37,13 @@ fn copy_artifacts() -> Result<()> {
     for entry in WalkDir::new(ARTIFACTS_SOURCE)
         .follow_links(false)
         .into_iter()
-        .filter_map(|e| e.ok())
     {
+        let entry = entry.with_context(|| {
+            format!(
+                "Failed to traverse artifacts source directory {}",
+                ARTIFACTS_SOURCE
+            )
+        })?;
         let src_path = entry.path();
         let relative_path = src_path.strip_prefix(ARTIFACTS_SOURCE)
             .context("Failed to get relative path")?;
