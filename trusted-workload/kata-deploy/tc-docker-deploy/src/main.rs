@@ -21,6 +21,10 @@ const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/confi
 const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
 const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
 
+/// Allow only plain relative symlink targets rooted within the artifacts tree.
+///
+/// Reject absolute paths and any `.`/`..` components to avoid writing host
+/// symlinks that can escape the intended destination layout.
 fn validate_symlink_target(link_target: &Path) -> Result<()> {
     if link_target.is_absolute() {
         return Err(anyhow::anyhow!(
@@ -31,10 +35,10 @@ fn validate_symlink_target(link_target: &Path) -> Result<()> {
 
     if link_target
         .components()
-        .any(|component| matches!(component, Component::ParentDir))
+        .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
     {
         return Err(anyhow::anyhow!(
-            "Refusing to install symlink with parent path traversal target: {:?}",
+            "Refusing to install symlink with non-canonical relative target: {:?}",
             link_target
         ));
     }
