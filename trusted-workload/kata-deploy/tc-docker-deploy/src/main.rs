@@ -87,8 +87,11 @@ fn copy_artifacts() -> Result<()> {
 /// Copy the shim binary to /usr/bin
 fn install_shim_binary() -> Result<()> {
     if !Path::new(SHIM_SOURCE).exists() {
-        warn!("Shim binary not found at {}, skipping copy", SHIM_SOURCE);
-        return Ok(());
+        return Err(anyhow::anyhow!(
+            "Required Kata shim binary not found at {}; cannot install {}",
+            SHIM_SOURCE,
+            SHIM_DEST
+        ));
     }
 
     // Remove existing file/symlink if present
