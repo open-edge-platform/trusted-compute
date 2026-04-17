@@ -23,7 +23,7 @@ const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
 
 /// Allow only plain relative symlink targets rooted within the artifacts tree.
 ///
-/// Reject absolute paths and any `.`/`..` components to avoid writing host
+/// Reject absolute paths and any `..` components to avoid writing host
 /// symlinks that can escape the intended destination layout.
 fn validate_symlink_target(link_target: &Path) -> Result<()> {
     if link_target.is_absolute() {
@@ -35,7 +35,7 @@ fn validate_symlink_target(link_target: &Path) -> Result<()> {
 
     if link_target
         .components()
-        .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+        .any(|component| matches!(component, Component::ParentDir))
     {
         return Err(anyhow::anyhow!(
             "Refusing to install symlink with non-canonical relative target: {:?}",
@@ -286,4 +286,25 @@ fn main() -> Result<()> {
 
     info!("Shutdown complete");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::validate_symlink_target;
+    use std::path::Path;
+
+    #[test]
+    fn validate_symlink_target_rejects_absolute_path() {
+        assert!(validate_symlink_target(Path::new("/etc/passwd")).is_err());
+    }
+
+    #[test]
+    fn validate_symlink_target_rejects_parent_traversal() {
+        assert!(validate_symlink_target(Path::new("../escape")).is_err());
+    }
+
+    #[test]
+    fn validate_symlink_target_allows_relative_path() {
+        assert!(validate_symlink_target(Path::new("./bin/containerd-shim-kata-v2")).is_ok());
+    }
 }
