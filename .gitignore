@@ -17,3 +17,4 @@ attestation-verifier/src/tools/aas-manager/populate-users
 /attestation-verifier/src/pkg/lib/common/serialize/test.json
 /attestation-verifier/src/pkg/lib/common/serialize/test.yml
 trusted-workload/kata-deploy/tc-docker-deploy/target/
+trusted-workload/kata-deploy/tc-docker-deploy/Cargo.lock
