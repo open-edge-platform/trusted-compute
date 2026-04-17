@@ -8,7 +8,7 @@ use signal_hook::consts::{SIGINT, SIGTERM};
 use signal_hook::flag;
 use std::fs;
 use std::os::unix::fs as unix_fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use walkdir::WalkDir;
@@ -20,6 +20,27 @@ const SHIM_DEST: &str = "/host/usr/bin/containerd-shim-kata-v2";
 const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/configuration.toml";
 const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
 const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
+
+fn validate_symlink_target(link_target: &Path) -> Result<()> {
+    if link_target.is_absolute() {
+        return Err(anyhow::anyhow!(
+            "Refusing to install symlink with absolute target: {:?}",
+            link_target
+        ));
+    }
+
+    if link_target
+        .components()
+        .any(|component| matches!(component, Component::ParentDir))
+    {
+        return Err(anyhow::anyhow!(
+            "Refusing to install symlink with parent path traversal target: {:?}",
+            link_target
+        ));
+    }
+
+    Ok(())
+}
 
 /// Copy all artifacts from source to destination
 fn copy_artifacts() -> Result<()> {
@@ -60,6 +81,13 @@ fn copy_artifacts() -> Result<()> {
         } else if entry.file_type().is_symlink() {
             let link_target = fs::read_link(src_path)
                 .with_context(|| format!("Failed to read symlink {:?}", src_path))?;
+
+            validate_symlink_target(&link_target).with_context(|| {
+                format!(
+                    "Invalid symlink target {:?} found in artifact {:?}",
+                    link_target, src_path
+                )
+            })?;
             
             // Remove existing symlink if present
             if dest_path.exists() || dest_path.is_symlink() {
