@@ -138,7 +138,7 @@ docker run --rm \
 	-w /workspace \
 	rust:1.90 \
 	bash -c "rustup target add x86_64-unknown-linux-musl && \
-		cargo build --release --target x86_64-unknown-linux-musl"
+		cargo build --locked --release --target x86_64-unknown-linux-musl"
 
 cp "${BUILD_DIR}/tc-docker-deploy/target/x86_64-unknown-linux-musl/release/tc-docker-deploy" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
 chmod 755 "${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
