@@ -1,8 +1,8 @@
 ## Trusted Compute Installation on Standalone Ubuntu Edge Node
 
-The installation script supports two deployment modes:
+The installation script supports two deployment options:
 
-| Mode | Description |
+| Option | Description |
 |------|-------------|
 | **K3s** | Deploys Trusted Compute components as Helm-managed workloads inside a K3s cluster |
 | **Docker** | Deploys the `kata-deploy` container directly via Docker Compose |
@@ -15,11 +15,11 @@ The installation script supports two deployment modes:
 |---|---------|
 | 1 | [Prerequisites](#1-prerequisites) |
 | 2 | [Download the Trusted Compute Package](#2-download-the-trusted-compute-package) |
-| 3 | [K3s Mode](#3-k3s-mode) |
+| 3 | [K3s Option](#3-k3s-option) |
 |   | &nbsp;&nbsp;3.1 [Installation](#31-installation) |
 |   | &nbsp;&nbsp;3.2 [Sample Trusted Workload Deployment](#32-sample-trusted-workload-deployment) |
 |   | &nbsp;&nbsp;3.3 [Uninstallation](#33-uninstallation) |
-| 4 | [Docker Mode](#4-docker-mode) |
+| 4 | [Docker Option](#4-docker-option) |
 |   | &nbsp;&nbsp;4.1 [Installation](#41-installation) |
 |   | &nbsp;&nbsp;4.2 [Sample Container Check](#42-sample-container-check) |
 |   | &nbsp;&nbsp;4.3 [Uninstallation](#43-uninstallation) |
@@ -57,7 +57,7 @@ The installation script supports two deployment modes:
 
 ---
 
-### 3. K3s Mode
+### 3. K3s Option
 
 #### 3.1 Installation
 
@@ -73,7 +73,7 @@ The installation script supports two deployment modes:
 	```bash
 	sudo ./install.sh --k3s
 	```
-	Or run without arguments and select **K3s** in the interactive mode selector:
+	Or run without arguments and select **K3s** in the interactive option selector:
 	```bash
 	sudo ./install.sh
 	```
@@ -123,11 +123,11 @@ The installation script supports two deployment modes:
 	```bash
 	sudo ./uninstall.sh --k3s
 	```
-	Or run without arguments and select **K3s** in the interactive mode selector.
+	Or run without arguments and select **K3s** in the interactive option selector.
 
 ---
 
-### 4. Docker Mode
+### 4. Docker Option
 
 #### 4.1 Installation
 
@@ -144,7 +144,7 @@ The installation script supports two deployment modes:
 	```bash
 	sudo ./install.sh --docker
 	```
-	Or run without arguments and select **Docker** in the interactive mode selector:
+	Or run without arguments and select **Docker** in the interactive option selector:
 	```bash
 	sudo ./install.sh
 	```
@@ -200,7 +200,12 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 	docker ps -a | grep nginx-trusted-workload
 	```
 
-8. **Stop and remove the container:**
+8. **Check the container logs:**
+	```bash
+	docker logs nginx-trusted-workload
+	```
+
+9. **Stop and remove the container:**
 	```bash
 	docker compose -f nginx.yaml down
 	```
@@ -213,4 +218,4 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 	```bash
 	sudo ./uninstall.sh --docker
 	```
-	Or run without arguments and select **Docker** in the interactive mode selector.
+	Or run without arguments and select **Docker** in the interactive option selector.

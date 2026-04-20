@@ -51,7 +51,7 @@ build:
 	# Create docker directory and copy tw-docker-deploy.yaml, updating image and version
 	mkdir -p "$$STAGEDIR/docker"
 	cp -a "$(CURDIR)/tw-docker-deploy.yaml" "$$STAGEDIR/docker/tw-docker-deploy.yaml"
-	sed -i 's|\(kata-deploy:\).*|\1$(KATA_DEPLOY_VERSION)|g' "$$STAGEDIR/docker/tw-docker-deploy.yaml"
+	sed -i 's|\(image:.*kata-deploy:\)[^[:space:]]*|\1$(KATA_DEPLOY_VERSION)|g' "$$STAGEDIR/docker/tw-docker-deploy.yaml"
 
 	# Replace hardcoded chart versions in the staged manifest with Makefile vars using sed
 	sed -i \

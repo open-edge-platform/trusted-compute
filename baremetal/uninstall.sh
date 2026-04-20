@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/install.sh" --source-only
 
 # Function to remove the manifest (triggers K3s to uninstall HelmCharts)
-remove_manifest() {
+remove_tc_manifest() {
     print_status "Removing trusted-compute manifest from $K3S_MANIFESTS_DIR..."
     if [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]]; then
         rm -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" \
@@ -46,7 +46,7 @@ wait_for_namespace_deleted() {
 }
 
 # Function to remove Helm charts
-remove_charts() {
+remove_tc_charts() {
     print_status "Removing Helm charts from $K3S_CHARTS_DIR..."
     for chart in attestation-verifier trusted-workload kata-deploy; do
         if rm -f "$K3S_CHARTS_DIR/${chart}"*.tgz 2>/dev/null; then
@@ -58,7 +58,7 @@ remove_charts() {
 }
 
 # Function to remove container images
-remove_images() {
+remove_tc_images() {
     print_status "Removing container images from $K3S_IMAGES_DIR..."
     for img in attestation-manager attestation-verifier kata-deploy trusted-workload; do
         local found
@@ -73,7 +73,7 @@ remove_images() {
 }
 
 # Function to remove containerd config
-remove_containerd_config() {
+remove_tc_containerd_config() {
     print_status "Removing containerd config template..."
     if [[ -f "$CONTAINERD_CONFIG_DEST" ]]; then
         rm -f "$CONTAINERD_CONFIG_DEST" \
@@ -85,7 +85,7 @@ remove_containerd_config() {
 }
 
 # Function to stop docker deploy container
-stop_docker_deploy() {
+stop_tc_docker_deploy() {
     local compose_file="$SCRIPT_DIR/docker/tw-docker-deploy.yaml"
     print_status "Stopping kata-deploy ..."
     if [[ ! -f "$compose_file" ]]; then
@@ -98,7 +98,7 @@ stop_docker_deploy() {
 }
 
 # Function to remove users/groups
-remove_users_groups() {
+remove_tc_users_groups() {
     print_status "Removing trusted compute users and groups..."
     if id -u tc-agent &>/dev/null; then
         userdel tc-agent && print_status "Removed tc-agent user" || print_warning "Failed to remove tc-agent user"
@@ -118,7 +118,7 @@ remove_users_groups() {
 }
 
 # Function to print uninstall summary (K3s)
-print_summary_k3s() {
+print_tc_k3s_uninstall_summary() {
     print_status "Uninstallation completed."
     print_status "Summary of removed components (TC uninstallation for K3s):"
     echo "  - Manifest removed from: $K3S_MANIFESTS_DIR"
@@ -129,14 +129,14 @@ print_summary_k3s() {
 }
 
 # Function to print uninstall summary (Docker)
-print_summary_docker() {
+print_tc_docker_uninstall_summary() {
     print_status "Uninstallation completed."
     print_status "Summary of removed components (TC uninstallation for Docker):"
     echo "  - kata-deploy container stopped and removed"
 }
 
 # Pre-flight check for K3s installation
-check_k3s_installed() {
+check_tc_k3s_installed() {
     print_status "Checking if TC is installed for K3s..."
     local found=false
     [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] && found=true
@@ -150,7 +150,7 @@ check_k3s_installed() {
 }
 
 # Pre-flight check for Docker installation
-check_docker_installed() {
+check_tc_docker_installed() {
     print_status "Checking if TC is installed for Docker..."
     if ! command -v docker &>/dev/null; then
         print_error "docker is not installed or not in PATH"
@@ -163,37 +163,37 @@ check_docker_installed() {
     print_status "kata-deploy container is running."
 }
 
-uninstall_k3s() {
-    check_k3s_installed
+uninstall_tc_k3s() {
+    check_tc_k3s_installed
     print_status "Starting TC uninstallation for K3s..."
-    remove_manifest
+    remove_tc_manifest
     restart_k3s
     print_status "Waiting for HelmChart resources to be cleaned up..."
     wait_for_namespace_deleted "trusted-compute" "$TIMEOUT"
     wait_for_namespace_deleted "kata-deploy" "$TIMEOUT"
     wait_for_namespace_deleted "confidential-containers-system" "$TIMEOUT"
-    remove_charts
-    remove_images
-    remove_containerd_config
-    remove_users_groups
-    print_summary_k3s
+    remove_tc_charts
+    remove_tc_images
+    remove_tc_containerd_config
+    remove_tc_users_groups
+    print_tc_k3s_uninstall_summary
 }
 
-uninstall_docker() {
-    check_docker_installed
+uninstall_tc_docker() {
+    check_tc_docker_installed
     print_status "Starting TC uninstallation for Docker..."
-    stop_docker_deploy
-    print_summary_docker
+    stop_tc_docker_deploy
+    print_tc_docker_uninstall_summary
 }
 
-# Interactive mode selector for uninstall
-select_uninstall_mode() {
+# Interactive option selector for uninstall
+select_uninstall_option() {
     local options=("K3s    - TC uninstallation for K3s" "Docker - TC uninstallation for Docker")
     local selected=0 key k2 k3
     local -a modes=(k3s docker)
 
     _draw_menu() {
-        printf '\nSelect uninstallation mode (use arrow keys, press Enter to confirm):\n\n'
+        printf '\nSelect uninstallation option (use arrow keys, press Enter to confirm):\n\n'
         for i in "${!options[@]}"; do
             [[ $i -eq $selected ]] \
                 && printf "  \e[7m ${options[$i]} \e[0m\n" \
@@ -212,19 +212,19 @@ select_uninstall_mode() {
         tput cuu $(( ${#options[@]} + 3 )); _draw_menu
     done
     tput cnorm; printf '\n'
-    INSTALL_MODE="${modes[$selected]}"
+    DEPLOYMENT_OPTION="${modes[$selected]}"
 }
 
 # Main script execution
 main() {
     set_paths
     TIMEOUT=$((10*60))
-    INSTALL_MODE=""
+    DEPLOYMENT_OPTION=""
 
     # Parse argument (reuse same flags as install.sh)
     case "${1:-}" in
-        --k3s)    INSTALL_MODE="k3s" ;;
-        --docker) INSTALL_MODE="docker" ;;
+        --k3s)    DEPLOYMENT_OPTION="k3s" ;;
+        --docker) DEPLOYMENT_OPTION="docker" ;;
         "")       : ;;
         *)
             print_error "Unknown argument: $1"
@@ -234,11 +234,11 @@ main() {
     esac
 
     check_root
-    [[ -z "$INSTALL_MODE" ]] && select_uninstall_mode
+    [[ -z "$DEPLOYMENT_OPTION" ]] && select_uninstall_option
 
-    case "$INSTALL_MODE" in
-        k3s)    uninstall_k3s ;;
-        docker) uninstall_docker ;;
+    case "$DEPLOYMENT_OPTION" in
+        k3s)    uninstall_tc_k3s ;;
+        docker) uninstall_tc_docker ;;
     esac
 }
 
