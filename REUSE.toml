@@ -53,6 +53,7 @@ path = [
     "**.github/workflows/lint.sh",
     "**go.mod",
     "**go.sum",
+    "**/Cargo.lock",
     "**/.helmignore",
     "**/Chart.lock",
     "**.yml",
