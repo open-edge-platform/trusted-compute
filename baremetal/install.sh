@@ -276,7 +276,6 @@ install_tc_k3s() {
     print_tc_k3s_summary
     print_status "Wait for daemonsets and deployments to become ready..."
     sleep 180
-    wait_for_namespace_ready "confidential-containers-system" "$TIMEOUT"
     wait_for_namespace_ready "trusted-compute" "$TIMEOUT"
 }
 

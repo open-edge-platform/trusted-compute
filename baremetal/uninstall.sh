@@ -171,7 +171,6 @@ uninstall_tc_k3s() {
     print_status "Waiting for HelmChart resources to be cleaned up..."
     wait_for_namespace_deleted "trusted-compute" "$TIMEOUT"
     wait_for_namespace_deleted "kata-deploy" "$TIMEOUT"
-    wait_for_namespace_deleted "confidential-containers-system" "$TIMEOUT"
     remove_tc_charts
     remove_tc_images
     remove_tc_containerd_config
