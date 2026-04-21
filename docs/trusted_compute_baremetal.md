@@ -157,37 +157,39 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 
 1. **Run NGINX with the Kata runtime:**
 	```bash
-	docker run -d --name nginx-trusted-workload --runtime io.containerd.kata.v2 -p 80:80 nginx:latest
+	docker run -d --name nginx-test --runtime io.containerd.kata.v2 -p 80:80 nginx:latest
 	```
 
 2. **Verify the container is running:**
 	```bash
-	docker ps | grep nginx-trusted-workload
+	docker ps | grep nginx-test
 	```
 
 3. **Verify it's using the Kata runtime:**
 	```bash
-	docker inspect nginx-trusted-workload --format '{{.HostConfig.Runtime}}'
+	docker inspect nginx-test --format '{{.HostConfig.Runtime}}'
 	```
 	Output should be: `io.containerd.kata.v2`
 
 4. **Stop and remove the container after verification:**
 	```bash
-	docker stop nginx-trusted-workload
-	docker rm nginx-trusted-workload
+	docker stop nginx-test
+	docker rm nginx-test
 	```
 
 **Alternatively, use Docker Compose to run NGINX with the Kata runtime:**
 
-5. **Create an `nginx.yaml` file with the following content:**
-	```yaml
+5. **Create an `nginx.yaml` file:**
+	```bash
+	cat > nginx.yaml <<'EOF'
 	services:
 	  nginx:
 	    image: nginx:latest
-	    container_name: nginx-trusted-workload
+	    container_name: nginx-test
 	    ports:
 	      - "80:80"
 	    runtime: io.containerd.kata.v2
+	EOF
 	```
 
 6. **Start the container with Docker Compose:**
@@ -197,12 +199,12 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 
 7. **Verify the container is running:**
 	```bash
-	docker ps -a | grep nginx-trusted-workload
+	docker ps -a | grep nginx-test
 	```
 
 8. **Check the container logs:**
 	```bash
-	docker logs nginx-trusted-workload
+	docker logs nginx-test
 	```
 
 9. **Stop and remove the container:**
