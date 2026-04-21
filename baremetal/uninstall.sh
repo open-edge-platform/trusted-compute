@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [[ -f "$SCRIPT_DIR/install.sh" ]] || { echo "[ERROR] install.sh not found in $SCRIPT_DIR" >&2; exit 1; }
 source "$SCRIPT_DIR/install.sh" --source-only
 
-# Function to remove the manifest (triggers K3s to uninstall HelmCharts)
+# Function to remove the manifest
 remove_tc_manifest() {
     print_status "Removing trusted-compute manifest from $K3S_MANIFESTS_DIR..."
     if [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]]; then
@@ -28,21 +28,75 @@ remove_tc_manifest() {
     fi
 }
 
-# Function to wait for namespaces to be cleaned up
-wait_for_namespace_deleted() {
-    local ns="$1"
-    local timeout="$2"
-    print_status "Waiting for namespace '$ns' to be deleted (timeout: ${timeout}s)..."
+# Function to wait for a Kubernetes resource to be deleted
+# Usage: wait_for_resource_deleted <resource_type> <resource_name> <namespace> <max_wait_seconds> <check_interval>
+wait_for_resource_deleted() {
+    local resource_type="$1"
+    local resource_name="$2"
+    local namespace="$3"
+    local max_wait="${4:-60}"
+    local check_interval="${5:-3}"
+
     local elapsed=0
-    while kubectl get namespace "$ns" &>/dev/null; do
-        if [[ $elapsed -ge $timeout ]]; then
-            print_warning "Timeout: namespace '$ns' was not deleted after ${timeout} seconds. Continuing..."
-            return
+    local namespace_flag=""
+    [[ -n "$namespace" ]] && namespace_flag="-n $namespace"
+
+    while kubectl get "$resource_type" "$resource_name" $namespace_flag &>/dev/null && [[ $elapsed -lt $max_wait ]]; do
+        sleep "$check_interval"
+        elapsed=$((elapsed + check_interval))
+        if [[ $((elapsed % 15)) -eq 0 ]]; then
+            print_status "Waiting for $resource_type '$resource_name' to be removed... (${elapsed}s)"
         fi
-        sleep 15
-        elapsed=$((elapsed + 15))
     done
-    print_status "Namespace '$ns' has been deleted."
+
+    if kubectl get "$resource_type" "$resource_name" $namespace_flag &>/dev/null; then
+        print_warning "$resource_type '$resource_name' still exists after ${max_wait}s, continuing..."
+        return 1
+    else
+        print_status "$resource_type '$resource_name' fully removed"
+        return 0
+    fi
+}
+
+# Function to delete Kubernetes resources explicitly
+delete_tc_k8s_resources() {
+    print_status "Deleting Kubernetes resources explicitly..."
+
+    # Delete AddOn resource
+    if kubectl get addon trusted-compute -n kube-system &>/dev/null; then
+        kubectl delete addon trusted-compute -n kube-system --timeout=60s \
+            && print_status "Deleted AddOn: trusted-compute" \
+            || print_warning "Failed to delete AddOn: trusted-compute"
+        wait_for_resource_deleted "addon" "trusted-compute" "kube-system" 60 3
+    else
+        print_warning "AddOn 'trusted-compute' not found, skipping"
+    fi
+
+    # Delete HelmChart resources
+    for chart in kata-deploy attestation-verifier trusted-workload; do
+        if kubectl get helmchart "$chart" -n kube-system &>/dev/null; then
+            local timeout=60
+            [[ "$chart" == "attestation-verifier" ]] && timeout=120
+            kubectl delete helmchart "$chart" -n kube-system --timeout=${timeout}s \
+                && print_status "Deleted HelmChart: $chart" \
+                || print_warning "Failed to delete HelmChart: $chart"
+            wait_for_resource_deleted "helmchart" "$chart" "kube-system" "$timeout" 3
+        else
+            print_warning "HelmChart '$chart' not found, skipping"
+        fi
+    done
+
+    # Delete namespaces
+    for ns in trusted-compute kata-deploy; do
+        if kubectl get namespace "$ns" &>/dev/null; then
+            kubectl delete namespace "$ns" --timeout=60s \
+                && print_status "Deleted namespace: $ns" \
+                || print_warning "Failed to delete namespace: $ns"
+            wait_for_resource_deleted "namespace" "$ns" "" 120 5
+        else
+            print_warning "Namespace '$ns' not found, skipping"
+        fi
+    done
 }
 
 # Function to remove Helm charts
@@ -60,7 +114,7 @@ remove_tc_charts() {
 # Function to remove container images
 remove_tc_images() {
     print_status "Removing container images from $K3S_IMAGES_DIR..."
-    for img in attestation-manager attestation-verifier kata-deploy trusted-workload; do
+    for img in attestation-manager attestation-verifier kata-deploy; do
         local found
         found=$(find "$K3S_IMAGES_DIR" -maxdepth 1 -name "*${img}*.tar" 2>/dev/null)
         if [[ -n "$found" ]]; then
@@ -122,10 +176,12 @@ print_tc_k3s_uninstall_summary() {
     print_status "Uninstallation completed."
     print_status "Summary of removed components (TC uninstallation for K3s):"
     echo "  - Manifest removed from: $K3S_MANIFESTS_DIR"
+    echo "  - K3s resources deleted: AddOn, HelmCharts Namespaces"
+    echo "  - K3s service:           Restarted"
     echo "  - Charts removed from:   $K3S_CHARTS_DIR"
     echo "  - Images removed from:   $K3S_IMAGES_DIR"
     echo "  - Containerd config:     $CONTAINERD_CONFIG_DEST"
-    echo "  - Users/groups:          tc-agent, tc-ima, bm-agents"
+    echo "  - Users/groups removed:  tc-agent, tc-ima, bm-agents"
 }
 
 # Function to print uninstall summary (Docker)
@@ -167,10 +223,8 @@ uninstall_tc_k3s() {
     check_tc_k3s_installed
     print_status "Starting TC uninstallation for K3s..."
     remove_tc_manifest
+    delete_tc_k8s_resources
     restart_k3s
-    print_status "Waiting for HelmChart resources to be cleaned up..."
-    wait_for_namespace_deleted "trusted-compute" "$TIMEOUT"
-    wait_for_namespace_deleted "kata-deploy" "$TIMEOUT"
     remove_tc_charts
     remove_tc_images
     remove_tc_containerd_config
@@ -217,7 +271,6 @@ select_uninstall_option() {
 # Main script execution
 main() {
     set_paths
-    TIMEOUT=$((10*60))
     DEPLOYMENT_OPTION=""
 
     # Parse argument (reuse same flags as install.sh)
