@@ -66,8 +66,8 @@ build:
 	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("'"$$KATA_DEPLOY_VALUES_FILE"'")' "$$STAGEDIR/manifests/trusted-compute.yaml"
 	rm -f "$$KATA_DEPLOY_VALUES_FILE"
 
-	# Update kata-deploy image tag in the trusted-compute.yaml manifest to match KATA_DEPLOY_VERSION
-	sed -i 's|\(tag: "\)[^"]*\("\)|\1$(KATA_DEPLOY_VERSION)\2|g' "$$STAGEDIR/manifests/trusted-compute.yaml"
+	# Update only the kata-deploy HelmChart valuesContent image tag to match KATA_DEPLOY_VERSION
+	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) |= sub("(?m)^([[:space:]]*tag: \")[^\"]*(\")$$"; "$${1}$(KATA_DEPLOY_VERSION)$${2}")' "$$STAGEDIR/manifests/trusted-compute.yaml"
 
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
