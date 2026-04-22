@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Intel Corporation
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+[package]
+name = "tc-docker-deploy"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+rust-version = "1.90.0"
+
+[[bin]]
+name = "tc-docker-deploy"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+env_logger = "0.10"
+log = "0.4"
+signal-hook = "0.3"
+walkdir = "2"
