@@ -1,9 +1,12 @@
+# SPDX-FileCopyrightText: (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+---
 version: 2
 updates:
+  # Go modules - separate block for each directory
   - package-ecosystem: "gomod"
-    directories:
-      - "/attestation-verifier/src"
-      - "/attestation-manager/src"
+    directory: "/attestation-verifier/src"
     schedule:
       interval: "daily"
     commit-message:
@@ -17,16 +20,26 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
+  
+  - package-ecosystem: "gomod"
+    directory: "/attestation-manager/src"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+
+  # Docker - separate block for each directory
   - package-ecosystem: "docker"
-    directories:
-      - "/attestation-manager"
-      - "/attestation-verifier/src/build/image/aas-manager"
-      - "/attestation-verifier/src/build/image/authservice"
-      - "/attestation-verifier/src/build/image/cms"
-      - "/attestation-verifier/src/build/image/hvs"
-      - "/attestation-verifier/src/build/image/tagent"
-      - "/attestation-verifier/utils/tools/containers/init-wait"
-      - "/attestation-verifier/utils/tools/containers/nats"
+    directory: "/attestation-manager"
     schedule:
       interval: "weekly"
     commit-message:
@@ -40,6 +53,120 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/src/build/image/aas-manager"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/src/build/image/authservice"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/src/build/image/cms"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/src/build/image/hvs"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/src/build/image/tagent"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/utils/tools/containers/init-wait"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+  
+  - package-ecosystem: "docker"
+    directory: "/attestation-verifier/utils/tools/containers/nats"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    open-pull-requests-limit: 5
+    labels:
+      - "docker"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
