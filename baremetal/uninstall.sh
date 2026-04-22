@@ -224,11 +224,11 @@ uninstall_tc_k3s() {
     print_status "Starting TC uninstallation for K3s..."
     remove_tc_manifest
     delete_tc_k8s_resources
-    restart_k3s
     remove_tc_charts
     remove_tc_images
     remove_tc_containerd_config
     remove_tc_users_groups
+    restart_k3s
     print_tc_k3s_uninstall_summary
 }
 
