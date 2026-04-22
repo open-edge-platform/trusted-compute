@@ -239,8 +239,8 @@ print_tc_docker_summary() {
 
 # Check if Docker TC installation already exists (blocks K3s install)
 check_no_tc_docker_conflict() {
-    if command -v docker &>/dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^kata-deploy$'; then
-        print_error "TC Docker installation is already active."
+    if command -v docker &>/dev/null && docker container inspect kata-deploy &>/dev/null 2>&1; then
+        print_error "TC Docker installation already exists (container 'kata-deploy' is present)."
         print_error "Please uninstall it first: sudo ./uninstall.sh --docker  (or run sudo ./uninstall.sh and select Docker)"
         exit 1
     fi
