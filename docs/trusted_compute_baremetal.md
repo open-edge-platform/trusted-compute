@@ -5,7 +5,7 @@ The installation script supports two deployment options:
 | Option | Description |
 |------|-------------|
 | **K3s** | Deploys Trusted Compute components as Helm-managed workloads inside a K3s cluster |
-| **Docker** | Deploys the `kata-deploy` container directly via Docker Compose |
+| **Docker** | Deploys Trusted Compute Components directly via Docker Compose |
 
 ---
 
@@ -21,7 +21,7 @@ The installation script supports two deployment options:
 |   | &nbsp;&nbsp;3.3 [Uninstallation](#33-uninstallation) |
 | 4 | [Docker Option](#4-docker-option) |
 |   | &nbsp;&nbsp;4.1 [Installation](#41-installation) |
-|   | &nbsp;&nbsp;4.2 [Sample Container Check](#42-sample-container-check) |
+|   | &nbsp;&nbsp;4.2 [Sample Trusted Workload Deployment](#42-sample-trusted-workload-deployment) |
 |   | &nbsp;&nbsp;4.3 [Uninstallation](#43-uninstallation) |
 
 ---
@@ -151,16 +151,16 @@ The installation script supports two deployment options:
 
 ---
 
-#### 4.2 Sample Container Check
+#### 4.2 Sample Trusted Workload Deployment
 
-Once Trusted Compute is installed, run containers using the Kata Containers runtime for hardware-isolated Trusted Compute execution.
+Once Trusted Compute is installed, run workload by defining kata-runtime for hardware-isolated Trusted Compute execution.
 
-1. **Run NGINX with the Kata runtime:**
+1. **Run Workload with the Kata runtime:**
 	```bash
 	docker run -d --name nginx-test --runtime io.containerd.kata.v2 -p 80:80 nginx:latest
 	```
 
-2. **Verify the container is running:**
+2. **Verify the workload is running:**
 	```bash
 	docker ps | grep nginx-test
 	```
@@ -171,13 +171,13 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 	```
 	Output should be: `io.containerd.kata.v2`
 
-4. **Stop and remove the container after verification:**
+4. **Stop and remove the workload after verification:**
 	```bash
 	docker stop nginx-test
 	docker rm nginx-test
 	```
 
-**Alternatively, use Docker Compose to run NGINX with the Kata runtime:**
+**Alternatively, use Docker Compose to run workload with the Kata runtime:**
 
 5. **Create an `nginx.yaml` file:**
 	```bash
@@ -192,22 +192,22 @@ Once Trusted Compute is installed, run containers using the Kata Containers runt
 	EOF
 	```
 
-6. **Start the container with Docker Compose:**
+6. **Start the workload with Docker Compose:**
 	```bash
 	docker compose -f nginx.yaml up -d
 	```
 
-7. **Verify the container is running:**
+7. **Verify the workload is running:**
 	```bash
 	docker ps -a | grep nginx-test
 	```
 
-8. **Check the container logs:**
+8. **Check the workload logs:**
 	```bash
 	docker logs nginx-test
 	```
 
-9. **Stop and remove the container:**
+9. **Stop and remove the workload:**
 	```bash
 	docker compose -f nginx.yaml down
 	```
