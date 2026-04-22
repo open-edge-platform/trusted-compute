@@ -16,7 +16,7 @@ TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
 KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
-CLUSTER_EXTENSIONS_VERSION       ?= v1.5.11
+CLUSTER_EXTENSIONS_VERSION       ?= v1.6.0
 KATA_DEPLOY_VALUES_URL           ?= https://raw.githubusercontent.com/open-edge-platform/cluster-extensions/refs/tags/$(CLUSTER_EXTENSIONS_VERSION)/deployment-package/trusted-compute/values-kata-deploy-default.yaml
 
 all: 
@@ -44,14 +44,18 @@ build:
 
 	# Copy existing files from repo
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
+	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/k3s.sh" "$$STAGEDIR/k3s/k3s.sh"
 	cp -a "$(CURDIR)/trusted-compute.yaml" "$$STAGEDIR/manifests/trusted-compute.yaml"
+
+	# Create docker directory and copy tw-docker-deploy.yaml, updating image and version
+	mkdir -p "$$STAGEDIR/docker"
+	cp -a "$(CURDIR)/tw-docker-deploy.yaml" "$$STAGEDIR/docker/tw-docker-deploy.yaml"
+	sed -i 's|\(image:.*kata-deploy:\)[^[:space:]]*|\1$(KATA_DEPLOY_VERSION)|g' "$$STAGEDIR/docker/tw-docker-deploy.yaml"
 
 	# Replace hardcoded chart versions in the staged manifest with Makefile vars using sed
 	sed -i \
 		-e 's/attestation-verifier\.tgz/attestation-verifier-$(ATTESTATION_VERIFIER_VERSION).tgz/g' \
-		-e 's/attestation-manager\.tgz/attestation-manager-$(ATTESTATION_MANAGER_VERSION).tgz/g' \
-		-e 's/trustagent\.tgz/trustagent-$(ATTESTATION_VERIFIER_VERSION).tgz/g' \
 		-e 's/trusted-workload\.tgz/trusted-workload-$(TRUSTED_WORKLOAD_VERSION).tgz/g' \
 		-e 's/kata-deploy\.tgz/kata-deploy-$(KATA_DEPLOY_CHART_VERSION).tgz/g' \
 		"$$STAGEDIR/manifests/trusted-compute.yaml"
@@ -61,6 +65,9 @@ build:
 	curl -fsSL "$(KATA_DEPLOY_VALUES_URL)" -o "$$KATA_DEPLOY_VALUES_FILE"
 	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("'"$$KATA_DEPLOY_VALUES_FILE"'")' "$$STAGEDIR/manifests/trusted-compute.yaml"
 	rm -f "$$KATA_DEPLOY_VALUES_FILE"
+
+	# Update only the kata-deploy HelmChart valuesContent image tag to match KATA_DEPLOY_VERSION
+	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) |= sub("(?m)^([[:space:]]*tag: \")[^\"]*(\")$$"; "$${1}$(KATA_DEPLOY_VERSION)$${2}")' "$$STAGEDIR/manifests/trusted-compute.yaml"
 
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
