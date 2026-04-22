@@ -212,11 +212,11 @@ check_tc_docker_installed() {
         print_error "docker is not installed or not in PATH"
         exit 1
     fi
-    if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^kata-deploy$'; then
-        print_error "kata-deploy container is not running. TC Docker installation not detected. Nothing to uninstall."
+    if ! docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q '^kata-deploy$'; then
+        print_error "kata-deploy container not found. TC Docker installation not detected. Nothing to uninstall."
         exit 1
     fi
-    print_status "kata-deploy container is running."
+    print_status "kata-deploy container detected."
 }
 
 uninstall_tc_k3s() {
