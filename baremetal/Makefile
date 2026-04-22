@@ -16,7 +16,7 @@ TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
 KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
-CLUSTER_EXTENSIONS_VERSION       ?= v1.5.11
+CLUSTER_EXTENSIONS_VERSION       ?= v1.6.0
 KATA_DEPLOY_VALUES_URL           ?= https://raw.githubusercontent.com/open-edge-platform/cluster-extensions/refs/tags/$(CLUSTER_EXTENSIONS_VERSION)/deployment-package/trusted-compute/values-kata-deploy-default.yaml
 
 all: 
