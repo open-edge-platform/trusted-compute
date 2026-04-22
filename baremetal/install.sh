@@ -2,10 +2,12 @@
 #
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
-#/
+#
 
 # Trusted Compute Installation Script
-# This script installs trusted-compute components for K3s
+# Supports two installation options:
+#   --k3s     Install trusted-compute components for K3s
+#   --docker  Install Trusted-compute components for Docker
 # Must be run as sudo
 
 set -e  # Exit on any error
@@ -38,8 +40,18 @@ check_root() {
     fi
 }
 
-# Function to check required directories/files
-check_requirements() {
+# Shared path constants (call after SCRIPT_DIR is set)
+set_paths() {
+    K3S_CHARTS_DIR="/var/lib/rancher/k3s/server/static/charts"
+    K3S_MANIFESTS_DIR="/var/lib/rancher/k3s/server/manifests"
+    K3S_IMAGES_DIR="/var/lib/rancher/k3s/agent/images"
+    CONTAINERD_ETC_DIR="/var/lib/rancher/k3s/agent/etc/containerd"
+    CONTAINERD_CONFIG_SRC="$SCRIPT_DIR/containerd/config-v3.toml.tmpl"
+    CONTAINERD_CONFIG_DEST="$CONTAINERD_ETC_DIR/config-v3.toml.tmpl"
+}
+
+# Function to check required directories/files for TC installation for K3s
+check_tc_requirements_k3s() {
     if [[ ! -d "$SCRIPT_DIR/charts" ]]; then
         print_error "Charts directory not found: $SCRIPT_DIR/charts"
         exit 1
@@ -138,10 +150,17 @@ restart_k3s() {
     systemctl restart k3s && print_status "Successfully restarted K3s service" || { print_error "Failed to restart K3s service"; exit 1; }
 }
 
-# Function to print summary
-print_summary() {
+# Function to check K3s service is installed and enabled
+check_k3s_service() {
+    command -v k3s &>/dev/null || { print_error "k3s is not installed or not in PATH"; exit 1; }
+    systemctl is-enabled k3s &>/dev/null || { print_error "k3s service is not enabled. Please install K3s first."; exit 1; }
+    print_status "K3s service is available."
+}
+
+# Function to print summary (TC installation for K3s)
+print_tc_k3s_summary() {
     print_status "Installation completed successfully!"
-    print_status "Summary of installed components:"
+    print_status "Summary of installed components (TC installation for K3s):"
     echo "  - Charts copied to: $K3S_CHARTS_DIR"
     echo "  - Manifest copied to: $K3S_MANIFESTS_DIR/trusted-compute.yaml"
     echo "  - Images copied to: $K3S_IMAGES_DIR"
@@ -168,23 +187,84 @@ wait_for_namespace_ready() {
     fi
 }
 
-# Main script execution
-main() {
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    K3S_CHARTS_DIR="/var/lib/rancher/k3s/server/static/charts"
-    K3S_MANIFESTS_DIR="/var/lib/rancher/k3s/server/manifests"
-    K3S_IMAGES_DIR="/var/lib/rancher/k3s/agent/images"
-    CONTAINERD_ETC_DIR="/var/lib/rancher/k3s/agent/etc/containerd"
-    CONTAINERD_CONFIG_SRC="$SCRIPT_DIR/containerd/config-v3.toml.tmpl"
-    CONTAINERD_CONFIG_DEST="$CONTAINERD_ETC_DIR/config-v3.toml.tmpl"
-    TIMEOUT=$((20*60))
-    INTERVAL=15
+# Function to check requirements for TC installation for Docker
+check_tc_requirements_docker() {
+    if [[ ! -d "$SCRIPT_DIR/images" ]]; then
+        print_error "Images directory not found: $SCRIPT_DIR/images"
+        exit 1
+    fi
+    if [[ ! -f "$SCRIPT_DIR/docker/tw-docker-deploy.yaml" ]]; then
+        print_error "tw-docker-deploy.yaml not found: $SCRIPT_DIR/docker/tw-docker-deploy.yaml"
+        exit 1
+    fi
+    if ! command -v docker &>/dev/null; then
+        print_error "docker is not installed or not in PATH"
+        exit 1
+    fi
+    if ! docker compose version &>/dev/null; then
+        print_error "docker compose plugin is not installed or not available"
+        exit 1
+    fi
+}
 
-    check_root
+# Function to import the kata-deploy image
+import_kata_deploy_image() {
+    print_status "Importing kata-deploy container image..."
+    local tar_file
+    tar_file=$(find "$SCRIPT_DIR/images" -maxdepth 1 -name "*kata-deploy*.tar" | head -n 1)
+    if [[ -z "$tar_file" ]]; then
+        print_error "No kata-deploy image tar found in $SCRIPT_DIR/images"
+        exit 1
+    fi
+    print_status "Loading image from: $tar_file"
+    docker load -i "$tar_file" && print_status "Successfully loaded kata-deploy image" || { print_error "Failed to load kata-deploy image"; exit 1; }
+}
+
+# Function to start the docker compose service
+start_docker_deploy() {
+    print_status "Starting kata-deploy via Docker Compose..."
+    docker compose -f "$SCRIPT_DIR/docker/tw-docker-deploy.yaml" up -d \
+        && print_status "kata-deploy container started successfully" \
+        || { print_error "Failed to start kata-deploy container"; exit 1; }
+}
+
+# Function to print summary (TC installation for Docker)
+print_tc_docker_summary() {
+    print_status "Installation completed successfully!"
+    print_status "Summary of installed components (TC installation for Docker):"
+    echo "  - kata-deploy image loaded from: $SCRIPT_DIR/images"
+    echo "  - Docker Compose file:           $SCRIPT_DIR/docker/tw-docker-deploy.yaml"
+    echo "  - Container started:             kata-deploy"
+}
+
+# Check if Docker TC installation already exists (blocks K3s install)
+check_no_tc_docker_conflict() {
+    if command -v docker &>/dev/null && docker container inspect kata-deploy &>/dev/null 2>&1; then
+        print_error "TC Docker installation already exists (container 'kata-deploy' is present)."
+        print_error "Please uninstall it first: sudo ./uninstall.sh --docker  (or run sudo ./uninstall.sh and select Docker)"
+        exit 1
+    fi
+}
+
+# Check if K3s TC installation already exists (blocks Docker install)
+check_no_tc_k3s_conflict() {
+    local found=false
+    [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] && found=true
+    command -v kubectl &>/dev/null && kubectl get namespace trusted-compute &>/dev/null 2>&1 && found=true
+    if [[ "$found" == true ]]; then
+        print_error "TC K3s installation is already active."
+        print_error "Please uninstall it first: sudo ./uninstall.sh --k3s  (or run sudo ./uninstall.sh and select K3s)"
+        exit 1
+    fi
+}
+
+install_tc_k3s() {
+    check_no_tc_docker_conflict
     check_secure_boot
+    check_k3s_service
     print_status "Installation script running from: $SCRIPT_DIR"
-    check_requirements
-    print_status "Starting trusted-compute installation..."
+    check_tc_requirements_k3s
+    print_status "Starting TC installation for K3s..."
     create_target_dirs
     copy_charts
     copy_manifests
@@ -193,11 +273,82 @@ main() {
     set_permissions
     create_users_groups
     restart_k3s
-    print_summary
+    print_tc_k3s_summary
     print_status "Wait for daemonsets and deployments to become ready..."
     sleep 180
-    wait_for_namespace_ready "confidential-containers-system" "$TIMEOUT"
     wait_for_namespace_ready "trusted-compute" "$TIMEOUT"
 }
 
-main
+install_tc_docker() {
+    check_no_tc_k3s_conflict
+    check_secure_boot
+    print_status "Installation script running from: $SCRIPT_DIR"
+    check_tc_requirements_docker
+    print_status "Starting TC installation for Docker..."
+    import_kata_deploy_image
+    start_docker_deploy
+    print_tc_docker_summary
+}
+
+# interactive menu
+
+select_deployment_option() {
+    local options=("K3s    - TC installation for K3s" "Docker - TC installation for Docker")
+    local selected=0 key k2 k3
+    local -a modes=(k3s docker)
+
+    _draw_menu() {
+        printf '\nSelect installation option (use arrow keys, press Enter to confirm):\n\n'
+        for i in "${!options[@]}"; do
+            [[ $i -eq $selected ]] \
+                && printf "  \e[7m ${options[$i]} \e[0m\n" \
+                || printf "    ${options[$i]}\n"
+        done
+    }
+
+    tput civis; _draw_menu
+    while IFS= read -rsn1 key; do
+        [[ $key == $'\x1b' ]] && { IFS= read -rsn1 -t 0.1 k2; IFS= read -rsn1 -t 0.1 k3; key+="${k2}${k3}"; }
+        case "$key" in
+            $'\x1b[A'|$'\x1b[D') (( selected-- )) || true; (( selected < 0 )) && selected=$(( ${#options[@]} - 1 )) ;;
+            $'\x1b[B'|$'\x1b[C') (( selected++ )) || true; (( selected >= ${#options[@]} )) && selected=0 ;;
+            '') break ;;
+        esac
+        tput cuu $(( ${#options[@]} + 3 )); _draw_menu
+    done
+    tput cnorm; printf '\n'
+    DEPLOYMENT_OPTION="${modes[$selected]}"
+}
+
+# Main script execution
+main() {
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    set_paths
+    TIMEOUT=$((20*60))
+    DEPLOYMENT_OPTION=""
+
+    # Parse argument
+    case "${1:-}" in
+        --k3s)    DEPLOYMENT_OPTION="k3s" ;;
+        --docker) DEPLOYMENT_OPTION="docker" ;;
+        "")       : ;;  # will prompt below
+        *)
+            print_error "Unknown argument: $1"
+            echo "Usage: $0 [--k3s | --docker]"
+            exit 1
+            ;;
+    esac
+
+    check_root
+
+    # If no option given, show interactive menu
+    [[ -z "$DEPLOYMENT_OPTION" ]] && select_deployment_option
+
+    case "$DEPLOYMENT_OPTION" in
+        k3s)    install_tc_k3s ;;
+        docker) install_tc_docker ;;
+    esac
+}
+
+[[ "${1:-}" == "--source-only" ]] && return 0
+main "$@"
