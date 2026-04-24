@@ -25,4 +25,4 @@ kata-containers:
     description: "Kata Containers github repo"
     url: "https://github.com/kata-containers/kata-containers.git"
     name: "kata-containers"
-    version: 3.27.0
+    version: 3.29.0

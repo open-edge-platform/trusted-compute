@@ -103,12 +103,6 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-#build kata binary and copy to artifacts
-"${BUILD_DIR}/build-kata-binary.sh"
-cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
-
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
 chown root:bm-agents "${KATA_ARTIFACT_DIR}/opt/kata"
@@ -161,9 +155,9 @@ echo "INFO: Copying build artifacts to Kata Containers repo"
 cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/"
 
 #build the kata deploy image
-pushd "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy"
+pushd "${KATA_CONTAINERS_DIR}"
 echo "INFO: Building Kata deploy image"
-docker build -t "${KATA_DEPLOY_IMAGE_NAME}":"${KATA_DEPLOY_IMAGE_VERSION}" .
+docker build -f tools/packaging/kata-deploy/Dockerfile -t "${KATA_DEPLOY_IMAGE_NAME}":"${KATA_DEPLOY_IMAGE_VERSION}" .
 popd
 
 #cleanup
