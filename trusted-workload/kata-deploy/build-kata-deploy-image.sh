@@ -110,9 +110,15 @@ echo "INFO: Enabling virtio_mem in configuration.toml for kernel 6.12 compatibil
 KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/configuration.toml"
 if [ -f "${KATA_CONFIG_FILE}" ]; then
     sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
-    echo "INFO: virtio_mem enabled in ${KATA_CONFIG_FILE}"
+    if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
+        echo "INFO: virtio_mem enabled in ${KATA_CONFIG_FILE}"
+    else
+        echo "ERROR: failed to enable virtio_mem in ${KATA_CONFIG_FILE}"
+        exit 1
+    fi
 else
-    echo "WARN: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    exit 1
 fi
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
