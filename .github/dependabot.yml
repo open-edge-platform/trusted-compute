@@ -9,6 +9,9 @@ updates:
     directory: "/attestation-verifier/src"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
+      semver-patch-days: 2
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 5
@@ -25,6 +28,9 @@ updates:
     directory: "/attestation-manager/src"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
+      semver-patch-days: 2
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 5
@@ -42,6 +48,9 @@ updates:
     directory: "/attestation-manager"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -58,6 +67,9 @@ updates:
     directory: "/attestation-verifier/src/build/image/aas-manager"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -74,6 +86,9 @@ updates:
     directory: "/attestation-verifier/src/build/image/authservice"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -90,6 +105,9 @@ updates:
     directory: "/attestation-verifier/src/build/image/cms"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -106,6 +124,9 @@ updates:
     directory: "/attestation-verifier/src/build/image/hvs"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -122,6 +143,9 @@ updates:
     directory: "/attestation-verifier/src/build/image/tagent"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -138,6 +162,9 @@ updates:
     directory: "/attestation-verifier/utils/tools/containers/init-wait"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -154,6 +181,9 @@ updates:
     directory: "/attestation-verifier/utils/tools/containers/nats"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -171,6 +201,9 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    cooldown:
+      default-days: 7
+      semver-patch-days: 3
     open-pull-requests-limit: 10
     commit-message:
       prefix: "[gha] "
