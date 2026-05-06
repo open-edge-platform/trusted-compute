@@ -1,5 +1,7 @@
 {{ template "base" . }}
 
+imports = ["/var/lib/rancher/k3s/agent/etc/containerd/config-v3.toml.d/*.toml"]
+
 [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-qemu]
     runtime_type = "io.containerd.kata-qemu.v2"
     runtime_path = "/opt/kata/bin/containerd-shim-kata-v2"
