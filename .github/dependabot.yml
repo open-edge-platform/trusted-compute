@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "daily"
     cooldown:
-      default-days: 5
+      default-days: 7
       semver-patch-days: 2
     commit-message:
       prefix: "deps"
@@ -29,7 +29,7 @@ updates:
     schedule:
       interval: "daily"
     cooldown:
-      default-days: 5
+      default-days: 7
       semver-patch-days: 2
     commit-message:
       prefix: "deps"
