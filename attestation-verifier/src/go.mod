@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
-	github.com/lib/pq v1.11.2
+	github.com/lib/pq v1.12.3
 	github.com/mattermost/xml-roundtrip-validator v0.1.0
 	github.com/nats-io/jwt/v2 v2.8.1
 	github.com/nats-io/nats.go v1.49.0
