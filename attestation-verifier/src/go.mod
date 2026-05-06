@@ -4,7 +4,7 @@ go 1.25.7
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/antchfx/jsonquery v1.3.6
+	github.com/antchfx/jsonquery v1.3.7
 	github.com/beevik/etree v1.6.0
 	github.com/cloudflare/cfssl v1.6.5
 	github.com/davecgh/go-spew v1.1.1
@@ -28,7 +28,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/vmware/govmomi v0.53.0
+	github.com/vmware/govmomi v0.53.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.50.0
 	golang.org/x/net v0.53.0
