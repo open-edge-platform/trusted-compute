@@ -5,6 +5,8 @@
 
 # Variables
 BUILD_DIR := $(shell pwd)/build
+MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+$(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
 EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
 EDGE_MICROVISOR_BRANCH?=3.0
@@ -12,10 +14,8 @@ EDGE_MICROVISOR_COMMIT?="25.06.01-20260227"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
-KATA_CONTAINERS_TAG?=3.27.0
+KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../trusted-workload/kata-deploy/version.yaml)
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
-
-MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
  
 # Targets
 .PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test
