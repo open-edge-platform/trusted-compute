@@ -7,6 +7,7 @@
 set -e
 
 K3S_INSTALL_URL="https://get.k3s.io"
+K3S_VERSION="v1.34.5+k3s1"
 K3S_BIN="/usr/local/bin/k3s"
 KUBECONFIG="$HOME/.kube/config"
 
@@ -22,7 +23,7 @@ check_sudo() {
 
 install_k3s() {
     echo "Installing K3s..."
-    curl -sfL $K3S_INSTALL_URL | sudo sh -
+    curl -sfL $K3S_INSTALL_URL | INSTALL_K3S_VERSION="${K3S_VERSION}" sudo -E sh -
     echo "K3s installed."
 
     # Make kubeconfig usable without sudo
