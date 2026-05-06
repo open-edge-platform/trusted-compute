@@ -50,7 +50,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -69,7 +68,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -88,7 +86,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -107,7 +104,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -126,7 +122,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -145,7 +140,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -164,7 +158,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -183,7 +176,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -203,7 +195,6 @@ updates:
       interval: daily
     cooldown:
       default-days: 7
-      semver-patch-days: 3
     open-pull-requests-limit: 10
     commit-message:
       prefix: "[gha] "
