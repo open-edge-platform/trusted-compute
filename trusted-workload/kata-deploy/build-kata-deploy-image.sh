@@ -37,6 +37,7 @@ KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")
 KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
 KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
+KATA_CONFIG_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/defaults/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
 KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
@@ -102,6 +103,23 @@ cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR
 echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
+
+# Enable virtio_mem in configuration.toml to fix kernel 6.12 memory hotplug issue
+# NOTE: This workaround is required for kernel 6.12.x due to broken memory probe mechanism
+echo "INFO: Enabling virtio_mem in configuration.toml for kernel 6.12 compatibility"
+KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/configuration.toml"
+if [ -f "${KATA_CONFIG_FILE}" ]; then
+    sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
+    if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
+        echo "INFO: virtio_mem enabled in ${KATA_CONFIG_FILE}"
+    else
+        echo "ERROR: failed to enable virtio_mem in ${KATA_CONFIG_FILE}"
+        exit 1
+    fi
+else
+    echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    exit 1
+fi
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
