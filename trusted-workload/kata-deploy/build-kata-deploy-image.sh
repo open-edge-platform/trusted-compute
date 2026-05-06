@@ -37,6 +37,7 @@ KATA_ARTIFACT_FILE_NAME=$(basename "${KATA_ARTIFACT_RELEASE_URL##*/}")
 KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
 KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
+KATA_CONFIG_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/defaults/kata-containers"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
 KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
@@ -103,11 +104,22 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-#build kata binary and copy to artifacts
-"${BUILD_DIR}/build-kata-binary.sh"
-cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
+# Enable virtio_mem in configuration.toml to fix kernel 6.12 memory hotplug issue
+# NOTE: This workaround is required for kernel 6.12.x due to broken memory probe mechanism
+echo "INFO: Enabling virtio_mem in configuration.toml for kernel 6.12 compatibility"
+KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/configuration.toml"
+if [ -f "${KATA_CONFIG_FILE}" ]; then
+    sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
+    if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
+        echo "INFO: virtio_mem enabled in ${KATA_CONFIG_FILE}"
+    else
+        echo "ERROR: failed to enable virtio_mem in ${KATA_CONFIG_FILE}"
+        exit 1
+    fi
+else
+    echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    exit 1
+fi
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
@@ -131,6 +143,20 @@ for file in $(find . -type f -o -type d -o -type l | sed 's|^\./||'); do
 done
 popd
 
+#build tc-docker-deploy wrapper and copy to artifacts
+echo "INFO: Building tc-docker-deploy binary using rust:1.90 container"
+docker run --rm \
+	-v "${BUILD_DIR}/tc-docker-deploy:/workspace" \
+	-w /workspace \
+	rust:1.90 \
+	bash -c "rustup target add x86_64-unknown-linux-musl && \
+		cargo build --locked --release --target x86_64-unknown-linux-musl"
+
+cp "${BUILD_DIR}/tc-docker-deploy/target/x86_64-unknown-linux-musl/release/tc-docker-deploy" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+chmod 755 "${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
+chown root:root "${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
+echo "INFO: tc-docker-deploy binary installed to ${KATA_ARTIFACT_DIR}/opt/kata/bin/tc-docker-deploy"
+
 #retar the artifacts
 echo "INFO: Retar the artifacts"
 tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
@@ -147,9 +173,9 @@ echo "INFO: Copying build artifacts to Kata Containers repo"
 cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/"
 
 #build the kata deploy image
-pushd "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy"
+pushd "${KATA_CONTAINERS_DIR}"
 echo "INFO: Building Kata deploy image"
-docker build -t "${KATA_DEPLOY_IMAGE_NAME}":"${KATA_DEPLOY_IMAGE_VERSION}" .
+docker build -f tools/packaging/kata-deploy/Dockerfile -t "${KATA_DEPLOY_IMAGE_NAME}":"${KATA_DEPLOY_IMAGE_VERSION}" .
 popd
 
 #cleanup
@@ -157,4 +183,3 @@ rm -rf "${KATA_ARTIFACT_DIR}"
 rm -rf "${KATA_CONTAINERS_DIR}"
 rm -f "${KATA_ARTIFACT_FILE_NAME}"
 rm -f "${KATA_ARTIFACT_NEW_NAME}"
-docker rmi -f ubuntu:24.04 || true
