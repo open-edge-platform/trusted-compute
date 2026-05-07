@@ -34,21 +34,14 @@ wget -q https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux
 chmod +x /usr/local/bin/yq
 
 # Install Go
-echo "INFO: Getting Go version from versions.yaml"
-GO_VERSION=$(yq e '.languages.golang.version' "${KATA_CONTAINER_DIR}/versions.yaml")
-if [ -z "${GO_VERSION}" ]; then
-    echo "ERROR: Failed to get Go version from versions.yaml"
-    GO_VERSION=1.25.9
-    echo "INFO: Installing default Go version : ${GO_VERSION}"
-else
-    echo "INFO: Installing Go version from versions.yaml : ${GO_VERSION}"
-fi
+GO_VERSION=1.26.2
+echo "INFO: Installing pinned Go version : ${GO_VERSION}"
 wget -q https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz || { echo "ERROR: Failed to download Go"; exit 1; }
 tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 
 # Install Rust
-echo "INFO: Getting Rust version from versoions.yaml"
+echo "INFO: Getting Rust version from versions.yaml"
 RUST_VERSION=$(yq e '.languages.rust.version' "${KATA_CONTAINER_DIR}/versions.yaml")
 if [ -z "${RUST_VERSION}" ]; then
     echo "ERROR: Failed to get Rust version from versions.yaml"
