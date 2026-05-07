@@ -4,7 +4,7 @@
 # */
 
 # Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
-FROM golang:1.26.2-bookworm AS builder
+FROM golang:1.26.2-bookworm@sha256:47ce5636e9936b2c5cbf708925578ef386b4f8872aec74a67bd13a627d242b19 AS builder
 
 WORKDIR /src/cfssl
 
@@ -42,6 +42,9 @@ RUN set -eux; \
     install -m 0755 /tmp/kubectl /usr/local/bin/kubectl && rm -f /tmp/kubectl /tmp/kubectl.sha256 && \
     mkdir -p /secrets && touch /.container-env && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# This container is an init/setup container (runs to completion); health checking is not applicable.
+HEALTHCHECK NONE
 
 # copy the cfssl binaries from builder stage (no Go runtime or sources remain)
 COPY --from=builder --chown=root:root --chmod=0755 /out/cfssl /usr/local/bin/cfssl
