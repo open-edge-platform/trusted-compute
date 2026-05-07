@@ -14,4 +14,7 @@ RUN apt-get update && \
 # Add a user and switch to it
 USER 503
 
+# This container is an init container (runs to completion); health checking is not applicable.
+HEALTHCHECK NONE
+
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

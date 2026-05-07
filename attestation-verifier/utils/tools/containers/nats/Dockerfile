@@ -43,6 +43,9 @@ RUN set -eux; \
     mkdir -p /secrets && touch /.container-env && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# This container is an init/setup container (runs to completion); health checking is not applicable.
+HEALTHCHECK NONE
+
 # copy the cfssl binaries from builder stage (no Go runtime or sources remain)
 COPY --from=builder --chown=root:root --chmod=0755 /out/cfssl /usr/local/bin/cfssl
 COPY --from=builder --chown=root:root --chmod=0755 /out/cfssljson /usr/local/bin/cfssljson
