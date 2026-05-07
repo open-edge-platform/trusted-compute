@@ -8,10 +8,14 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/attestation-verifier/src"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     cooldown:
       default-days: 7
       semver-patch-days: 2
+    groups:
+      all-go-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 5
@@ -23,14 +27,18 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "gomod"
     directory: "/attestation-manager/src"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     cooldown:
       default-days: 7
       semver-patch-days: 2
+    groups:
+      all-go-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 5
@@ -50,6 +58,10 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -61,13 +73,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/src/build/image/aas-manager"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -79,13 +95,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/src/build/image/authservice"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -97,13 +117,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/src/build/image/cms"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -115,13 +139,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/src/build/image/hvs"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -133,13 +161,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/src/build/image/tagent"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -151,13 +183,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/utils/tools/containers/init-wait"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -169,13 +205,17 @@ updates:
       - "vtcao297"
       - "shahmitu"
       - "hemanthsm"
-  
+
   - package-ecosystem: "docker"
     directory: "/attestation-verifier/utils/tools/containers/nats"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-docker-deps:
+        patterns:
+          - "*"
     commit-message:
       prefix: "docker"
     open-pull-requests-limit: 5
@@ -192,9 +232,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      all-gha-deps:
+        patterns:
+          - "*"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "[gha] "
