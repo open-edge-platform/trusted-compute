@@ -41,11 +41,24 @@ The installation script supports two deployment options:
 
 ### 2. Download the Trusted Compute Package
 
-1. **Get the Latest Tag and Download (using ORAS):**
+1. **Download Trusted Compute Package (using ORAS):**
+
+	**Option 1: Download a Specific Version**
+	
+	If you want to download a specific version (e.g., 1.5.0):
+	```bash
+	VERSION=1.5.0
+	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:$VERSION
+	```
+	
+	**Option 2: Download the Latest Version**
+	
+	If no specific version is required, download the latest:
 	```bash
 	TAG=$(oras repo tags registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
 	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:$TAG
 	```
+	
 	- Ensure `oras` is available — see the [oras installation guide](https://oras.land/docs/installation).
 
 2. **Extract the Package:**
