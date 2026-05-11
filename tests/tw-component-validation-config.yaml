@@ -14,9 +14,9 @@ tw_helm_chart:
     It contains the configuration for the component validation tests.
   name: trusted-workload
   namespace: confidential-containers-system
-  version: 1.4.5
+  version: 1.5.1-dev
   chart_link: oci://registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/charts/trusted-workload
-  previous_version: 1.4.4
+  previous_version: 1.5.0
 
 sample_workload:
   description: |
