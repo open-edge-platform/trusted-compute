@@ -28,7 +28,8 @@ build:
 	@# Help: Runs build stage
 	@echo "---MAKEFILE BUILD---"
 	cd src/ && go mod tidy
-	cd src/cmd/app && go build -o main
+	$(eval SECURE_BOOT_FLAG := $(if $(findstring pr,$(VERSION_SUFFIX)),-X main.enableSecureBootCheck=false,))
+	cd src/cmd/app && go build -ldflags "$(SECURE_BOOT_FLAG)" -o main
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -47,6 +48,9 @@ docker-push: ## Push docker images.
 DOCKER_ENV := DOCKER_BUILDKIT=1
 docker-build: test ## Build docker images.
 	@echo "---Docker Build---"
+	@if echo "$(VERSION_SUFFIX)" | grep -q "pr"; then \
+		$(MAKE) build; \
+	fi
 	docker build -f Dockerfile -t attestation-manager:${VERSION} --no-cache .
 	@echo "---End Docker Build---"
 

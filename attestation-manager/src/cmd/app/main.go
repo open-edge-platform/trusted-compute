@@ -16,6 +16,10 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/logging"
 )
 
+// enableSecureBootCheck can be set at build time via ldflags:
+// go build -ldflags "-X main.enableSecureBootCheck=false"
+var enableSecureBootCheck = "true"
+
 func main() {
 
 	// Load configuration
@@ -164,7 +168,9 @@ func main() {
 		parseSuccess, secureBootStatus, hardwareGuid, attestStatus := api.ParseTrustReport(attestReport)
 		logging.Debug("Parse success status:", parseSuccess, "SecureBoot of Node:", secureBootStatus, "Hardware Details:", hardwareGuid, "Attestation Status:", attestStatus)
 		logging.Info("Parse success status:", parseSuccess)
-		if !secureBootStatus {
+		
+		// SecureBoot check is enabled by default, can be disabled via ldflags: -X main.enableSecureBootCheck=false
+		if enableSecureBootCheck == "true" && !secureBootStatus {
 			logging.Info("SecureBoot Disabled, Informing Attestation Manager Server")
 			var attestationDetails string = "SecureBoot Disabled"
 			if cfg.InformAMServer {
