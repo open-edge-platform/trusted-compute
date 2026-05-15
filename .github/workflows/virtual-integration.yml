@@ -31,10 +31,14 @@ jobs:
       contents: read
     name: Deploy On-Prem Orchestrator and Run Golden Suite Trusted Compute Tests
     runs-on: ubuntu-24.04-16core-64GB
-    timeout-minutes: 90
+    timeout-minutes: 300
     env:
       KUBECONFIG: ${{ github.workspace }}/terraform/orchestrator/files/kubeconfig
     steps:
+      - name: Setup tmate session for debugging
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          allowed_ssh_users: runner
       - name: Deploy On-Prem Orchestrator
         id: deploy-on-prem
         uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_on_prem@d5c1881292e7b2a4b5e0103ae0eb4bd2bfab5d77
