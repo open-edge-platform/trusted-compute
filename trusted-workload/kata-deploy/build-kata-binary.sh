@@ -28,12 +28,12 @@ pushd "${KATA_DIR}"
 git apply "${PATCH_FILE}"
 popd
 
-GO_VERSION=$(yq '.golang.version' "${KATA_DIR}/versions.yaml" 2>/dev/null || true)
-GO_VERSION="${GO_VERSION:-1.25.9}"
+GO_VERSION=$(yq '.languages.golang.version' "${KATA_DIR}/versions.yaml" 2>/dev/null || true)
+[[ "${GO_VERSION}" == "null" || -z "${GO_VERSION}" ]] && GO_VERSION="1.25.9"
 echo "INFO: Using Go version ${GO_VERSION}"
 
 # Create build script for inside the container
-cat > "${KATA_BUILD_DIR}/build_kata_in_container.sh" <<'EOF'
+cat > "${KATA_BUILD_DIR}/build_kata_in_container.sh" <<EOF
 #!/bin/bash
 set -euo pipefail
 apt-get update
