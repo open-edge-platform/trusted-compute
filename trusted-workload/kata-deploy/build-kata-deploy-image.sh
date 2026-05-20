@@ -121,6 +121,13 @@ else
     exit 1
 fi
 
+
+#build kata binary and copy to artifacts
+"${BUILD_DIR}/build-kata-binary.sh"
+cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
+
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
 chown root:bm-agents "${KATA_ARTIFACT_DIR}/opt/kata"
