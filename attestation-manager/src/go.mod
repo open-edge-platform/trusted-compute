@@ -1,13 +1,13 @@
 module github.com/open-edge-platform/trusted-compute/attestation-manager/src
 
-go 1.26.0
+go 1.26.3
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/open-edge-platform/infra-managers/attestationstatus v0.9.2
-	google.golang.org/grpc v1.81.0
-	k8s.io/apimachinery v0.36.0
-	k8s.io/client-go v0.36.0
+	github.com/open-edge-platform/infra-managers/attestationstatus v0.10.1
+	google.golang.org/grpc v1.81.1
+	k8s.io/apimachinery v0.36.1
+	k8s.io/client-go v0.36.1
 )
 
 require (
@@ -30,18 +30,18 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/term v0.40.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.36.0 // indirect
+	k8s.io/api v0.36.1 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
