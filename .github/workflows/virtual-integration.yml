@@ -1,0 +1,444 @@
+---
+name: Virtual Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+    types:
+      - opened
+      - synchronize
+      - reopened
+  merge_group:
+
+concurrency:
+  group: ${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  run-golden-suite:
+    permissions:
+      contents: read
+    name: Run Golden Suite Trusted Compute Tests for baremetal package
+    runs-on: ubuntu-24.04-16core-64GB
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Trusted Compute package
+        run: |
+          echo "Installing build prerequisites..."
+          sudo apt-get update -qq
+          sudo apt-get install -y curl make tar
+
+          version_suffix=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            version_suffix="-pr-${{ github.event.number }}"
+          fi
+
+          YQ_VERSION="v4.44.6"
+          curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+            -o /tmp/yq && chmod +x /tmp/yq && sudo mv /tmp/yq /usr/local/bin/yq
+
+          if ! command -v helm >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          fi
+
+          echo "Building Trusted Compute installation package..."
+          make -C baremetal build VERSION_SUFFIX="$version_suffix"
+
+          echo "Build complete:"
+          ls -lh baremetal/trusted-compute-installation-package.tgz
+
+      - name: Setup VM prerequisites
+        run: |
+          echo "Installing VM and TPM prerequisites..."
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            qemu-system-x86-64 \
+            ovmf \
+            libvirt-daemon-system \
+            libvirt-clients \
+            virt-manager \
+            virtinst \
+            swtpm \
+            swtpm-tools \
+            tpm2-tools \
+            expect \
+            wget
+          
+          echo "Prerequisites installation completed"
+
+      - name: Start libvirt service
+        run: |
+          echo "Starting libvirt service..."
+          sudo systemctl start libvirtd
+          sudo systemctl status libvirtd
+          echo "libvirt service started"
+
+      - name: Create Ubuntu 24 VM with TPM
+        run: |
+          echo "Creating VM with Ubuntu 24, TPM, and Secure Boot..."
+          sudo chmod +x ./.github/scripts/create-ubuntu24-vm-with-tpm.sh
+          sudo ./.github/scripts/create-ubuntu24-vm-with-tpm.sh test-vm 8 16 100
+          
+          echo "VM creation completed"
+          
+          echo "\nVM Status:"
+          sudo virsh list --all
+          
+          echo "\nVM Configuration:"
+          sudo virsh dominfo test-vm
+
+      - name: Start VM and verify OS release via console
+        env:
+          VM_USERNAME: user
+          VM_PASSWORD: user
+        run: |
+          echo "Starting VM..."
+          sudo virsh start test-vm
+
+          echo "Waiting for VM boot (120s for cloud-init first boot)..."
+          sleep 120
+
+          echo "Logging into VM console and collecting /etc/os-release"
+          expect << 'EOF'
+            set timeout 60
+            set logged_in 0
+            spawn sudo virsh console test-vm
+
+            # Attempt 1
+            send -- "\r"
+            expect {
+              -re {login: ?$} {
+                send -- "$env(VM_USERNAME)\r"
+                exp_continue
+              }
+              -re {Password: ?$} {
+                send -- "$env(VM_PASSWORD)\r"
+                exp_continue
+              }
+              -re {Login incorrect} {}
+              -re {[#$] $} {
+                set logged_in 1
+              }
+              timeout {}
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            # Attempt 2 (final)
+            if {$logged_in == 0} {
+              after 8000
+              send -- "\r"
+              expect {
+                -re {login: ?$} {
+                  send -- "$env(VM_USERNAME)\r"
+                  exp_continue
+                }
+                -re {Password: ?$} {
+                  send -- "$env(VM_PASSWORD)\r"
+                  exp_continue
+                }
+                -re {Login incorrect} {}
+                -re {[#$] $} {
+                  set logged_in 1
+                }
+                timeout {}
+                eof { puts "Console closed unexpectedly"; exit 1 }
+              }
+            }
+
+            if {$logged_in == 0} {
+              puts "Timed out waiting for successful console login"
+              exit 1
+            }
+
+            send -- "cat /etc/os-release\r"
+
+            expect {
+              -re "PRETTY_NAME=.*" {}
+              timeout { puts "Timed out waiting for /etc/os-release output"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after os-release command"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo apt-get update -qq\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after apt-get update"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo apt-get install -y tpm2-tools\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after tpm2-tools install"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo tpm2_pcrread\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after tpm2_pcrread"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "ls -l /sys/kernel/security/ima/policy\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after ima policy ls"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "exit\r"
+            send -- "\035"
+            expect eof
+          EOF
+
+      - name: Install Trusted Compute package in VM via console
+        env:
+          VM_USERNAME: user
+          VM_PASSWORD: user
+        run: |
+          KEY_PATH="/var/lib/libvirt/images/test-vm/ssh/test-vm-id_ed25519"
+
+          VM_IP=""
+          for _ in $(seq 1 20); do
+            VM_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
+            if [[ -n "$VM_IP" ]]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ -z "$VM_IP" ]]; then
+            echo "Unable to determine VM IP from libvirt DHCP leases"
+            sudo virsh net-dhcp-leases default || true
+            exit 1
+          fi
+
+          echo "Copying Trusted Compute package to VM at $VM_IP..."
+          for _ in $(seq 1 20); do
+            if sudo scp \
+              -i "$KEY_PATH" \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=10 \
+              baremetal/trusted-compute-installation-package.tgz \
+              user@"$VM_IP":/home/user/trusted-compute-installation-package.tgz; then
+              break
+            fi
+            sleep 5
+          done
+
+          echo "Logging into VM console to install Trusted Compute package"
+          expect << 'EOF'
+            set timeout 60
+            set logged_in 0
+            spawn sudo virsh console test-vm
+
+            # Attempt 1
+            send -- "\r"
+            expect {
+              -re {login: ?$} {
+                send -- "$env(VM_USERNAME)\r"
+                exp_continue
+              }
+              -re {Password: ?$} {
+                send -- "$env(VM_PASSWORD)\r"
+                exp_continue
+              }
+              -re {Login incorrect} {}
+              -re {[#$] $} {
+                set logged_in 1
+              }
+              timeout {}
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            # Attempt 2 (final)
+            if {$logged_in == 0} {
+              after 8000
+              send -- "\r"
+              expect {
+                -re {login: ?$} {
+                  send -- "$env(VM_USERNAME)\r"
+                  exp_continue
+                }
+                -re {Password: ?$} {
+                  send -- "$env(VM_PASSWORD)\r"
+                  exp_continue
+                }
+                -re {Login incorrect} {}
+                -re {[#$] $} {
+                  set logged_in 1
+                }
+                timeout {}
+                eof { puts "Console closed unexpectedly"; exit 1 }
+              }
+            }
+
+            if {$logged_in == 0} {
+              puts "Timed out waiting for successful console login"
+              exit 1
+            }
+
+            send -- "tar -xzf trusted-compute-installation-package.tgz\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after tar extract"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "cd trusted-compute-installation-package\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after cd"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo ./k3s/k3s.sh --install\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after k3s install"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo ./install.sh --k3s\r"
+
+
+            # Wait for up to 10 minutes for any output or prompt after install.sh (no timeout error)
+            set timeout 300
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "10 minutes elapsed after install.sh, continuing regardless of prompt"; }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "exit\r"
+            send -- "\035"
+            expect eof
+          EOF
+
+      - name: Fetch kubeconfig via scp and run kubectl from host
+        run: |
+          set -euo pipefail
+
+          KEY_PATH="/var/lib/libvirt/images/test-vm/ssh/test-vm-id_ed25519"
+          if [[ ! -f "$KEY_PATH" ]]; then
+            echo "SSH private key not found: $KEY_PATH"
+            exit 1
+          fi
+
+          VM_IP=""
+          for _ in $(seq 1 20); do
+            VM_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
+            if [[ -n "$VM_IP" ]]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ -z "$VM_IP" ]]; then
+            echo "Unable to determine VM IP from libvirt DHCP leases"
+            sudo virsh net-dhcp-leases default || true
+            exit 1
+          fi
+
+          echo "Preparing kubeconfig for scp on VM..."
+          sudo ssh \
+            -i "$KEY_PATH" \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ConnectTimeout=10 \
+            user@"$VM_IP" \
+            "sudo cp /etc/rancher/k3s/k3s.yaml /home/user/k3s.yaml && sudo chown user:user /home/user/k3s.yaml"
+
+          echo "Copying kubeconfig from VM using scp..."
+          sudo scp \
+            -i "$KEY_PATH" \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ConnectTimeout=10 \
+            user@"$VM_IP":/home/user/k3s.yaml ./vm-k3s.yaml
+
+          sudo chown "$USER":"$USER" ./vm-k3s.yaml
+          chmod 600 ./vm-k3s.yaml
+
+          sed -i "s|127.0.0.1|$VM_IP|g" ./vm-k3s.yaml
+
+          if ! command -v kubectl >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y curl ca-certificates
+            KUBECTL_VERSION="$(curl -L -s https://dl.k8s.io/release/stable.txt)"
+            curl -L -o /tmp/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+            chmod +x /tmp/kubectl
+            sudo install -m 0755 /tmp/kubectl /usr/local/bin/kubectl
+          fi
+
+          mkdir -p vm-logs/trusted-compute-pod-logs
+
+          export KUBECONFIG="$PWD/vm-k3s.yaml"
+
+          kubectl get nodes -o yaml
+          kubectl get all -n trusted-compute
+
+          kubectl get pods -n trusted-compute -o name | while read -r pod; do
+            pod_name="${pod#pod/}"
+            kubectl logs -n trusted-compute "$pod_name" > "vm-logs/trusted-compute-pod-logs/${pod_name}.log" 2>&1 || true
+
+            kubectl get pod "$pod_name" -n trusted-compute -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}' | while read -r container_name; do
+              [[ -n "$container_name" ]] || continue
+              kubectl logs -n trusted-compute "$pod_name" -c "$container_name" > "vm-logs/trusted-compute-pod-logs/${pod_name}-${container_name}.log" 2>&1 || true
+              kubectl logs -n trusted-compute "$pod_name" -c "$container_name" --previous > "vm-logs/trusted-compute-pod-logs/${pod_name}-${container_name}-previous.log" 2>&1 || true
+            done
+          done
+
+      - name: Collect VM boot logs
+        if: always()
+        run: |
+          mkdir -p vm-logs
+
+          echo "Collecting libvirt and VM diagnostics..."
+          sudo virsh list --all > vm-logs/virsh-list-all.txt 2>&1 || true
+          sudo virsh dominfo test-vm > vm-logs/dominfo.txt 2>&1 || true
+          sudo virsh domstate test-vm > vm-logs/domstate.txt 2>&1 || true
+          sudo virsh dumpxml test-vm > vm-logs/domain.xml 2>&1 || true
+
+          echo "Collecting qemu and libvirt service logs..."
+          sudo ls -la /var/log/libvirt/qemu > vm-logs/qemu-log-dir.txt 2>&1 || true
+          sudo cp /var/log/libvirt/qemu/test-vm.log vm-logs/test-vm.log 2>/dev/null || true
+          sudo journalctl -u libvirtd --no-pager --since "-30 min" > vm-logs/libvirtd-journal.txt 2>&1 || true
+          sudo journalctl -u virtlogd --no-pager --since "-30 min" > vm-logs/virtlogd-journal.txt 2>&1 || true
+
+          # Ensure artifact files are accessible to the non-root GitHub Actions runner user.
+          sudo chown -R "$USER":"$USER" vm-logs || true
+          chmod -R u+rwX,go+rX vm-logs || true
+
+      - name: Upload VM boot logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vm-boot-logs
+          path: vm-logs
+          if-no-files-found: warn
+
