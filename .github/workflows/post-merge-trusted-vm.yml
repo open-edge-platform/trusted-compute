@@ -11,6 +11,8 @@ on:
       - release-*
     paths:
       - 'trusted-vm/**'
+    tags:
+      - '*'
   workflow_dispatch:
 
 permissions:

@@ -12,6 +12,8 @@ on:
       - release-*
     paths:
       - 'attestation-manager/**'
+    tags:
+      - '*'
   workflow_dispatch:
 
 permissions:
