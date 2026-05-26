@@ -211,6 +211,104 @@ jobs:
             expect eof
           EOF
 
+      - name: Patch HVS image in installation package with swtpm endorsement CA
+        run: |
+          set -euo pipefail
+
+          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
+          SRC_01_PEM="/var/lib/swtpm-localca/01.pem"
+
+          if [[ ! -f "$PKG_TGZ" ]]; then
+            echo "Package not found: $PKG_TGZ"
+            exit 1
+          fi
+
+          if ! sudo test -f "$SRC_ROOT_CA" || ! sudo test -f "$SRC_01_PEM"; then
+            echo "Missing required swtpm CA files:"
+            echo "  $SRC_ROOT_CA"
+            echo "  $SRC_01_PEM"
+            echo "Ensure VM creation/setup generated swtpm-localca assets before this step."
+            exit 1
+          fi
+
+          WORKDIR="$(mktemp -d)"
+          trap 'rm -rf "$WORKDIR"' EXIT
+
+          # Read source CA files with root privileges and stage them for image copy.
+          STAGED_ROOT_CA="$WORKDIR/swtpm-localca-rootca-cert.pem"
+          STAGED_01_PEM_RAW="$WORKDIR/01.raw.pem"
+          STAGED_01_PEM="$WORKDIR/01.pem"
+          sudo cp "$SRC_ROOT_CA" "$STAGED_ROOT_CA"
+          sudo cp "$SRC_01_PEM" "$STAGED_01_PEM_RAW"
+          sudo chown "$USER":"$USER" "$STAGED_ROOT_CA" "$STAGED_01_PEM_RAW"
+
+          # swtpm 01.pem may contain text output around the PEM. Normalize to clean PEM with openssl.
+          if ! openssl x509 -in "$STAGED_01_PEM_RAW" -outform PEM -out "$STAGED_01_PEM" >/dev/null 2>&1; then
+            echo "Failed to extract/normalize a valid PEM certificate from $SRC_01_PEM"
+            exit 1
+          fi
+
+          tar -xzf "$PKG_TGZ" -C "$WORKDIR"
+
+          PKG_DIR="$WORKDIR/trusted-compute-installation-package"
+          HVS_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*attestation-verifier-hvs-*.tar' | head -n1)"
+
+          if [[ -z "$HVS_TAR" ]]; then
+            echo "Unable to locate HVS image tar in package images/"
+            exit 1
+          fi
+
+          echo "Patching image tar: $HVS_TAR"
+
+          load_out="$(sudo docker load -i "$HVS_TAR")"
+          image_ref="$(printf '%s\n' "$load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
+          if [[ -z "$image_ref" ]]; then
+            echo "Failed to parse loaded image reference"
+            echo "$load_out"
+            exit 1
+          fi
+
+          orig_entrypoint="$(sudo docker image inspect --format '{{json .Config.Entrypoint}}' "$image_ref")"
+          orig_cmd="$(sudo docker image inspect --format '{{json .Config.Cmd}}' "$image_ref")"
+
+          cid="$(sudo docker run -d --entrypoint /bin/sh "$image_ref" -c 'sleep 600')"
+          sudo docker cp "$STAGED_ROOT_CA" "$cid":/tmp/.swtpm-localca-rootca-cert.pem
+          sudo docker cp "$STAGED_01_PEM" "$cid":/tmp/.swtpm-01.pem
+          sudo docker exec -u 0 "$cid" /bin/sh -c '
+            set -e
+            if [ ! -f /tmp/external-eca.pem ]; then
+              echo "Missing target file in image: /tmp/external-eca.pem"
+              exit 1
+            fi
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-localca-rootca-cert.pem >> /tmp/external-eca.pem
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-01.pem >> /tmp/external-eca.pem
+            rm -f /tmp/.swtpm-localca-rootca-cert.pem /tmp/.swtpm-01.pem
+          '
+
+          patched_ref="$image_ref"
+
+          commit_args=()
+          if [[ "$orig_entrypoint" != "null" ]]; then
+            commit_args+=(--change "ENTRYPOINT $orig_entrypoint")
+          fi
+          if [[ "$orig_cmd" != "null" ]]; then
+            commit_args+=(--change "CMD $orig_cmd")
+          fi
+
+          sudo docker commit "${commit_args[@]}" "$cid" "$patched_ref" >/dev/null
+          sudo docker rm -f "$cid" >/dev/null
+
+          sudo docker save -o "$HVS_TAR" "$patched_ref"
+          sudo chown "$USER":"$USER" "$HVS_TAR"
+
+          tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
+
+          echo "Patched package generated:"
+          ls -lh "$PKG_TGZ"
+
       - name: Install Trusted Compute package in VM via console
         env:
           VM_USERNAME: user
@@ -326,11 +424,11 @@ jobs:
             send -- "sudo ./install.sh --k3s\r"
 
 
-            # Wait for up to 10 minutes for any output or prompt after install.sh (no timeout error)
-            set timeout 300
+            # Wait for up to 400 seconds for any output or prompt after install.sh (no timeout error)
+            set timeout 400
             expect {
               -re {[#$] $} {}
-              timeout { puts "10 minutes elapsed after install.sh, continuing regardless of prompt"; }
+              timeout { puts "400 seconds elapsed after install.sh, continuing regardless of prompt"; }
               eof { puts "Console closed unexpectedly"; exit 1 }
             }
 
@@ -401,6 +499,8 @@ jobs:
 
           kubectl get nodes -o yaml
           kubectl get all -n trusted-compute
+          kubectl get events -n trusted-compute --sort-by='.metadata.creationTimestamp' > vm-logs/trusted-compute-events.log 2>&1 || true
+          kubectl describe pods -n trusted-compute > "vm-logs/trusted-compute-pod-logs/pods-describe.log" 2>&1 || true
 
           kubectl get pods -n trusted-compute -o name | while read -r pod; do
             pod_name="${pod#pod/}"
