@@ -11,8 +11,6 @@ on:
       - release-*
     paths:
       - 'trusted-workload/kata-deploy/**'
-    tags:
-      - '*'
   workflow_dispatch:
 
 permissions:
