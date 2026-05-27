@@ -309,209 +309,38 @@ jobs:
           echo "Patched package generated:"
           ls -lh "$PKG_TGZ"
 
-      - name: Install Trusted Compute package in VM via console
-        env:
-          VM_USERNAME: user
-          VM_PASSWORD: user
+      - name: Install Robot Framework and SSHLibrary
         run: |
-          KEY_PATH="/var/lib/libvirt/images/test-vm/ssh/test-vm-id_ed25519"
+          pip install robotframework~=7.0 robotframework-sshlibrary~=3.8.0
 
-          VM_IP=""
-          for _ in $(seq 1 20); do
-            VM_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
-            if [[ -n "$VM_IP" ]]; then
-              break
-            fi
-            sleep 5
-          done
-
-          if [[ -z "$VM_IP" ]]; then
-            echo "Unable to determine VM IP from libvirt DHCP leases"
-            sudo virsh net-dhcp-leases default || true
-            exit 1
-          fi
-
-          echo "Copying Trusted Compute package to VM at $VM_IP..."
-          for _ in $(seq 1 20); do
-            if sudo scp \
-              -i "$KEY_PATH" \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=10 \
-              baremetal/trusted-compute-installation-package.tgz \
-              user@"$VM_IP":/home/user/trusted-compute-installation-package.tgz; then
-              break
-            fi
-            sleep 5
-          done
-
-          echo "Logging into VM console to install Trusted Compute package"
-          expect << 'EOF'
-            set timeout 60
-            set logged_in 0
-            spawn sudo virsh console test-vm
-
-            # Attempt 1
-            send -- "\r"
-            expect {
-              -re {login: ?$} {
-                send -- "$env(VM_USERNAME)\r"
-                exp_continue
-              }
-              -re {Password: ?$} {
-                send -- "$env(VM_PASSWORD)\r"
-                exp_continue
-              }
-              -re {Login incorrect} {}
-              -re {[#$] $} {
-                set logged_in 1
-              }
-              timeout {}
-              eof { puts "Console closed unexpectedly"; exit 1 }
-            }
-
-            # Attempt 2 (final)
-            if {$logged_in == 0} {
-              after 8000
-              send -- "\r"
-              expect {
-                -re {login: ?$} {
-                  send -- "$env(VM_USERNAME)\r"
-                  exp_continue
-                }
-                -re {Password: ?$} {
-                  send -- "$env(VM_PASSWORD)\r"
-                  exp_continue
-                }
-                -re {Login incorrect} {}
-                -re {[#$] $} {
-                  set logged_in 1
-                }
-                timeout {}
-                eof { puts "Console closed unexpectedly"; exit 1 }
-              }
-            }
-
-            if {$logged_in == 0} {
-              puts "Timed out waiting for successful console login"
-              exit 1
-            }
-
-            send -- "tar -xzf trusted-compute-installation-package.tgz\r"
-
-            expect {
-              -re {[#$] $} {}
-              timeout { puts "Timed out waiting for shell prompt after tar extract"; exit 1 }
-              eof { puts "Console closed unexpectedly"; exit 1 }
-            }
-
-            send -- "cd trusted-compute-installation-package\r"
-
-            expect {
-              -re {[#$] $} {}
-              timeout { puts "Timed out waiting for shell prompt after cd"; exit 1 }
-              eof { puts "Console closed unexpectedly"; exit 1 }
-            }
-
-            send -- "sudo ./k3s/k3s.sh --install\r"
-
-            expect {
-              -re {[#$] $} {}
-              timeout { puts "Timed out waiting for shell prompt after k3s install"; exit 1 }
-              eof { puts "Console closed unexpectedly"; exit 1 }
-            }
-
-            send -- "sudo ./install.sh --k3s\r"
-
-
-            # Wait for up to 400 seconds for any output or prompt after install.sh (no timeout error)
-            set timeout 400
-            expect {
-              -re {[#$] $} {}
-              timeout { puts "400 seconds elapsed after install.sh, continuing regardless of prompt"; }
-              eof { puts "Console closed unexpectedly"; exit 1 }
-            }
-
-            send -- "exit\r"
-            send -- "\035"
-            expect eof
-          EOF
-
-      - name: Fetch kubeconfig via scp and run kubectl from host
+      - name: Install Trusted Compute package via Robot Framework
         run: |
           set -euo pipefail
 
-          KEY_PATH="/var/lib/libvirt/images/test-vm/ssh/test-vm-id_ed25519"
-          if [[ ! -f "$KEY_PATH" ]]; then
-            echo "SSH private key not found: $KEY_PATH"
-            exit 1
-          fi
-
-          VM_IP=""
+          DUT_IP=""
           for _ in $(seq 1 20); do
-            VM_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
-            if [[ -n "$VM_IP" ]]; then
+            DUT_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
+            if [[ -n "$DUT_IP" ]]; then
               break
             fi
             sleep 5
           done
 
-          if [[ -z "$VM_IP" ]]; then
-            echo "Unable to determine VM IP from libvirt DHCP leases"
+          if [[ -z "$DUT_IP" ]]; then
+            echo "Unable to determine DUT IP from libvirt DHCP leases"
             sudo virsh net-dhcp-leases default || true
             exit 1
           fi
 
-          echo "Preparing kubeconfig for scp on VM..."
-          sudo ssh \
-            -i "$KEY_PATH" \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ConnectTimeout=10 \
-            user@"$VM_IP" \
-            "sudo cp /etc/rancher/k3s/k3s.yaml /home/user/k3s.yaml && sudo chown user:user /home/user/k3s.yaml"
-
-          echo "Copying kubeconfig from VM using scp..."
-          sudo scp \
-            -i "$KEY_PATH" \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ConnectTimeout=10 \
-            user@"$VM_IP":/home/user/k3s.yaml ./vm-k3s.yaml
-
-          sudo chown "$USER":"$USER" ./vm-k3s.yaml
-          chmod 600 ./vm-k3s.yaml
-
-          sed -i "s|127.0.0.1|$VM_IP|g" ./vm-k3s.yaml
-
-          if ! command -v kubectl >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo apt-get install -y curl ca-certificates
-            KUBECTL_VERSION="$(curl -L -s https://dl.k8s.io/release/stable.txt)"
-            curl -L -o /tmp/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-            chmod +x /tmp/kubectl
-            sudo install -m 0755 /tmp/kubectl /usr/local/bin/kubectl
-          fi
-
-          mkdir -p vm-logs/trusted-compute-pod-logs
-
-          export KUBECONFIG="$PWD/vm-k3s.yaml"
-
-          kubectl get nodes -o yaml
-          kubectl get all -n trusted-compute
-          kubectl get events -n trusted-compute --sort-by='.metadata.creationTimestamp' > vm-logs/trusted-compute-events.log 2>&1 || true
-          kubectl describe pods -n trusted-compute > "vm-logs/trusted-compute-pod-logs/pods-describe.log" 2>&1 || true
-
-          kubectl get pods -n trusted-compute -o name | while read -r pod; do
-            pod_name="${pod#pod/}"
-            kubectl logs -n trusted-compute "$pod_name" > "vm-logs/trusted-compute-pod-logs/${pod_name}.log" 2>&1 || true
-
-            kubectl get pod "$pod_name" -n trusted-compute -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}' | while read -r container_name; do
-              [[ -n "$container_name" ]] || continue
-              kubectl logs -n trusted-compute "$pod_name" -c "$container_name" > "vm-logs/trusted-compute-pod-logs/${pod_name}-${container_name}.log" 2>&1 || true
-              kubectl logs -n trusted-compute "$pod_name" -c "$container_name" --previous > "vm-logs/trusted-compute-pod-logs/${pod_name}-${container_name}-previous.log" 2>&1 || true
-            done
-          done
+          echo "Running Robot Framework golden suite against DUT at $DUT_IP"
+          robot \
+            --outputdir vm-logs/robot-results \
+            --variable DUT_HOST:"$DUT_IP" \
+            --variable DUT_USERNAME:user \
+            --variable DUT_PASSWORD:user \
+            --variable TC_PACKAGE:baremetal/trusted-compute-installation-package.tgz \
+            --variable INSTALL_TIMEOUT:600 \
+            tests/golden_suite_install_tests.robot
 
       - name: Collect VM boot logs
         if: always()
@@ -540,5 +369,13 @@ jobs:
         with:
           name: vm-boot-logs
           path: vm-logs
+          if-no-files-found: warn
+
+      - name: Upload Robot Framework results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-results
+          path: vm-logs/robot-results
           if-no-files-found: warn
 
