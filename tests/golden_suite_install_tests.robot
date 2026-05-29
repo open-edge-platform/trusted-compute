@@ -247,6 +247,13 @@ Collect Per Pod Logs
         ...    stderr=STDOUT
         Log    ${containers_result.stdout}
 
+        IF    not ${allow_failure}
+            Should Be Equal As Integers    ${containers_result.rc}    0    msg=Failed to get containers for pod ${pod_name}
+        END
+        IF    ${allow_failure} and ${containers_result.rc} != 0
+            CONTINUE
+        END
+
         ${containers}=    Split To Lines    ${containers_result.stdout}
         FOR    ${container_name}    IN    @{containers}
             ${container_name}=    Strip String    ${container_name}
@@ -343,6 +350,103 @@ Cleanup After Tamper Test
     [Documentation]    Restore tampered Kata config.
     Restore Kata Configuration On DUT
 
+Deploy Sample Trusted Workload On DUT
+    [Documentation]    Create namespace and deploy a sample nginx pod using kata-qemu runtime class via local kubectl.
+    ${create_ns_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    create
+    ...    namespace
+    ...    nginx-test
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${create_ns_out}=    Set Variable    ${create_ns_result.stdout}
+    ${create_ns_rc}=    Set Variable    ${create_ns_result.rc}
+    Log    ${create_ns_out}
+    Should Be Equal As Integers    ${create_ns_rc}    0    msg=Failed to create namespace nginx-test on DUT
+
+    ${manifest}=    Catenate    SEPARATOR=\n
+    ...    apiVersion: v1
+    ...    kind: Pod
+    ...    metadata:
+    ...    ${SPACE}${SPACE}name: nginx-default
+    ...    ${SPACE}${SPACE}namespace: nginx-test
+    ...    spec:
+    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu
+    ...    ${SPACE}${SPACE}containers:
+    ...    ${SPACE}${SPACE}- name: nginx
+    ...    ${SPACE}${SPACE}${SPACE}${SPACE}image: nginx:1.27.0
+    ${manifest_file}=    Set Variable    ${EXECDIR}/nginx-test-pod.yaml
+    OperatingSystem.Create File    ${manifest_file}    ${manifest}
+
+    ${apply_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    -n
+    ...    nginx-test
+    ...    apply
+    ...    -f
+    ...    ${manifest_file}
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${apply_out}=    Set Variable    ${apply_result.stdout}
+    ${apply_rc}=    Set Variable    ${apply_result.rc}
+    Log    ${apply_out}
+    Should Be Equal As Integers    ${apply_rc}    0    msg=Failed to apply nginx sample pod manifest in namespace nginx-test
+    OperatingSystem.Remove File    ${manifest_file}
+
+Verify Sample Trusted Workload Pod Is Running On DUT
+    [Documentation]    Verify nginx-default pod in nginx-test namespace reaches Running phase.
+    ${phase_jsonpath}=    Set Variable    jsonpath={.status.phase}
+    ${phase_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    -n
+    ...    nginx-test
+    ...    get
+    ...    pod
+    ...    nginx-default
+    ...    -o
+    ...    ${phase_jsonpath}
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${phase}=    Set Variable    ${phase_result.stdout}
+    Log    nginx-default phase: ${phase}
+    Should Be Equal As Integers    ${phase_result.rc}    0    msg=Failed to query nginx-default pod phase
+    Should Be Equal    ${phase}    Running    msg=nginx-default pod is not in Running phase
+
+Verify QEMU Process Is Running On DUT
+    [Documentation]    Verify at least one QEMU process is present on the DUT after trusted workload deployment.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system'
+    Log    ${qemu_ps}
+    Should Not Be Empty    ${qemu_ps}    msg=No QEMU process found on DUT
+
+Verify No QEMU Process Is Running On DUT
+    [Documentation]    Verify no QEMU processes are present on the DUT after trusted workload cleanup.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system' || true
+    Log    ${qemu_ps}
+    Should Be Empty    ${qemu_ps}    msg=QEMU process still running on DUT after cleanup
+
+Delete Sample Trusted Workload Namespace On DUT
+    [Documentation]    Delete sample namespace used for trusted workload validation.
+    ${delete_ns_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    delete
+    ...    namespace
+    ...    nginx-test
+    ...    --ignore-not-found
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${delete_ns_out}=    Set Variable    ${delete_ns_result.stdout}
+    ${delete_ns_rc}=    Set Variable    ${delete_ns_result.rc}
+    Log    ${delete_ns_out}
+    Should Be Equal As Integers    ${delete_ns_rc}    0    msg=Failed to delete namespace nginx-test on DUT
+
 *** Test Cases ***
 TC-GS-01 Upload Trusted Compute Package To DUT
     [Documentation]    Copy the Trusted Compute installation package to the DUT via SCP.
@@ -381,7 +485,15 @@ TC-GS-06 Verify Attestation Manager Overall Trust Status
     Ensure Local Kubectl Available
     Wait Until Keyword Succeeds    7 min    15 sec    Verify Attestation Manager Overall Trust Status
 
-TC-GS-07 Verify Attestation Manager Reports False After Kata Config Tamper
+TC-GS-07 Verify Sample Trusted Workload Deployment
+    [Documentation]    Deploy a sample nginx trusted workload pod and verify it reaches Running state.
+    [Tags]    golden-suite    validate    trusted-workload    sample
+    Deploy Sample Trusted Workload On DUT
+    Wait Until Keyword Succeeds    5 min    10 sec    Verify Sample Trusted Workload Pod Is Running On DUT
+    Verify QEMU Process Is Running On DUT
+    [Teardown]    Run Keywords    Delete Sample Trusted Workload Namespace On DUT    AND    Verify No QEMU Process Is Running On DUT
+
+TC-GS-08 Verify Attestation Manager Reports False After Kata Config Tamper
     [Documentation]    Append a tamper marker to the Kata configuration on the DUT and verify attestation-manager reports Overall Trust Status: false.
     [Tags]    golden-suite    validate    attestation-manager    negative
     Backup And Tamper Kata Configuration On DUT
@@ -390,7 +502,7 @@ TC-GS-07 Verify Attestation Manager Reports False After Kata Config Tamper
     Wait Until Keyword Succeeds    3 min    15 sec    Verify Node Is SchedulingDisabled
     [Teardown]    Cleanup After Tamper Test
 
-TC-GS-08 Collect Pod Logs
+TC-GS-09 Collect Pod Logs
     [Documentation]    Collect trusted-compute pod logs/events.
     [Tags]    golden-suite    collect    logs
     Collect Pod Logs Using Local Kubectl
