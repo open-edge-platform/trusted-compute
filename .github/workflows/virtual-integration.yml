@@ -23,9 +23,24 @@ permissions:
   contents: read
 
 jobs:
+  pre-checks:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+        with:
+          persist-credentials: false
+      - name: "Discover Changed Subfolders"
+        id: discover-changes
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@c460294361ed63e9a7a7703e8b96ddac1ac98715  # 2026.1.3
+
   run-golden-suite:
     permissions:
       contents: read
+    needs: [pre-checks]
     name: Run Golden Suite Trusted Compute Tests for baremetal package
     runs-on: ubuntu-24.04-16core-64GB
     steps:
@@ -36,12 +51,26 @@ jobs:
         run: |
           echo "Installing build prerequisites..."
           sudo apt-get update -qq
-          sudo apt-get install -y curl make tar
+          sudo apt-get install -y curl make tar jq
 
-          version_suffix=""
+          base_suffix=""
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            version_suffix="-pr-${{ github.event.number }}"
+            base_suffix="-pr-${{ github.event.number }}"
           fi
+
+          changed_projects='${{ needs.pre-checks.outputs.changed_projects }}'
+          declare -A project_suffix
+
+          if [[ "$changed_projects" != "[]" ]]; then
+            for project in $(echo "$changed_projects" | jq -r '.[]'); do
+              project_suffix["$project"]="$base_suffix"
+            done
+          fi
+
+          av_suffix="${project_suffix[attestation-verifier]}"
+          am_suffix="${project_suffix[attestation-manager]}"
+          tw_suffix="${project_suffix[trusted-workload]}"
+          kd_suffix="${project_suffix[trusted-workload]}"
 
           YQ_VERSION="v4.44.6"
           curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
@@ -52,7 +81,11 @@ jobs:
           fi
 
           echo "Building Trusted Compute installation package..."
-          make -C baremetal build VERSION_SUFFIX="$version_suffix"
+          make -C baremetal build \
+            ATTESTATION_VERIFIER_VERSION="$(cat attestation-verifier/VERSION)${av_suffix}" \
+            ATTESTATION_MANAGER_VERSION="$(cat attestation-manager/VERSION)${am_suffix}" \
+            TRUSTED_WORKLOAD_VERSION="$(cat trusted-workload/VERSION)${tw_suffix}" \
+            KATA_DEPLOY_VERSION="$(cat trusted-workload/kata-deploy/VERSION)${kd_suffix}"
 
           echo "Build complete:"
           ls -lh baremetal/trusted-compute-installation-package.tgz
