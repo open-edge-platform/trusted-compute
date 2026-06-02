@@ -67,7 +67,7 @@ spec:
             - name: HVS_PORT
               value: "{{ .Values.env.hvsPort }}"
             - name: TCHOSTNAME
-              value: "trustagent.{{ .Release.Namespace }}.svc"
+              value: "{{ .Values.env.hostname }}.{{ .Release.Namespace }}.svc"
             - name: LOG_LEVEL
               value: "{{ .Values.env.logLevel }}"
             - name: POLL_DURATION

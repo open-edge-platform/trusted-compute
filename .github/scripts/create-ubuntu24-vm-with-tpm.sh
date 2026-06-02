@@ -112,7 +112,8 @@ check_prerequisites() {
     if [[ -n "$OVMF_CODE" ]]; then
         log_info "Found OVMF firmware at: $OVMF_CODE"
     else
-        log_warn "OVMF firmware not found - will use default BIOS"
+        log_error "OVMF firmware with Secure Boot support not found after installation"
+        exit 1
     fi
     
     # Check for swtpm package and install when missing

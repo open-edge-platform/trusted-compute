@@ -3,7 +3,7 @@
 {{ include "factory.serviceCommonSpec" . }}
   type: ClusterIP
   ports:
-    - port: 1443
-      targetPort: 1443
+    - port: {{ .Values.service.ta.containerPort }}
+      targetPort: {{ .Values.service.ta.containerPort }}
       protocol: TCP
       name: https
