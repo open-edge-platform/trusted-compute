@@ -115,9 +115,8 @@ Install Trusted Compute
 
 Wait For Pods Ready
     [Documentation]    Poll until all pods in trusted-compute namespace are Running/Completed,
-    ...                or fail after 5 minutes.
+    ...                or fail after 10 minutes.
     Log    Waiting for trusted-compute pods to become ready
-    ${deadline}=    Evaluate    600
     FOR    ${i}    IN RANGE    60
         ${stdout}=    Execute Command
         ...    sudo k3s kubectl get pods -n trusted-compute --no-headers 2>/dev/null || true
