@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Pre-Merge CI Pipeline to complete
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b   # v7
         env:
           TARGET_WORKFLOW_FILE: pre-merge.yml
           TARGET_EVENT: pull_request
