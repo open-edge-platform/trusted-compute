@@ -130,7 +130,7 @@ Wait For Pods Ready
         ...    Should Not Contain    ${stdout}    ContainerCreating
         ${not_ready4}=    Run Keyword And Return Status
         ...    Should Not Contain    ${stdout}    CrashLoopBackOff
-        IF    ${not_ready} and ${not_ready2} and ${not_ready3}
+        IF    """${stdout}""" != "" and "No resources found" not in """${stdout}""" and ${not_ready} and ${not_ready2} and ${not_ready3} and ${not_ready4}
             Log    All pods appear ready
             RETURN
         END
