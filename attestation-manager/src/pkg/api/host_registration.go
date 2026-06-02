@@ -37,10 +37,12 @@ func AddHostToVerifier(cfg *constants.Config, token string, hostname string) (bo
 	// 	logging.Error("Error getting host UUID:", err)
 	// }
 	// hostName := os.Getenv("NODE_NAME")
-	hostName := "tc-node"
-	tchostname := os.Getenv("TCHOSTNAME")
-	if tchostname != "" {
-		hostName = tchostname
+	hostName := hostname
+	if hostName == "" {
+		hostName = os.Getenv("TCHOSTNAME")
+	}
+	if hostName == "" {
+		hostName = "tc-node"
 	}
 	logging.Info("Host Name retrieved successfully:", hostName)
 	type Payload struct {
