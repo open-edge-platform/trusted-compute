@@ -129,7 +129,13 @@ Wait For Pods Ready
         ...    Should Not Contain    ${stdout}    ContainerCreating
         ${not_ready4}=    Run Keyword And Return Status
         ...    Should Not Contain    ${stdout}    CrashLoopBackOff
-        IF    """${stdout}""" != "" and "No resources found" not in """${stdout}""" and ${not_ready} and ${not_ready2} and ${not_ready3} and ${not_ready4}
+        ${not_ready5}=    Run Keyword And Return Status
+        ...    Should Not Contain    ${stdout}    ImagePullBackOff
+        ${not_ready6}=    Run Keyword And Return Status
+        ...    Should Not Contain    ${stdout}    ErrImagePull
+        ${not_ready7}=    Run Keyword And Return Status
+        ...    Should Not Contain    ${stdout}    Error
+        IF    """${stdout}""" != "" and "No resources found" not in """${stdout}""" and ${not_ready} and ${not_ready2} and ${not_ready3} and ${not_ready4} and ${not_ready5} and ${not_ready6} and ${not_ready7}
             Log    All pods appear ready
             RETURN
         END

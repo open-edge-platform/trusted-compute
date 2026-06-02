@@ -155,7 +155,7 @@ metadata:
             periodSeconds: 15
           ports:
             - name: https
-              containerPort: 1443
+              containerPort: {{ .Values.service.ta.containerPort }}
               protocol: TCP
           volumeMounts:
             {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
