@@ -37,6 +37,8 @@ The installation script supports two deployment options:
 
 > **Note:** Both K3s and Docker installations are mutually exclusive. If one is already installed, the script will prompt you to uninstall it first before proceeding with the other.
 
+> **Note:** Trusted Compute 1.5.0 is not compatible with Docker version 29.5 or later. Docker version 29.4.x is required (tested with 29.4.3).
+
 ---
 
 ### 2. Download the Trusted Compute Package
@@ -148,6 +150,8 @@ The installation script supports two deployment options:
 
 	Follow the official guide for Ubuntu:
 	[https://docs.docker.com/engine/install/ubuntu/](https://docs.docker.com/engine/install/ubuntu/)
+
+	> **Note:** Trusted Compute 1.5.0 is not compatible with Docker version 29.5 or later. Docker version 29.4.x is required (tested with 29.4.3).
 
 2. **Install Docker Compose v2 plugin** (if not already installed):
 
