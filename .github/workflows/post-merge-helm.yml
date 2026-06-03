@@ -11,8 +11,6 @@ on:
       - release-*
     paths:
       - 'helm/**'
-    tags:
-      - '*'
   workflow_dispatch:
 
 permissions:
