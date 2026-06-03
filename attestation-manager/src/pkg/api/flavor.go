@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/constants" // Import the constants package
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/logging"
@@ -29,8 +30,14 @@ func AddFlavorTemplate(cfg *constants.Config, token string, hostname string) (bo
 		return false, ""
 	}
 
+	if hostname == "" {
+		hostname = os.Getenv("TCHOSTNAME")
+	}
+	if hostname == "" {
+		hostname = "tc-node"
+	}
 	data := FlavorPayload{
-		ConnectionString:   "intel:nats://tc-node",
+		ConnectionString:   "intel:https://" + hostname + ":1443",
 		PartialFlavorTypes: []string{"PLATFORM", "OS", "IMA"},
 		FlavorGroupNames:   []string{"automatic"},
 	}
