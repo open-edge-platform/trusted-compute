@@ -16,8 +16,7 @@ TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
 KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
-CLUSTER_EXTENSIONS_VERSION       ?= v1.6.0
-KATA_DEPLOY_VALUES_URL           ?= https://raw.githubusercontent.com/open-edge-platform/cluster-extensions/refs/tags/$(CLUSTER_EXTENSIONS_VERSION)/deployment-package/trusted-compute/values-kata-deploy-default.yaml
+KATA_DEPLOY_VALUES_FILE          ?= $(CURDIR)/values-kata-deploy-default.yaml
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -60,14 +59,9 @@ build:
 		-e 's/kata-deploy\.tgz/kata-deploy-$(KATA_DEPLOY_CHART_VERSION).tgz/g' \
 		"$$STAGEDIR/manifests/trusted-compute.yaml"
 
-	# Patch kata-deploy valuesContent from external values YAML
-	KATA_DEPLOY_VALUES_FILE="$$STAGEDIR/manifests/values-kata-deploy-default.yaml"
-	curl -fsSL "$(KATA_DEPLOY_VALUES_URL)" -o "$$KATA_DEPLOY_VALUES_FILE"
-	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("'"$$KATA_DEPLOY_VALUES_FILE"'")' "$$STAGEDIR/manifests/trusted-compute.yaml"
-	rm -f "$$KATA_DEPLOY_VALUES_FILE"
-
-	# Update only the kata-deploy HelmChart valuesContent image tag to match KATA_DEPLOY_VERSION
-	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) |= sub("(?m)^([[:space:]]*tag: \")[^\"]*(\")$$"; "$${1}$(KATA_DEPLOY_VERSION)$${2}")' "$$STAGEDIR/manifests/trusted-compute.yaml"
+	# Update the tag in the values file, then copy its content into the manifest
+	yq -i '.image.tag = "$(KATA_DEPLOY_VERSION)"' "$(KATA_DEPLOY_VALUES_FILE)"
+	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("$(KATA_DEPLOY_VALUES_FILE)")' "$$STAGEDIR/manifests/trusted-compute.yaml"
 
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
