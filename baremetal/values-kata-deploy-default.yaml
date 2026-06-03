@@ -3,7 +3,7 @@
 ---
 image:
   reference: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy
-  tag: "1.5.1-dev"
+  tag:
 k8sDistribution: "k3s" # k8s, k3s, rke2, k0s, microk8s
 debug: false
 snapshotter:
