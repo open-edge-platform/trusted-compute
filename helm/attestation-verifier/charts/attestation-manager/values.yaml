@@ -59,7 +59,7 @@ env:
   aasPort: "8444"
   cmsPort: "8445"
   hvsPort: "8443"
-  hostname: "tc-node" # The hostname for registrating to Verifier
+  hostname: "trustagent" # The hostname for registering to Verifier (trustagent service name)
   logLevel: "INFO"
   amServerAddress: "" # The address of the attestation status manager server eg: attest-node.integration10.espd.infra-host.com
   amServerAddressType: "DNS" # The address type of the attestation manager server, can be DNS or IP 

@@ -137,6 +137,12 @@ metadata:
             - configMapRef:
                 name: {{ include "factory.name" . }}
           env:
+            - name: CURRENT_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SAN_LIST
+              value: "$(CURRENT_IP),{{ include "factory.name" . }},{{ include "factory.name" . }}.{{ .Release.Namespace }}.svc"
             {{- include "factory.envBearerToken" . | nindent 12 }}
             {{- include "factory.envCmsSha384" . | nindent 12 }}
           readinessProbe:
@@ -147,6 +153,10 @@ metadata:
             initialDelaySeconds: 5
             failureThreshold: 60
             periodSeconds: 15
+          ports:
+            - name: https
+              containerPort: {{ .Values.service.ta.containerPort }}
+              protocol: TCP
           volumeMounts:
             {{- include "factory.volumeMountSvcLogs" . | nindent 12 }}
             - name: {{ include "factory.name" . }}-config

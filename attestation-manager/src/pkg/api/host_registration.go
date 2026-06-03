@@ -8,6 +8,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"os"
 
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/constants" // Import the constants package
 	"github.com/open-edge-platform/trusted-compute/attestation-manager/src/pkg/logging"
@@ -36,7 +37,13 @@ func AddHostToVerifier(cfg *constants.Config, token string, hostname string) (bo
 	// 	logging.Error("Error getting host UUID:", err)
 	// }
 	// hostName := os.Getenv("NODE_NAME")
-	hostName := "tc-node"
+	hostName := hostname
+	if hostName == "" {
+		hostName = os.Getenv("TCHOSTNAME")
+	}
+	if hostName == "" {
+		hostName = "tc-node"
+	}
 	logging.Info("Host Name retrieved successfully:", hostName)
 	type Payload struct {
 		ConnectionString string   `json:"connection_string"`
@@ -45,7 +52,7 @@ func AddHostToVerifier(cfg *constants.Config, token string, hostname string) (bo
 		HostName         string   `json:"host_name"`
 	}
 	data := Payload{
-		ConnectionString: "intel:nats://tc-node",
+		ConnectionString: "intel:https://" + hostName + ":1443",
 		Description:      "TC Edge Device",
 		FlavorGroupNames: []string{"automatic"},
 		HostName:         hostName,

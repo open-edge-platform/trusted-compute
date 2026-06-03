@@ -22,8 +22,10 @@ dependencies:
   - name: nats-init
     repository: file://./charts/nats-init/
     version: 0.0.8
+    condition: global.config.nats.enabled
   - name: nats
     repository: file://./charts/nats/
+    condition: global.config.nats.enabled
     version: 0.0.8
   - name: global-admin-generator
     repository: file://./charts/global-admin-generator/
