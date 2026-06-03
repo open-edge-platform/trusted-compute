@@ -6,14 +6,15 @@
 SHELL := /bin/bash
 .ONESHELL:
 
-VERSION                          ?= $(shell cat ./VERSION)
+VERSION_SUFFIX                   ?=
+VERSION                          ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 OCI_REPOSITORY                   ?= edge-orch/trusted-compute
 OCI_REGISTRY                     ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 INSTALLATION_PACKAGE             ?= ${OCI_REGISTRY}/${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package
-ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)
-ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)
-TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)
-KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)
+ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)$(VERSION_SUFFIX)
+ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)$(VERSION_SUFFIX)
+TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)$(VERSION_SUFFIX)
+KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deploy/VERSION)$(VERSION_SUFFIX)
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
 CLUSTER_EXTENSIONS_VERSION       ?= v1.6.0
@@ -80,7 +81,11 @@ build:
 
 	# Ensure helm charts are built and available in the helm output
 	@echo "Building helm charts (../helm helm-build)"
-	set -e; make -C "$(CURDIR)/../helm" helm-build
+	set -e; $(MAKE) -C "$(CURDIR)/../helm" helm-build \
+		ATTESTATION_VERIFIER_VERSION="$(ATTESTATION_VERIFIER_VERSION)" \
+		ATTESTATION_MANAGER_VERSION="$(ATTESTATION_MANAGER_VERSION)" \
+		TRUSTED_WORKLOAD_VERSION="$(TRUSTED_WORKLOAD_VERSION)" \
+		KATA_DEPLOY_VERSION="$(KATA_DEPLOY_VERSION)"
 
 	# Copy generated charts from helm/build/_output to staging charts folder if present
 	if [ -d "$(CURDIR)/../helm/build/_output" ]; then \

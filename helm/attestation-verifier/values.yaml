@@ -33,6 +33,9 @@ hvs:
 trustagent:
   image:
     name: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/tagent
+  config:
+    nats:
+      enabled: false
 
 nats:
   clientPort: 30222
@@ -76,7 +79,7 @@ global:
   config:
     dbhostSSLPodRange: 10.0.0.0/8 #192.168.0.0/16 # PostgreSQL DB Host Address(IP address/subnet-mask). IP range varies for different k8s network plugins(Ex: Flannel - 10.1.0.0/8 (default), Calico - 192.168.0.0/16).
     nats:
-      enabled: true # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
+      enabled: false # Enable/Disable NATS mode<br> (Allowed values: `true`\`false`)
       servers:    # KWT NATS Server IP/Hostname<br>
 
   storage:

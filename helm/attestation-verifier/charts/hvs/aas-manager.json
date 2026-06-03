@@ -45,6 +45,20 @@
                ]
             }
          ]
+      },
+      {
+         "username": "{{ required "A valid HVS service username is required!" .Values.secret.serviceUsername }}",
+         "password": "{{ .Values.secret.servicePassword }}",
+         "roles": [
+            {
+               "service": "TA",
+               "name": "Administrator",
+               "context": "",
+               "permissions": [
+                  "*:*:*"
+               ]
+            }
+         ]
       }
    ]
 }
