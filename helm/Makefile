@@ -76,11 +76,19 @@ docker-push: ## Push docker images.
 	yq eval -i '.version = "${ATTESTATION_VERIFIER_VERSION}"' attestation-verifier/Chart.yaml
 	# Find all Chart.yaml files in the specified path and update the appVersion
 	find "attestation-verifier" -type f -name "Chart.yaml" | while read -r file; do \
-		echo "Updating versions in $$file to ${ATTESTATION_VERIFIER_VERSION}"; \
-		sed -i "s/^appVersion:.*/appVersion: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
-		sed -i "s/^version:.*/version: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
-		sed -i "s/^\(\s*version:\).*/\1 ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+		if echo "$$file" | grep -q "attestation-manager"; then \
+			echo "Updating versions in $$file to ${ATTESTATION_MANAGER_VERSION}"; \
+			sed -i "s/^appVersion:.*/appVersion: ${ATTESTATION_MANAGER_VERSION}/" "$$file"; \
+			sed -i "s/^version:.*/version: ${ATTESTATION_MANAGER_VERSION}/" "$$file"; \
+			sed -i "s/^\(\s*version:\).*/\1 ${ATTESTATION_MANAGER_VERSION}/" "$$file"; \
+		else \
+			echo "Updating versions in $$file to ${ATTESTATION_VERIFIER_VERSION}"; \
+			sed -i "s/^appVersion:.*/appVersion: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+			sed -i "s/^version:.*/version: ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+			sed -i "s/^\(\s*version:\).*/\1 ${ATTESTATION_VERIFIER_VERSION}/" "$$file"; \
+		fi; \
 	done; \
+	yq eval -i '(.dependencies[] | select(.name == "attestation-manager") | .version) = "${ATTESTATION_MANAGER_VERSION}"' attestation-verifier/Chart.yaml
 	yq eval -i '.config.imaAllowlist |= sub("<ATTESTATION_VERIFIER_VERSION>", "${ATTESTATION_VERIFIER_VERSION}")' attestation-verifier/charts/trustagent/values.yaml
 
 
