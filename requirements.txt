@@ -1,6 +1,10 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Robot Framework
+robotframework~=7.0
+robotframework-sshlibrary~=3.8.0
+
 # OpenAPI validator
 openapi-spec-validator~=0.7.1
 
