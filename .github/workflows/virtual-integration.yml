@@ -1,0 +1,469 @@
+---
+name: Virtual Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+    types:
+      - opened
+      - synchronize
+      - reopened
+  merge_group:
+
+concurrency:
+  group: ${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  pre-checks:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+        with:
+          persist-credentials: false
+      - name: "Discover Changed Subfolders"
+        id: discover-changes
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@c460294361ed63e9a7a7703e8b96ddac1ac98715  # 2026.1.3
+
+  wait-for-pre-merge:
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      actions: read
+      contents: read
+    needs: [pre-checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Pre-Merge CI Pipeline to complete
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b   # v7
+        env:
+          TARGET_WORKFLOW_FILE: pre-merge.yml
+          TARGET_EVENT: pull_request
+          TARGET_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TIMEOUT_SECONDS: "5400"
+          POLL_INTERVAL_SECONDS: "30"
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const workflowId = process.env.TARGET_WORKFLOW_FILE;
+            const targetEvent = process.env.TARGET_EVENT;
+            const targetHeadSha = process.env.TARGET_HEAD_SHA;
+            const timeoutMs = Number(process.env.TIMEOUT_SECONDS) * 1000;
+            const intervalMs = Number(process.env.POLL_INTERVAL_SECONDS) * 1000;
+            const started = Date.now();
+
+            while (true) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: workflowId,
+                event: targetEvent,
+                per_page: 100
+              });
+
+              const run = runs.find(r => r.head_sha === targetHeadSha);
+
+              if (run && run.status === "completed") {
+                if (run.conclusion === "success") {
+                  core.info(`Pre-Merge CI Pipeline completed successfully for ${targetHeadSha}`);
+                  return;
+                }
+                core.setFailed(`Pre-Merge CI Pipeline concluded with status: ${run.conclusion}`);
+                return;
+              }
+
+              if (Date.now() - started > timeoutMs) {
+                core.setFailed(`Timed out waiting for Pre-Merge CI Pipeline on ${targetHeadSha}`);
+                return;
+              }
+
+              core.info(`Waiting for Pre-Merge CI Pipeline on ${targetHeadSha}...`);
+              await new Promise(resolve => setTimeout(resolve, intervalMs));
+            }
+
+  run-golden-suite:
+    permissions:
+      contents: read
+    needs: [pre-checks, wait-for-pre-merge]
+    name: Run Golden Suite Trusted Compute Tests for baremetal package
+    runs-on: ubuntu-24.04-16core-64GB
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+      - name: Build Trusted Compute package
+        run: |
+          echo "Installing build prerequisites..."
+          sudo apt-get update -qq
+          sudo apt-get install -y curl make tar jq
+
+          base_suffix=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base_suffix="-pr-${{ github.event.number }}"
+          fi
+
+          changed_projects='${{ needs.pre-checks.outputs.changed_projects }}'
+          declare -A project_suffix
+
+          if [[ "$changed_projects" != "[]" ]]; then
+            for project in $(echo "$changed_projects" | jq -r '.[]'); do
+              project_suffix["$project"]="$base_suffix"
+            done
+          fi
+
+          av_suffix="${project_suffix[attestation-verifier]}"
+          am_suffix="${project_suffix[attestation-manager]}"
+          tw_suffix="${project_suffix[trusted-workload]}"
+          kd_suffix="${project_suffix[trusted-workload]}"
+
+          YQ_VERSION="v4.44.6"
+          curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+            -o /tmp/yq && chmod +x /tmp/yq && sudo mv /tmp/yq /usr/local/bin/yq
+
+          if ! command -v helm >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          fi
+
+          echo "Building Trusted Compute installation package..."
+          make -C baremetal build \
+            ATTESTATION_VERIFIER_VERSION="$(cat attestation-verifier/VERSION)${av_suffix}" \
+            ATTESTATION_MANAGER_VERSION="$(cat attestation-manager/VERSION)${am_suffix}" \
+            TRUSTED_WORKLOAD_VERSION="$(cat trusted-workload/VERSION)${tw_suffix}" \
+            KATA_DEPLOY_VERSION="$(cat trusted-workload/kata-deploy/VERSION)${kd_suffix}"
+
+          echo "Build complete:"
+          ls -lh baremetal/trusted-compute-installation-package.tgz
+
+      - name: Setup VM prerequisites
+        run: |
+          echo "Installing VM and TPM prerequisites..."
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            qemu-system-x86-64 \
+            ovmf \
+            libvirt-daemon-system \
+            libvirt-clients \
+            virt-manager \
+            virtinst \
+            swtpm \
+            swtpm-tools \
+            tpm2-tools \
+            expect \
+            wget
+          
+          echo "Prerequisites installation completed"
+
+      - name: Start libvirt service
+        run: |
+          echo "Starting libvirt service..."
+          sudo systemctl start libvirtd
+          sudo systemctl status libvirtd
+          echo "libvirt service started"
+
+      - name: Create Ubuntu 24 VM with TPM
+        run: |
+          echo "Creating VM with Ubuntu 24, TPM, and Secure Boot..."
+          sudo chmod +x ./.github/scripts/create-ubuntu24-vm-with-tpm.sh
+          sudo ./.github/scripts/create-ubuntu24-vm-with-tpm.sh test-vm 8 16 100
+          
+          echo "VM creation completed"
+          
+          echo "\nVM Status:"
+          sudo virsh list --all
+          
+          echo "\nVM Configuration:"
+          sudo virsh dominfo test-vm
+
+      - name: Start VM and verify OS release via console
+        env:
+          VM_USERNAME: user
+          VM_PASSWORD: user
+        run: |
+          echo "Starting VM..."
+          sudo virsh start test-vm
+
+          echo "Waiting for VM boot (120s for cloud-init first boot)..."
+          sleep 120
+
+          echo "Logging into VM console and collecting /etc/os-release"
+          expect << 'EOF'
+            set timeout 60
+            set logged_in 0
+            spawn sudo virsh console test-vm
+
+            # Attempt 1
+            send -- "\r"
+            expect {
+              -re {login: ?$} {
+                send -- "$env(VM_USERNAME)\r"
+                exp_continue
+              }
+              -re {Password: ?$} {
+                send -- "$env(VM_PASSWORD)\r"
+                exp_continue
+              }
+              -re {Login incorrect} {}
+              -re {[#$] $} {
+                set logged_in 1
+              }
+              timeout {}
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            # Attempt 2 (final)
+            if {$logged_in == 0} {
+              after 8000
+              send -- "\r"
+              expect {
+                -re {login: ?$} {
+                  send -- "$env(VM_USERNAME)\r"
+                  exp_continue
+                }
+                -re {Password: ?$} {
+                  send -- "$env(VM_PASSWORD)\r"
+                  exp_continue
+                }
+                -re {Login incorrect} {}
+                -re {[#$] $} {
+                  set logged_in 1
+                }
+                timeout {}
+                eof { puts "Console closed unexpectedly"; exit 1 }
+              }
+            }
+
+            if {$logged_in == 0} {
+              puts "Timed out waiting for successful console login"
+              exit 1
+            }
+
+            send -- "cat /etc/os-release\r"
+
+            expect {
+              -re "PRETTY_NAME=.*" {}
+              timeout { puts "Timed out waiting for /etc/os-release output"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after os-release command"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo apt-get update -qq\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after apt-get update"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo apt-get install -y tpm2-tools\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after tpm2-tools install"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "sudo tpm2_pcrread\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after tpm2_pcrread"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "ls -l /sys/kernel/security/ima/policy\r"
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after ima policy ls"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "exit\r"
+            send -- "\035"
+            expect eof
+          EOF
+
+      - name: Patch HVS image in installation package with swtpm endorsement CA
+        run: |
+          set -euo pipefail
+
+          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
+          SRC_01_PEM="/var/lib/swtpm-localca/01.pem"
+
+          if [[ ! -f "$PKG_TGZ" ]]; then
+            echo "Package not found: $PKG_TGZ"
+            exit 1
+          fi
+
+          if ! sudo test -f "$SRC_ROOT_CA" || ! sudo test -f "$SRC_01_PEM"; then
+            echo "Missing required swtpm CA files:"
+            echo "  $SRC_ROOT_CA"
+            echo "  $SRC_01_PEM"
+            echo "Ensure VM creation/setup generated swtpm-localca assets before this step."
+            exit 1
+          fi
+
+          WORKDIR="$(mktemp -d)"
+          trap 'rm -rf "$WORKDIR"' EXIT
+
+          # Read source CA files with root privileges and stage them for image copy.
+          STAGED_ROOT_CA="$WORKDIR/swtpm-localca-rootca-cert.pem"
+          STAGED_01_PEM_RAW="$WORKDIR/01.raw.pem"
+          STAGED_01_PEM="$WORKDIR/01.pem"
+          sudo cp "$SRC_ROOT_CA" "$STAGED_ROOT_CA"
+          sudo cp "$SRC_01_PEM" "$STAGED_01_PEM_RAW"
+          sudo chown "$USER":"$USER" "$STAGED_ROOT_CA" "$STAGED_01_PEM_RAW"
+
+          # swtpm 01.pem may contain text output around the PEM. Normalize to clean PEM with openssl.
+          if ! openssl x509 -in "$STAGED_01_PEM_RAW" -outform PEM -out "$STAGED_01_PEM" >/dev/null 2>&1; then
+            echo "Failed to extract/normalize a valid PEM certificate from $SRC_01_PEM"
+            exit 1
+          fi
+
+          tar -xzf "$PKG_TGZ" -C "$WORKDIR"
+
+          PKG_DIR="$WORKDIR/trusted-compute-installation-package"
+          HVS_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*attestation-verifier-hvs-*.tar' | head -n1)"
+
+          if [[ -z "$HVS_TAR" ]]; then
+            echo "Unable to locate HVS image tar in package images/"
+            exit 1
+          fi
+
+          echo "Patching image tar: $HVS_TAR"
+
+          load_out="$(sudo docker load -i "$HVS_TAR")"
+          image_ref="$(printf '%s\n' "$load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
+          if [[ -z "$image_ref" ]]; then
+            echo "Failed to parse loaded image reference"
+            echo "$load_out"
+            exit 1
+          fi
+
+          orig_entrypoint="$(sudo docker image inspect --format '{{json .Config.Entrypoint}}' "$image_ref")"
+          orig_cmd="$(sudo docker image inspect --format '{{json .Config.Cmd}}' "$image_ref")"
+
+          cid="$(sudo docker run -d --entrypoint /bin/sh "$image_ref" -c 'sleep 600')"
+          sudo docker cp "$STAGED_ROOT_CA" "$cid":/tmp/.swtpm-localca-rootca-cert.pem
+          sudo docker cp "$STAGED_01_PEM" "$cid":/tmp/.swtpm-01.pem
+          sudo docker exec -u 0 "$cid" /bin/sh -c '
+            set -e
+            if [ ! -f /tmp/external-eca.pem ]; then
+              echo "Missing target file in image: /tmp/external-eca.pem"
+              exit 1
+            fi
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-localca-rootca-cert.pem >> /tmp/external-eca.pem
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-01.pem >> /tmp/external-eca.pem
+            rm -f /tmp/.swtpm-localca-rootca-cert.pem /tmp/.swtpm-01.pem
+          '
+
+          patched_ref="$image_ref"
+
+          commit_args=()
+          if [[ "$orig_entrypoint" != "null" ]]; then
+            commit_args+=(--change "ENTRYPOINT $orig_entrypoint")
+          fi
+          if [[ "$orig_cmd" != "null" ]]; then
+            commit_args+=(--change "CMD $orig_cmd")
+          fi
+
+          sudo docker commit "${commit_args[@]}" "$cid" "$patched_ref" >/dev/null
+          sudo docker rm -f "$cid" >/dev/null
+
+          sudo docker save -o "$HVS_TAR" "$patched_ref"
+          sudo chown "$USER":"$USER" "$HVS_TAR"
+
+          tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
+
+          echo "Patched package generated:"
+          ls -lh "$PKG_TGZ"
+
+      - name: Install Robot Framework and SSHLibrary
+        run: |
+          pip install robotframework~=7.0 robotframework-sshlibrary~=3.8.0
+
+      - name: Install Trusted Compute package via Robot Framework
+        run: |
+          set -euo pipefail
+
+          DUT_IP=""
+          for _ in $(seq 1 20); do
+            DUT_IP="$(sudo virsh net-dhcp-leases default | awk '/test-vm/ {print $5}' | cut -d/ -f1 | head -n1)"
+            if [[ -n "$DUT_IP" ]]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ -z "$DUT_IP" ]]; then
+            echo "Unable to determine DUT IP from libvirt DHCP leases"
+            sudo virsh net-dhcp-leases default || true
+            exit 1
+          fi
+
+          echo "Running Robot Framework golden suite against DUT at $DUT_IP"
+          robot \
+            --outputdir vm-logs/robot-results \
+            --variable DUT_HOST:"$DUT_IP" \
+            --variable DUT_USERNAME:user \
+            --variable DUT_PASSWORD:user \
+            --variable TC_PACKAGE:baremetal/trusted-compute-installation-package.tgz \
+            --variable INSTALL_TIMEOUT:600 \
+            tests/golden_suite_install_tests.robot
+
+      - name: Collect VM boot logs
+        if: always()
+        run: |
+          mkdir -p vm-logs
+
+          echo "Collecting libvirt and VM diagnostics..."
+          sudo virsh list --all > vm-logs/virsh-list-all.txt 2>&1 || true
+          sudo virsh dominfo test-vm > vm-logs/dominfo.txt 2>&1 || true
+          sudo virsh domstate test-vm > vm-logs/domstate.txt 2>&1 || true
+          sudo virsh dumpxml test-vm > vm-logs/domain.xml 2>&1 || true
+
+          echo "Collecting qemu and libvirt service logs..."
+          sudo ls -la /var/log/libvirt/qemu > vm-logs/qemu-log-dir.txt 2>&1 || true
+          sudo cp /var/log/libvirt/qemu/test-vm.log vm-logs/test-vm.log 2>/dev/null || true
+          sudo journalctl -u libvirtd --no-pager --since "-30 min" > vm-logs/libvirtd-journal.txt 2>&1 || true
+          sudo journalctl -u virtlogd --no-pager --since "-30 min" > vm-logs/virtlogd-journal.txt 2>&1 || true
+
+          # Ensure artifact files are accessible to the non-root GitHub Actions runner user.
+          sudo chown -R "$USER":"$USER" vm-logs || true
+          chmod -R u+rwX,go+rX vm-logs || true
+
+      - name: Upload VM boot logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: vm-boot-logs
+          path: vm-logs
+          if-no-files-found: warn
+
+      - name: Upload Robot Framework results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: robot-results
+          path: vm-logs/robot-results
+          if-no-files-found: warn
+
