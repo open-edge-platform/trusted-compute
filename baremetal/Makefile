@@ -60,9 +60,12 @@ build:
 		-e 's/kata-deploy\.tgz/kata-deploy-$(KATA_DEPLOY_CHART_VERSION).tgz/g' \
 		"$$STAGEDIR/manifests/trusted-compute.yaml"
 
-	# Update the tag in the values file, then copy its content into the manifest
-	yq -i '.image.tag = "$(KATA_DEPLOY_VERSION)"' "$(KATA_DEPLOY_VALUES_FILE)"
-	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("$(KATA_DEPLOY_VALUES_FILE)")' "$$STAGEDIR/manifests/trusted-compute.yaml"
+	# Update the tag in a staged copy of the values file, then copy its content into the manifest
+	KATA_DEPLOY_VALUES_STAGED="$$STAGEDIR/manifests/values-kata-deploy-default.yaml"
+	cp -a "$(KATA_DEPLOY_VALUES_FILE)" "$$KATA_DEPLOY_VALUES_STAGED"
+	yq -i '.image.tag = "$(KATA_DEPLOY_VERSION)"' "$$KATA_DEPLOY_VALUES_STAGED"
+	yq -i '(select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent) = load_str("'"$$KATA_DEPLOY_VALUES_STAGED"'")' "$$STAGEDIR/manifests/trusted-compute.yaml"
+	rm -f "$$KATA_DEPLOY_VALUES_STAGED"
 
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
