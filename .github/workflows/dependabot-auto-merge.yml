@@ -65,13 +65,6 @@ jobs:
   # Triggered when a Dependabot PR is actually merged into main: comments
   # "@dependabot rebase" on every remaining open Dependabot PR so each one
   # updates its branch, re-runs CI, and re-enters the auto-merge cycle.
-  rebase-remaining:
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
-    runs-on: ubuntu-latest
-    steps:
       - name: Rebase remaining open Dependabot PRs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
@@ -90,11 +83,15 @@ jobs:
               return;
             }
             for (const pr of remaining) {
-              core.info(`Requesting rebase for PR #${pr.number}: ${pr.title}`);
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                body: '@dependabot rebase',
-              });
+              core.info(`Updating branch for PR #${pr.number}: ${pr.title}`);
+              try {
+                await github.rest.pulls.updateBranch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                });
+                core.info(`Branch updated for PR #${pr.number}`);
+              } catch (error) {
+                core.warning(`Failed to update branch for PR #${pr.number}: ${error.message}`);
+              }
             }
