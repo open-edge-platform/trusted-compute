@@ -132,18 +132,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+        with:
+          persist-credentials: false
       - name: Build Trusted Compute package
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_NUMBER: ${{ github.event.number }}
+          CHANGED_PROJECTS: ${{ needs.pre-checks.outputs.changed_projects }}
         run: |
           echo "Installing build prerequisites..."
           sudo apt-get update -qq
           sudo apt-get install -y curl make tar jq
 
           base_suffix=""
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base_suffix="-pr-${{ github.event.number }}"
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base_suffix="-pr-$EVENT_NUMBER"
           fi
 
-          changed_projects='${{ needs.pre-checks.outputs.changed_projects }}'
+          changed_projects="$CHANGED_PROJECTS"
           declare -A project_suffix
 
           if [[ "$changed_projects" != "[]" ]]; then
