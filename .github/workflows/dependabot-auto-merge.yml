@@ -11,21 +11,21 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   # Triggered when Virtual Integration passes: enables GitHub auto-merge on the PR.
   # GitHub will then merge it once all branch-protection requirements are met.
   auto-merge:
-    if: |
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]'
-    runs-on: ubuntu-latest
-    steps:
+      permissions:
+        pull-requests: write   # for gh pr merge --auto and PR listing
+      if: |
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.actor.login == 'dependabot[bot]'
+      runs-on: ubuntu-latest
+      steps:
       - name: Resolve Dependabot PR number
         id: pr
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
@@ -66,6 +66,9 @@ jobs:
   # GitHub API to update the branch of every remaining open Dependabot PR so
   # each one re-runs CI and re-enters the auto-merge cycle.
   rebase-remaining:
+    permissions:
+      contents: write        # for updateBranch API call
+      pull-requests: read    # for listing open PRs
     if: |
       github.event_name == 'pull_request' &&
       github.event.pull_request.merged == true &&
