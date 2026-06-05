@@ -45,12 +45,13 @@ jobs:
     needs: [pre-checks]
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for Pre-Merge CI Pipeline to complete
+      - name: Wait for pre-merge-pipeline job to complete
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3   # v9.0.0
         env:
           TARGET_WORKFLOW_FILE: pre-merge.yml
           TARGET_EVENT: pull_request
           TARGET_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TARGET_JOB_PREFIX: pre-merge-pipeline
           TIMEOUT_SECONDS: "5400"
           POLL_INTERVAL_SECONDS: "30"
         with:
@@ -60,6 +61,7 @@ jobs:
             const workflowId = process.env.TARGET_WORKFLOW_FILE;
             const targetEvent = process.env.TARGET_EVENT;
             const targetHeadSha = process.env.TARGET_HEAD_SHA;
+            const targetJobPrefix = process.env.TARGET_JOB_PREFIX;
             const timeoutMs = Number(process.env.TIMEOUT_SECONDS) * 1000;
             const intervalMs = Number(process.env.POLL_INTERVAL_SECONDS) * 1000;
             const started = Date.now();
@@ -75,25 +77,53 @@ jobs:
 
               const run = runs.find(r => r.head_sha === targetHeadSha);
 
-              if (run && run.status === "completed") {
-                if (run.conclusion === "success") {
-                  core.info(`Pre-Merge CI Pipeline completed successfully for ${targetHeadSha}`);
+              if (run) {
+                const { data } = await github.rest.actions.listJobsForWorkflowRun({
+                  owner,
+                  repo,
+                  run_id: run.id,
+                  per_page: 100
+                });
+
+                const jobs = data.jobs ?? [];
+
+                const targetJobs = jobs.filter(j =>
+                  j.name === targetJobPrefix || j.name.startsWith(`${targetJobPrefix} (`)
+                );
+
+                if (targetJobs.length > 0) {
+                  const unfinished = targetJobs.filter(j => j.status !== "completed");
+                  if (unfinished.length === 0) {
+                    const bad = targetJobs.find(j => j.conclusion !== "success" && j.conclusion !== "skipped");
+                    if (bad) {
+                      core.setFailed(`Job ${bad.name} concluded with status: ${bad.conclusion}`);
+                      return;
+                    }
+
+                    core.info(`All ${targetJobPrefix} jobs completed successfully/skipped for ${targetHeadSha}`);
+                    return;
+                  }
+
+                  core.info(
+                    `Waiting for ${targetJobPrefix} jobs: ${unfinished.map(j => `${j.name}(${j.status})`).join(', ')}`
+                  );
+                } else if (run.status === "completed") {
+                  core.setFailed(`No ${targetJobPrefix} job found in pre-merge run for ${targetHeadSha}`);
                   return;
                 }
-                core.setFailed(`Pre-Merge CI Pipeline concluded with status: ${run.conclusion}`);
-                return;
               }
 
               if (Date.now() - started > timeoutMs) {
-                core.setFailed(`Timed out waiting for Pre-Merge CI Pipeline on ${targetHeadSha}`);
+                core.setFailed(`Timed out waiting for ${targetJobPrefix} on ${targetHeadSha}`);
                 return;
               }
 
-              core.info(`Waiting for Pre-Merge CI Pipeline on ${targetHeadSha}...`);
+              core.info(`Waiting for ${targetJobPrefix} in Pre-Merge CI Pipeline on ${targetHeadSha}...`);
               await new Promise(resolve => setTimeout(resolve, intervalMs));
             }
 
   run-golden-suite:
+    if: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
     permissions:
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
