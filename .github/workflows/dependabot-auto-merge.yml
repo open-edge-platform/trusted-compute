@@ -23,7 +23,8 @@ jobs:
         github.event_name == 'workflow_run' &&
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'pull_request' &&
-        github.event.workflow_run.actor.login == 'dependabot[bot]'
+        github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
       runs-on: ubuntu-latest
       steps:
       - name: Resolve Dependabot PR number
@@ -55,12 +56,13 @@ jobs:
 
       - name: Enable auto-merge
         run: |
-          gh pr merge "${{ steps.pr.outputs.number }}" \
+          gh pr merge "$PR_NUMBER" \
             --auto \
             --squash \
-            --repo "${{ github.repository }}"
+            --repo "$GITHUB_REPOSITORY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
 
   # Triggered when a Dependabot PR is actually merged into main: calls the
   # GitHub API to update the branch of every remaining open Dependabot PR so
