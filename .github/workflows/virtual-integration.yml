@@ -132,18 +132,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+        with:
+          persist-credentials: false
       - name: Build Trusted Compute package
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_NUMBER: ${{ github.event.number }}
+          CHANGED_PROJECTS: ${{ needs.pre-checks.outputs.changed_projects }}
         run: |
           echo "Installing build prerequisites..."
           sudo apt-get update -qq
           sudo apt-get install -y curl make tar jq
 
           base_suffix=""
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base_suffix="-pr-${{ github.event.number }}"
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base_suffix="-pr-$EVENT_NUMBER"
           fi
 
-          changed_projects='${{ needs.pre-checks.outputs.changed_projects }}'
+          changed_projects="$CHANGED_PROJECTS"
           declare -A project_suffix
 
           if [[ "$changed_projects" != "[]" ]]; then
@@ -158,11 +164,42 @@ jobs:
           kd_suffix="${project_suffix[trusted-workload]}"
 
           YQ_VERSION="v4.44.6"
-          curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
-            -o /tmp/yq && chmod +x /tmp/yq && sudo mv /tmp/yq /usr/local/bin/yq
+          HELM_VERSION="v3.16.4"
+
+          arch="$(uname -m)"
+          case "$arch" in
+            x86_64)
+              yq_arch="amd64"
+              helm_arch="amd64"
+              yq_sha256="0c2b24e645b57d8e7c0566d18643a6d4f5580feeea3878127354a46f2a1e4598"
+              helm_sha256="fc307327959aa38ed8f9f7e66d45492bb022a66c3e5da6063958254b9767d179"
+              ;;
+            aarch64|arm64)
+              yq_arch="arm64"
+              helm_arch="arm64"
+              yq_sha256="9477ac3cc447b6c083986129e35af8122eb2b938fe55c9c3e40436fb966e5813"
+              helm_sha256="d3f8f15b3d9ec8c8678fbf3280c3e5902efabe5912e2f9fcf29107efbc8ead69"
+              ;;
+            *)
+              echo "Unsupported architecture: $arch"
+              exit 1
+              ;;
+          esac
+
+          yq_url="https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${yq_arch}"
+          yq_tmp="/tmp/yq"
+          curl -fsSL "$yq_url" -o "$yq_tmp"
+          echo "${yq_sha256}  ${yq_tmp}" | sha256sum -c -
+          chmod +x "$yq_tmp"
+          sudo mv "$yq_tmp" /usr/local/bin/yq
 
           if ! command -v helm >/dev/null 2>&1; then
-            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            helm_tgz="/tmp/helm-${HELM_VERSION}-linux-${helm_arch}.tar.gz"
+            curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-${helm_arch}.tar.gz" -o "$helm_tgz"
+            echo "${helm_sha256}  ${helm_tgz}" | sha256sum -c -
+            tar -C /tmp -xzf "$helm_tgz"
+            sudo mv "/tmp/linux-${helm_arch}/helm" /usr/local/bin/helm
+            rm -rf "$helm_tgz" "/tmp/linux-${helm_arch}"
           fi
 
           echo "Building Trusted Compute installation package..."
@@ -429,7 +466,18 @@ jobs:
 
       - name: Install Robot Framework and SSHLibrary
         run: |
-          pip install robotframework~=7.0 robotframework-sshlibrary~=3.8.0
+          sudo apt-get update -qq
+          sudo apt-get install -y python3-paramiko python3-scp
+
+          cat > /tmp/robot-requirements.txt << 'EOF'
+          robotframework==7.0.1 \
+            --hash=sha256:7f469492311f10e3be69d8ca2f2cae6b6490030d59683d23cd7909088c286d8 \
+            --hash=sha256:58d01b84cd7eccea69f2dbe13cbcbff1299e551168d3b88c25617b0c9d6ddc75
+          robotframework-sshlibrary==3.8.0 \
+            --hash=sha256:aedf8a02bcb734404cf8575d0ada25d6c7dc2fcb65de2113c4e07c63d2446c2
+          EOF
+
+          python3 -m pip install --no-deps --require-hashes -r /tmp/robot-requirements.txt
 
       - name: Install Trusted Compute package via Robot Framework
         run: |
