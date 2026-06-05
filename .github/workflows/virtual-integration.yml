@@ -121,6 +121,7 @@ jobs:
             }
 
   run-golden-suite:
+    if: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
     permissions:
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
