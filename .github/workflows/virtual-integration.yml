@@ -78,12 +78,14 @@ jobs:
               const run = runs.find(r => r.head_sha === targetHeadSha);
 
               if (run) {
-                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                const { data } = await github.rest.actions.listJobsForWorkflowRun({
                   owner,
                   repo,
                   run_id: run.id,
                   per_page: 100
                 });
+
+                const jobs = data.jobs ?? [];
 
                 const targetJobs = jobs.filter(j =>
                   j.name === targetJobPrefix || j.name.startsWith(`${targetJobPrefix} (`)

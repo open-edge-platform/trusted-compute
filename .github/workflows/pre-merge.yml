@@ -163,13 +163,15 @@ jobs:
             const started = Date.now();
 
             while (true) {
-              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              const { data } = await github.rest.actions.listWorkflowRuns({
                 owner,
                 repo,
                 workflow_id: workflowId,
                 event: targetEvent,
                 per_page: 100
               });
+
+              const runs = data.workflow_runs ?? [];
 
               const run = runs.find(r => r.head_sha === targetHeadSha);
 
