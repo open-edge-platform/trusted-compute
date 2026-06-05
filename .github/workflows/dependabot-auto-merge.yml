@@ -62,9 +62,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Triggered when a Dependabot PR is actually merged into main: comments
-  # "@dependabot rebase" on every remaining open Dependabot PR so each one
-  # updates its branch, re-runs CI, and re-enters the auto-merge cycle.
+  # Triggered when a Dependabot PR is actually merged into main: calls the
+  # GitHub API to update the branch of every remaining open Dependabot PR so
+  # each one re-runs CI and re-enters the auto-merge cycle.
   rebase-remaining:
     if: |
       github.event_name == 'pull_request' &&
