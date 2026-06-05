@@ -12,7 +12,9 @@ permissions: {}
 
 jobs:
   request-copilot-review:
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    if: |
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
