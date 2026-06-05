@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+name: Request Copilot Review
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  request-copilot-review:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Request Copilot review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api \
+            repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers \
+            --method POST \
+            --field 'reviewers[]=copilot-pull-request-reviewer[bot]'
