@@ -135,19 +135,75 @@ jobs:
       version_suffix: "-pr-${{ github.event.number }}"
     secrets:  # zizmor: ignore[secrets-inherit]
       inherit
+  wait-for-virtual-integration:
+    permissions:
+      actions: read
+      contents: read
+    needs: pre-checks
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Virtual Integration to complete
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3   # v9.0.0
+        env:
+          TARGET_WORKFLOW_FILE: virtual-integration.yml
+          TARGET_EVENT: pull_request
+          TARGET_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TIMEOUT_SECONDS: "7200"
+          POLL_INTERVAL_SECONDS: "30"
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const workflowId = process.env.TARGET_WORKFLOW_FILE;
+            const targetEvent = process.env.TARGET_EVENT;
+            const targetHeadSha = process.env.TARGET_HEAD_SHA;
+            const timeoutMs = Number(process.env.TIMEOUT_SECONDS) * 1000;
+            const intervalMs = Number(process.env.POLL_INTERVAL_SECONDS) * 1000;
+            const started = Date.now();
+
+            while (true) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: workflowId,
+                event: targetEvent,
+                per_page: 100
+              });
+
+              const run = runs.find(r => r.head_sha === targetHeadSha);
+
+              if (run && run.status === "completed") {
+                if (run.conclusion === "success") {
+                  core.info(`Virtual Integration completed successfully for ${targetHeadSha}`);
+                  return;
+                }
+                core.setFailed(`Virtual Integration concluded with status: ${run.conclusion}`);
+                return;
+              }
+
+              if (Date.now() - started > timeoutMs) {
+                core.setFailed(`Timed out waiting for Virtual Integration on ${targetHeadSha}`);
+                return;
+              }
+
+              core.info(`Waiting for Virtual Integration on ${targetHeadSha}...`);
+              await new Promise(resolve => setTimeout(resolve, intervalMs));
+            }
   final-check:
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [pre-merge-root, pre-merge-pipeline, pre-merge-pipeline-no-docker]
+    needs: [pre-merge-root, pre-merge-pipeline, pre-merge-pipeline-no-docker, wait-for-virtual-integration]
     steps:
       - name: Final Status Check
         env:
           pre_merge_pipeline: ${{ needs.pre-merge-pipeline.result }}
           pre_merge_pipeline_no_docker: ${{ needs.pre-merge-pipeline-no-docker.result }}
           pre_merge_root_pipeline: ${{ needs.pre-merge-root.result }}
+          virtual_integration: ${{ needs.wait-for-virtual-integration.result }}
         run: |
 
-          results=("pre_merge_root_pipeline" "pre_merge_pipeline" "pre_merge_pipeline_no_docker")
+          results=("pre_merge_root_pipeline" "pre_merge_pipeline" "pre_merge_pipeline_no_docker" "virtual_integration")
           status="OK"
 
           for result in "${results[@]}"; do
