@@ -55,12 +55,13 @@ jobs:
 
       - name: Enable auto-merge
         run: |
-          gh pr merge "${{ steps.pr.outputs.number }}" \
+          gh pr merge "$PR_NUMBER" \
             --auto \
             --squash \
-            --repo "${{ github.repository }}"
+            --repo "$GITHUB_REPOSITORY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
 
   # Triggered when a Dependabot PR is actually merged into main: calls the
   # GitHub API to update the branch of every remaining open Dependabot PR so
