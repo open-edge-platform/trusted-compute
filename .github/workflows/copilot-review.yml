@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+name: Request Copilot Review
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  request-copilot-review:
+    if: |
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Request Copilot review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          requested="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" --jq '.users[].login')"
+          if printf '%s\n' "$requested" | grep -qx 'copilot-pull-request-reviewer[bot]'; then
+            echo "Copilot reviewer already requested; skipping."
+            exit 0
+          fi
+          gh api \
+            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" \
+            --method POST \
+            --field 'reviewers[]=copilot-pull-request-reviewer[bot]'
