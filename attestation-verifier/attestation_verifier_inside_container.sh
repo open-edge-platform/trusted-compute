@@ -15,7 +15,7 @@ if [ -z "$1" ]; then
 fi
 
 BUILD_PARAM=$1
-GO_VER=go1.26.2
+GO_VER=go1.26.3
 
 #Installing Pre-requisites
 set -ex
