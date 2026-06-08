@@ -24,12 +24,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          requested="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" --jq '.users[].login')"
-          if printf '%s\n' "$requested" | grep -qx 'copilot-pull-request-reviewer[bot]'; then
-            echo "Copilot reviewer already requested; skipping."
-            exit 0
-          fi
-          gh api \
-            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" \
-            --method POST \
-            --field 'reviewers[]=copilot-pull-request-reviewer[bot]'
+          gh pr edit "$PR_NUMBER" \
+          --add-reviewer "copilot-pull-request-reviewer[bot]" \
+          --repo "$GITHUB_REPOSITORY"
