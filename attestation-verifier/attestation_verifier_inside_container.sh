@@ -15,7 +15,11 @@ if [ -z "$1" ]; then
 fi
 
 BUILD_PARAM=$1
-GO_VER=go1.26.3
+GO_VER=$(grep '^toolchain ' /intel_isecl/src/go.mod | awk '{print $2}')
+if [ -z "$GO_VER" ]; then
+    echo "Error: could not read Go toolchain version from go.mod"
+    exit 1
+fi
 
 #Installing Pre-requisites
 set -ex
