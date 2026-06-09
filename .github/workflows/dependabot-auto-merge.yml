@@ -3,7 +3,7 @@
 name: Dependabot Auto-merge
 
 on:
-  workflow_run:
+  workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: ["Virtual Integration"]
     types: [completed]
   pull_request:
