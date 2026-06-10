@@ -177,27 +177,36 @@ Ensure Local Kubectl Available
 Collect Pod Logs Using Local Kubectl
     [Documentation]    Run local kubectl commands using patched kubeconfig and collect logs.
 
+    Collect Namespace Logs Using Local Kubectl    trusted-compute    vm-logs/trusted-compute-pod-logs
+    Collect Namespace Logs Using Local Kubectl    kata-deploy    vm-logs/kata-deploy-pod-logs
+
+Collect Namespace Logs Using Local Kubectl
+    [Documentation]    Run local kubectl commands for a namespace and collect logs.
+    [Arguments]    ${namespace}    ${base_path}    ${allow_failure}=${TRUE}
+
+    OperatingSystem.Create Directory    ${base_path}
+
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/nodes.yaml
-    ...    ${TRUE}
+    ...    ${base_path}/nodes.yaml
+    ...    ${allow_failure}
     ...    get    nodes    -o    yaml
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/all.log
-    ...    ${TRUE}
-    ...    get    all    -n    trusted-compute
+    ...    ${base_path}/all.log
+    ...    ${allow_failure}
+    ...    get    all    -n    ${namespace}
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/trusted-compute-events.log
-    ...    ${TRUE}
-    ...    get    events    -n    trusted-compute    --sort-by=.metadata.creationTimestamp
+    ...    ${base_path}/${namespace}-events.log
+    ...    ${allow_failure}
+    ...    get    events    -n    ${namespace}    --sort-by=.metadata.creationTimestamp
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/pods-describe.log
-    ...    ${TRUE}
-    ...    describe    pods    -n    trusted-compute
+    ...    ${base_path}/pods-describe.log
+    ...    ${allow_failure}
+    ...    describe    pods    -n    ${namespace}
 
-    Collect Per Pod Logs    vm-logs/trusted-compute-pod-logs
+    Collect Per Pod Logs    ${namespace}    ${base_path}    ${allow_failure}
 
 Run Kubectl Command And Save Output
     [Documentation]    Execute kubectl with arguments and save combined stdout/stderr to file.
@@ -210,12 +219,18 @@ Run Kubectl Command And Save Output
     END
 
 Collect Per Pod Logs
-    [Documentation]    Collect pod, container, and previous container logs for trusted-compute namespace.
-    [Arguments]    ${base_path}
-    ${pods_result}=    Run Process    kubectl    --kubeconfig    ${LOCAL_KUBECONFIG}    get    pods    -n    trusted-compute    -o    name    stdout=PIPE    stderr=STDOUT
+    [Documentation]    Collect pod, container, and previous container logs for the given namespace.
+    [Arguments]    ${namespace}    ${base_path}    ${allow_failure}=${FALSE}
+    ${pods_result}=    Run Process    kubectl    --kubeconfig    ${LOCAL_KUBECONFIG}    get    pods    -n    ${namespace}    -o    name    stdout=PIPE    stderr=STDOUT
     Log    ${pods_result.stdout}
-    Should Be Equal As Integers    ${pods_result.rc}    0    msg=Failed to list trusted-compute pods
+    IF    not ${allow_failure}
+        Should Be Equal As Integers    ${pods_result.rc}    0    msg=Failed to list pods in ${namespace} namespace
+    END
     OperatingSystem.Create File    ${base_path}/pods-list.log    ${pods_result.stdout}
+
+    IF    ${allow_failure} and ${pods_result.rc} != 0
+        RETURN
+    END
 
     ${pods}=    Split To Lines    ${pods_result.stdout}
     FOR    ${pod}    IN    @{pods}
@@ -228,8 +243,8 @@ Collect Per Pod Logs
 
         Run Kubectl Command And Save Output
         ...    ${base_path}/${pod_name}.log
-        ...    ${TRUE}
-        ...    logs    -n    trusted-compute    ${pod_name}
+        ...    ${allow_failure}
+        ...    logs    -n    ${namespace}    ${pod_name}
 
         ${jsonpath_arg}=    Set Variable    jsonpath={range .spec.containers[*]}{.name}{"\\n"}{end}
         ${containers_result}=    Run Process
@@ -240,7 +255,7 @@ Collect Per Pod Logs
         ...    pod
         ...    ${pod_name}
         ...    -n
-        ...    trusted-compute
+        ...    ${namespace}
         ...    -o
         ...    ${jsonpath_arg}
         ...    stdout=PIPE
@@ -263,13 +278,13 @@ Collect Per Pod Logs
 
             Run Kubectl Command And Save Output
             ...    ${base_path}/${pod_name}-${container_name}.log
-            ...    ${TRUE}
-            ...    logs    -n    trusted-compute    ${pod_name}    -c    ${container_name}
+            ...    ${allow_failure}
+            ...    logs    -n    ${namespace}    ${pod_name}    -c    ${container_name}
 
             Run Kubectl Command And Save Output
             ...    ${base_path}/${pod_name}-${container_name}-previous.log
-            ...    ${TRUE}
-            ...    logs    -n    trusted-compute    ${pod_name}    -c    ${container_name}    --previous
+            ...    ${allow_failure}
+            ...    logs    -n    ${namespace}    ${pod_name}    -c    ${container_name}    --previous
         END
     END
 
@@ -352,19 +367,10 @@ Cleanup After Tamper Test
 
 Deploy Sample Trusted Workload On DUT
     [Documentation]    Create namespace and deploy a sample nginx pod using kata-qemu runtime class via local kubectl.
-    ${create_ns_result}=    Run Process
-    ...    kubectl
-    ...    --kubeconfig
-    ...    ${LOCAL_KUBECONFIG}
-    ...    create
-    ...    namespace
-    ...    nginx-test
-    ...    stdout=PIPE
-    ...    stderr=STDOUT
-    ${create_ns_out}=    Set Variable    ${create_ns_result.stdout}
-    ${create_ns_rc}=    Set Variable    ${create_ns_result.rc}
-    Log    ${create_ns_out}
-    Should Be Equal As Integers    ${create_ns_rc}    0    msg=Failed to create namespace nginx-test on DUT
+    ${create_ns_cmd}=    Set Variable    kubectl --kubeconfig ${LOCAL_KUBECONFIG} create namespace nginx-test --dry-run=client -o yaml | kubectl --kubeconfig ${LOCAL_KUBECONFIG} apply -f -
+    ${create_ns_result}=    Run Process    /bin/bash    -lc    ${create_ns_cmd}    stdout=PIPE    stderr=STDOUT
+    Log    ${create_ns_result.stdout}
+    Should Be Equal As Integers    ${create_ns_result.rc}    0    msg=Failed to create/apply namespace nginx-test on DUT
 
     ${manifest}=    Catenate    SEPARATOR=\n
     ...    apiVersion: v1
@@ -413,7 +419,7 @@ Verify Sample Trusted Workload Pod Is Running On DUT
     ...    ${phase_jsonpath}
     ...    stdout=PIPE
     ...    stderr=STDOUT
-    ${phase}=    Set Variable    ${phase_result.stdout}
+    ${phase}=    Strip String    ${phase_result.stdout}
     Log    nginx-default phase: ${phase}
     Should Be Equal As Integers    ${phase_result.rc}    0    msg=Failed to query nginx-default pod phase
     Should Be Equal    ${phase}    Running    msg=nginx-default pod is not in Running phase
