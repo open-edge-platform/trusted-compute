@@ -405,6 +405,10 @@ Deploy Sample Trusted Workload On DUT
 
 Verify Sample Trusted Workload Pod Is Running On DUT
     [Documentation]    Verify nginx-default pod in nginx-test namespace reaches Running phase.
+    Run Kubectl Command And Save Output
+    ...    vm-logs/nginx-test-pod-describe.log
+    ...    ${TRUE}
+    ...    describe    pod    nginx-default    -n    nginx-test
     ${phase_jsonpath}=    Set Variable    jsonpath={.status.phase}
     ${phase_result}=    Run Process
     ...    kubectl
