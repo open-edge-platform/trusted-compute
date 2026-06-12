@@ -440,6 +440,52 @@ Verify No QEMU Process Is Running On DUT
     Log    ${qemu_ps}
     Should Be Empty    ${qemu_ps}    msg=QEMU process still running on DUT after cleanup
 
+Collect DUT System Logs
+    [Documentation]    Collect inner-VM system logs and Kata diagnostics from the DUT.
+    OperatingSystem.Create Directory    vm-logs/dut-system-logs
+
+    ${k3s_journal}    ${k3s_rc}=    Execute Command
+    ...    sudo journalctl -u k3s --no-pager 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    k3s journal (rc=${k3s_rc}):\n${k3s_journal}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/k3s-journal.log    ${k3s_journal}
+
+    ${containerd_log}    ${containerd_rc}=    Execute Command
+    ...    sudo cat /var/lib/rancher/k3s/agent/containerd/containerd.log 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    containerd log (rc=${containerd_rc}):\n${containerd_log}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/containerd.log    ${containerd_log}
+
+    ${run_vc_tree}    ${run_vc_tree_rc}=    Execute Command
+    ...    sudo ls -alR /run/vc 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc tree (rc=${run_vc_tree_rc}):\n${run_vc_tree}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-tree.log    ${run_vc_tree}
+
+    ${run_vc_logs}    ${run_vc_logs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /run/vc/vm/*/console.log /run/vc/vm/*/*.log /run/vc/sbs/*/*.log /run/vc/sbs/*/*/console.log; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc sandbox logs (rc=${run_vc_logs_rc}):\n${run_vc_logs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-sandbox-logs.log    ${run_vc_logs}
+
+    ${kata_runtime_configs}    ${kata_runtime_configs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /opt/kata/share/defaults/kata-containers/configuration*.toml /etc/kata-containers/*.toml; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    Kata runtime configs (rc=${kata_runtime_configs_rc}):\n${kata_runtime_configs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/kata-runtime-configs.log    ${kata_runtime_configs}
+
+    ${containerd_runtime_configs}    ${containerd_runtime_configs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /var/lib/rancher/k3s/agent/etc/containerd/config.toml /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    containerd runtime configs (rc=${containerd_runtime_configs_rc}):\n${containerd_runtime_configs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/containerd-runtime-configs.log    ${containerd_runtime_configs}
+
+    ${runtimeclass_snapshot}    ${runtimeclass_snapshot_rc}=    Execute Command
+    ...    sudo k3s kubectl get runtimeclass -o yaml 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    runtimeclass snapshot (rc=${runtimeclass_snapshot_rc}):\n${runtimeclass_snapshot}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/runtimeclass-snapshot.yaml    ${runtimeclass_snapshot}
+
 Delete Sample Trusted Workload Namespace On DUT
     [Documentation]    Delete sample namespace used for trusted workload validation.
     ${delete_ns_result}=    Run Process
@@ -513,6 +559,7 @@ TC-GS-08 Verify Attestation Manager Reports False After Kata Config Tamper
     [Teardown]    Cleanup After Tamper Test
 
 TC-GS-09 Collect Pod Logs
-    [Documentation]    Collect trusted-compute pod logs/events.
+    [Documentation]    Collect trusted-compute pod logs/events and inner-VM system logs.
     [Tags]    golden-suite    collect    logs
     Collect Pod Logs Using Local Kubectl
+    Collect DUT System Logs
