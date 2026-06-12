@@ -37,6 +37,7 @@ SSH_KEY_DIR="${VM_DIR}/ssh"
 SSH_PRIVATE_KEY="${SSH_KEY_DIR}/${SSH_KEY_NAME}"
 SSH_PUBLIC_KEY="${SSH_PRIVATE_KEY}.pub"
 VM_AUTHORIZED_KEY=""
+NESTED_CPU_FEATURE=""
 
 # Detect OVMF firmware path (try multiple known locations for Ubuntu 24.04)
 detect_ovmf_code() {
@@ -100,6 +101,16 @@ check_prerequisites() {
             exit 1
         fi
     done
+
+    if grep -qw vmx /proc/cpuinfo; then
+      NESTED_CPU_FEATURE="vmx"
+    elif grep -qw svm /proc/cpuinfo; then
+      NESTED_CPU_FEATURE="svm"
+    else
+      log_error "Host CPU does not expose vmx or svm; nested virtualization is required for Kata inside the DUT VM"
+      exit 1
+    fi
+    log_info "Nested virtualization CPU feature detected: $NESTED_CPU_FEATURE"
     
     # Check for OVMF firmware with Secure Boot support
     if [[ -z "$OVMF_CODE" ]]; then
@@ -269,6 +280,9 @@ create_domain_xml() {
   <memory unit='GiB'>%MEMORY_GB%</memory>
   <currentMemory unit='GiB'>%MEMORY_GB%</currentMemory>
   <vcpu placement='static'>%VCPUS%</vcpu>
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <feature policy='require' name='%NESTED_CPU_FEATURE%'/>
+  </cpu>
   
   <os>
     <type arch='x86_64' machine='q35'>hvm</type>
@@ -340,6 +354,11 @@ create_domain_xml() {
       <listen type='address' address='127.0.0.1'/>
     </graphics>
 
+    <!-- vhost-vsock: required by Kata Containers for guest agent communication -->
+    <vsock model='virtio'>
+      <cid auto='yes'/>
+    </vsock>
+
   </devices>
 </domain>
 EOF
@@ -348,6 +367,7 @@ EOF
     sed -e "s|%VM_NAME%|$VM_NAME|g" \
         -e "s|%MEMORY_GB%|$MEMORY_GB|g" \
         -e "s|%VCPUS%|$VCPUS|g" \
+      -e "s|%NESTED_CPU_FEATURE%|$NESTED_CPU_FEATURE|g" \
         -e "s|%DISK_PATH%|$DISK_PATH|g" \
         -e "s|%CLOUD_INIT_ISO%|$CLOUD_INIT_ISO|g" \
         -e "s|%OVMF_CODE%|$OVMF_CODE|g" \

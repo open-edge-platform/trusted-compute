@@ -345,6 +345,48 @@ jobs:
               eof { puts "Console closed unexpectedly"; exit 1 }
             }
 
+            send -- "grep -E --color=never -m1 'vmx|svm' /proc/cpuinfo\r"
+
+            expect {
+              -re {(vmx|svm)} {}
+              timeout { puts "Timed out waiting for nested virtualization CPU flags in /proc/cpuinfo"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after nested virtualization CPU flag check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "test -c /dev/kvm && ls -l /dev/kvm\r"
+
+            expect {
+              -re {/dev/kvm} {}
+              timeout { puts "Timed out waiting for /dev/kvm to appear in the DUT"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after /dev/kvm check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "test -c /dev/vhost-vsock && ls -l /dev/vhost-vsock\r"
+
+            expect {
+              -re {/dev/vhost-vsock} {}
+              timeout { puts "Timed out waiting for /dev/vhost-vsock to appear in the DUT"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after /dev/vhost-vsock check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
             send -- "sudo tpm2_pcrread\r"
 
             expect {
