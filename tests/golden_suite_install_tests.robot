@@ -177,27 +177,36 @@ Ensure Local Kubectl Available
 Collect Pod Logs Using Local Kubectl
     [Documentation]    Run local kubectl commands using patched kubeconfig and collect logs.
 
+    Collect Namespace Logs Using Local Kubectl    trusted-compute    vm-logs/trusted-compute-pod-logs
+    Collect Namespace Logs Using Local Kubectl    kata-deploy    vm-logs/kata-deploy-pod-logs
+
+Collect Namespace Logs Using Local Kubectl
+    [Documentation]    Run local kubectl commands for a namespace and collect logs.
+    [Arguments]    ${namespace}    ${base_path}    ${allow_failure}=${TRUE}
+
+    OperatingSystem.Create Directory    ${base_path}
+
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/nodes.yaml
-    ...    ${TRUE}
+    ...    ${base_path}/nodes.yaml
+    ...    ${allow_failure}
     ...    get    nodes    -o    yaml
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/all.log
-    ...    ${TRUE}
-    ...    get    all    -n    trusted-compute
+    ...    ${base_path}/all.log
+    ...    ${allow_failure}
+    ...    get    all    -n    ${namespace}
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/trusted-compute-events.log
-    ...    ${TRUE}
-    ...    get    events    -n    trusted-compute    --sort-by=.metadata.creationTimestamp
+    ...    ${base_path}/${namespace}-events.log
+    ...    ${allow_failure}
+    ...    get    events    -n    ${namespace}    --sort-by=.metadata.creationTimestamp
 
     Run Kubectl Command And Save Output
-    ...    vm-logs/trusted-compute-pod-logs/pods-describe.log
-    ...    ${TRUE}
-    ...    describe    pods    -n    trusted-compute
+    ...    ${base_path}/pods-describe.log
+    ...    ${allow_failure}
+    ...    describe    pods    -n    ${namespace}
 
-    Collect Per Pod Logs    vm-logs/trusted-compute-pod-logs
+    Collect Per Pod Logs    ${namespace}    ${base_path}    ${allow_failure}
 
 Run Kubectl Command And Save Output
     [Documentation]    Execute kubectl with arguments and save combined stdout/stderr to file.
@@ -210,12 +219,18 @@ Run Kubectl Command And Save Output
     END
 
 Collect Per Pod Logs
-    [Documentation]    Collect pod, container, and previous container logs for trusted-compute namespace.
-    [Arguments]    ${base_path}
-    ${pods_result}=    Run Process    kubectl    --kubeconfig    ${LOCAL_KUBECONFIG}    get    pods    -n    trusted-compute    -o    name    stdout=PIPE    stderr=STDOUT
+    [Documentation]    Collect pod, container, and previous container logs for the given namespace.
+    [Arguments]    ${namespace}    ${base_path}    ${allow_failure}=${FALSE}
+    ${pods_result}=    Run Process    kubectl    --kubeconfig    ${LOCAL_KUBECONFIG}    get    pods    -n    ${namespace}    -o    name    stdout=PIPE    stderr=STDOUT
     Log    ${pods_result.stdout}
-    Should Be Equal As Integers    ${pods_result.rc}    0    msg=Failed to list trusted-compute pods
+    IF    not ${allow_failure}
+        Should Be Equal As Integers    ${pods_result.rc}    0    msg=Failed to list pods in ${namespace} namespace
+    END
     OperatingSystem.Create File    ${base_path}/pods-list.log    ${pods_result.stdout}
+
+    IF    ${allow_failure} and ${pods_result.rc} != 0
+        RETURN
+    END
 
     ${pods}=    Split To Lines    ${pods_result.stdout}
     FOR    ${pod}    IN    @{pods}
@@ -228,8 +243,8 @@ Collect Per Pod Logs
 
         Run Kubectl Command And Save Output
         ...    ${base_path}/${pod_name}.log
-        ...    ${TRUE}
-        ...    logs    -n    trusted-compute    ${pod_name}
+        ...    ${allow_failure}
+        ...    logs    -n    ${namespace}    ${pod_name}
 
         ${jsonpath_arg}=    Set Variable    jsonpath={range .spec.containers[*]}{.name}{"\\n"}{end}
         ${containers_result}=    Run Process
@@ -240,12 +255,19 @@ Collect Per Pod Logs
         ...    pod
         ...    ${pod_name}
         ...    -n
-        ...    trusted-compute
+        ...    ${namespace}
         ...    -o
         ...    ${jsonpath_arg}
         ...    stdout=PIPE
         ...    stderr=STDOUT
         Log    ${containers_result.stdout}
+
+        IF    not ${allow_failure}
+            Should Be Equal As Integers    ${containers_result.rc}    0    msg=Failed to get containers for pod ${pod_name}
+        END
+        IF    ${allow_failure} and ${containers_result.rc} != 0
+            CONTINUE
+        END
 
         ${containers}=    Split To Lines    ${containers_result.stdout}
         FOR    ${container_name}    IN    @{containers}
@@ -256,13 +278,13 @@ Collect Per Pod Logs
 
             Run Kubectl Command And Save Output
             ...    ${base_path}/${pod_name}-${container_name}.log
-            ...    ${TRUE}
-            ...    logs    -n    trusted-compute    ${pod_name}    -c    ${container_name}
+            ...    ${allow_failure}
+            ...    logs    -n    ${namespace}    ${pod_name}    -c    ${container_name}
 
             Run Kubectl Command And Save Output
             ...    ${base_path}/${pod_name}-${container_name}-previous.log
-            ...    ${TRUE}
-            ...    logs    -n    trusted-compute    ${pod_name}    -c    ${container_name}    --previous
+            ...    ${allow_failure}
+            ...    logs    -n    ${namespace}    ${pod_name}    -c    ${container_name}    --previous
         END
     END
 
@@ -343,6 +365,144 @@ Cleanup After Tamper Test
     [Documentation]    Restore tampered Kata config.
     Restore Kata Configuration On DUT
 
+Deploy Sample Trusted Workload On DUT
+    [Documentation]    Create namespace and deploy a sample nginx pod using kata-qemu runtime class via local kubectl.
+    ${create_ns_cmd}=    Set Variable    kubectl --kubeconfig ${LOCAL_KUBECONFIG} create namespace nginx-test --dry-run=client -o yaml | kubectl --kubeconfig ${LOCAL_KUBECONFIG} apply -f -
+    ${create_ns_result}=    Run Process    /bin/bash    -lc    ${create_ns_cmd}    stdout=PIPE    stderr=STDOUT
+    Log    ${create_ns_result.stdout}
+    Should Be Equal As Integers    ${create_ns_result.rc}    0    msg=Failed to create/apply namespace nginx-test on DUT
+
+    ${manifest}=    Catenate    SEPARATOR=\n
+    ...    apiVersion: v1
+    ...    kind: Pod
+    ...    metadata:
+    ...    ${SPACE}${SPACE}name: nginx-default
+    ...    ${SPACE}${SPACE}namespace: nginx-test
+    ...    spec:
+    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu
+    ...    ${SPACE}${SPACE}containers:
+    ...    ${SPACE}${SPACE}- name: nginx
+    ...    ${SPACE}${SPACE}${SPACE}${SPACE}image: nginx:1.27.0
+    ${manifest_file}=    Set Variable    ${EXECDIR}/nginx-test-pod.yaml
+    OperatingSystem.Create File    ${manifest_file}    ${manifest}
+
+    ${apply_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    -n
+    ...    nginx-test
+    ...    apply
+    ...    -f
+    ...    ${manifest_file}
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${apply_out}=    Set Variable    ${apply_result.stdout}
+    ${apply_rc}=    Set Variable    ${apply_result.rc}
+    Log    ${apply_out}
+    Should Be Equal As Integers    ${apply_rc}    0    msg=Failed to apply nginx sample pod manifest in namespace nginx-test
+    OperatingSystem.Remove File    ${manifest_file}
+
+Verify Sample Trusted Workload Pod Is Running On DUT
+    [Documentation]    Verify nginx-default pod in nginx-test namespace reaches Running phase.
+    Run Kubectl Command And Save Output
+    ...    vm-logs/nginx-test-pod-describe.log
+    ...    ${TRUE}
+    ...    describe    pod    nginx-default    -n    nginx-test
+    ${phase_jsonpath}=    Set Variable    jsonpath={.status.phase}
+    ${phase_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    -n
+    ...    nginx-test
+    ...    get
+    ...    pod
+    ...    nginx-default
+    ...    -o
+    ...    ${phase_jsonpath}
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${phase}=    Strip String    ${phase_result.stdout}
+    Log    nginx-default phase: ${phase}
+    Should Be Equal As Integers    ${phase_result.rc}    0    msg=Failed to query nginx-default pod phase
+    Should Be Equal    ${phase}    Running    msg=nginx-default pod is not in Running phase
+
+Verify QEMU Process Is Running On DUT
+    [Documentation]    Verify at least one QEMU process is present on the DUT after trusted workload deployment.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system'
+    Log    ${qemu_ps}
+    Should Not Be Empty    ${qemu_ps}    msg=No QEMU process found on DUT
+
+Verify No QEMU Process Is Running On DUT
+    [Documentation]    Verify no QEMU processes are present on the DUT after trusted workload cleanup.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system' || true
+    Log    ${qemu_ps}
+    Should Be Empty    ${qemu_ps}    msg=QEMU process still running on DUT after cleanup
+
+Collect DUT System Logs
+    [Documentation]    Collect inner-VM system logs and Kata diagnostics from the DUT.
+    OperatingSystem.Create Directory    vm-logs/dut-system-logs
+
+    ${k3s_journal}    ${k3s_rc}=    Execute Command
+    ...    sudo journalctl -u k3s --no-pager 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    k3s journal (rc=${k3s_rc}):\n${k3s_journal}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/k3s-journal.log    ${k3s_journal}
+
+    ${containerd_log}    ${containerd_rc}=    Execute Command
+    ...    sudo cat /var/lib/rancher/k3s/agent/containerd/containerd.log 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    containerd log (rc=${containerd_rc}):\n${containerd_log}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/containerd.log    ${containerd_log}
+
+    ${run_vc_tree}    ${run_vc_tree_rc}=    Execute Command
+    ...    sudo ls -alR /run/vc 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc tree (rc=${run_vc_tree_rc}):\n${run_vc_tree}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-tree.log    ${run_vc_tree}
+
+    ${run_vc_logs}    ${run_vc_logs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /run/vc/vm/*/console.log /run/vc/vm/*/*.log /run/vc/sbs/*/*.log /run/vc/sbs/*/*/console.log; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc sandbox logs (rc=${run_vc_logs_rc}):\n${run_vc_logs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-sandbox-logs.log    ${run_vc_logs}
+
+    ${kata_runtime_configs}    ${kata_runtime_configs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /opt/kata/share/defaults/kata-containers/configuration*.toml /etc/kata-containers/*.toml; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    Kata runtime configs (rc=${kata_runtime_configs_rc}):\n${kata_runtime_configs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/kata-runtime-configs.log    ${kata_runtime_configs}
+
+    ${containerd_runtime_configs}    ${containerd_runtime_configs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /var/lib/rancher/k3s/agent/etc/containerd/config.toml /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    containerd runtime configs (rc=${containerd_runtime_configs_rc}):\n${containerd_runtime_configs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/containerd-runtime-configs.log    ${containerd_runtime_configs}
+
+    ${runtimeclass_snapshot}    ${runtimeclass_snapshot_rc}=    Execute Command
+    ...    sudo k3s kubectl get runtimeclass -o yaml 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    runtimeclass snapshot (rc=${runtimeclass_snapshot_rc}):\n${runtimeclass_snapshot}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/runtimeclass-snapshot.yaml    ${runtimeclass_snapshot}
+
+Delete Sample Trusted Workload Namespace On DUT
+    [Documentation]    Delete sample namespace used for trusted workload validation.
+    ${delete_ns_result}=    Run Process
+    ...    kubectl
+    ...    --kubeconfig
+    ...    ${LOCAL_KUBECONFIG}
+    ...    delete
+    ...    namespace
+    ...    nginx-test
+    ...    --ignore-not-found
+    ...    stdout=PIPE
+    ...    stderr=STDOUT
+    ${delete_ns_out}=    Set Variable    ${delete_ns_result.stdout}
+    ${delete_ns_rc}=    Set Variable    ${delete_ns_result.rc}
+    Log    ${delete_ns_out}
+    Should Be Equal As Integers    ${delete_ns_rc}    0    msg=Failed to delete namespace nginx-test on DUT
+
 *** Test Cases ***
 TC-GS-01 Upload Trusted Compute Package To DUT
     [Documentation]    Copy the Trusted Compute installation package to the DUT via SCP.
@@ -381,7 +541,15 @@ TC-GS-06 Verify Attestation Manager Overall Trust Status
     Ensure Local Kubectl Available
     Wait Until Keyword Succeeds    7 min    15 sec    Verify Attestation Manager Overall Trust Status
 
-TC-GS-07 Verify Attestation Manager Reports False After Kata Config Tamper
+TC-GS-07 Verify Sample Trusted Workload Deployment
+    [Documentation]    Deploy a sample nginx trusted workload pod and verify it reaches Running state.
+    [Tags]    golden-suite    validate    trusted-workload    sample
+    Deploy Sample Trusted Workload On DUT
+    Wait Until Keyword Succeeds    5 min    10 sec    Verify Sample Trusted Workload Pod Is Running On DUT
+    Verify QEMU Process Is Running On DUT
+    [Teardown]    Run Keywords    Delete Sample Trusted Workload Namespace On DUT    AND    Verify No QEMU Process Is Running On DUT
+
+TC-GS-08 Verify Attestation Manager Reports False After Kata Config Tamper
     [Documentation]    Append a tamper marker to the Kata configuration on the DUT and verify attestation-manager reports Overall Trust Status: false.
     [Tags]    golden-suite    validate    attestation-manager    negative
     Backup And Tamper Kata Configuration On DUT
@@ -390,7 +558,8 @@ TC-GS-07 Verify Attestation Manager Reports False After Kata Config Tamper
     Wait Until Keyword Succeeds    3 min    15 sec    Verify Node Is SchedulingDisabled
     [Teardown]    Cleanup After Tamper Test
 
-TC-GS-08 Collect Pod Logs
-    [Documentation]    Collect trusted-compute pod logs/events.
+TC-GS-09 Collect Pod Logs
+    [Documentation]    Collect trusted-compute pod logs/events and inner-VM system logs.
     [Tags]    golden-suite    collect    logs
     Collect Pod Logs Using Local Kubectl
+    Collect DUT System Logs
