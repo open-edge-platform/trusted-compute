@@ -30,7 +30,7 @@ jobs:
     outputs:
       changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
         with:
           persist-credentials: false
       - name: "Discover Changed Subfolders"
@@ -131,7 +131,7 @@ jobs:
     runs-on: ubuntu-24.04-16core-64GB
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd   # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
         with:
           persist-credentials: false
       - name: Build Trusted Compute package
@@ -242,7 +242,7 @@ jobs:
         run: |
           echo "Creating VM with Ubuntu 24, TPM, and Secure Boot..."
           sudo chmod +x ./.github/scripts/create-ubuntu24-vm-with-tpm.sh
-          sudo ./.github/scripts/create-ubuntu24-vm-with-tpm.sh test-vm 8 16 100
+          sudo ./.github/scripts/create-ubuntu24-vm-with-tpm.sh test-vm 12 16 100
           
           echo "VM creation completed"
           
@@ -345,6 +345,48 @@ jobs:
               eof { puts "Console closed unexpectedly"; exit 1 }
             }
 
+            send -- "grep -E --color=never -m1 'vmx|svm' /proc/cpuinfo\r"
+
+            expect {
+              -re {(vmx|svm)} {}
+              timeout { puts "Timed out waiting for nested virtualization CPU flags in /proc/cpuinfo"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after nested virtualization CPU flag check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "test -c /dev/kvm && ls -l /dev/kvm\r"
+
+            expect {
+              -re {/dev/kvm} {}
+              timeout { puts "Timed out waiting for /dev/kvm to appear in the DUT"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after /dev/kvm check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            send -- "test -c /dev/vhost-vsock && ls -l /dev/vhost-vsock\r"
+
+            expect {
+              -re {/dev/vhost-vsock} {}
+              timeout { puts "Timed out waiting for /dev/vhost-vsock to appear in the DUT"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after /dev/vhost-vsock check"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
             send -- "sudo tpm2_pcrread\r"
 
             expect {
@@ -366,9 +408,9 @@ jobs:
             expect eof
           EOF
 
-      - name: Patch HVS image in installation package with swtpm endorsement CA
+      - name: Patch HVS and kata-deploy in installation package
         run: |
-          set -euo pipefail
+          set -euxo pipefail
 
           PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
           SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
@@ -458,6 +500,65 @@ jobs:
 
           sudo docker save -o "$HVS_TAR" "$patched_ref"
           sudo chown "$USER":"$USER" "$HVS_TAR"
+
+          # Patch kata-deploy image: enable_debug = true in configuration-qemu.toml
+          KATA_DEPLOY_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*kata-deploy*.tar' | head -n1)"
+
+          if [[ -z "$KATA_DEPLOY_TAR" ]]; then
+            echo "Unable to locate kata-deploy image tar in package images/"
+            exit 1
+          fi
+
+          echo "Patching image tar: $KATA_DEPLOY_TAR"
+
+          kd_load_out="$(sudo docker load -i "$KATA_DEPLOY_TAR")"
+          kd_image_ref="$(printf '%s\n' "$kd_load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
+          if [[ -z "$kd_image_ref" ]]; then
+            echo "Failed to parse loaded kata-deploy image reference"
+            echo "$kd_load_out"
+            exit 1
+          fi
+
+          KD_CFG_REL="opt/kata-artifacts/opt/kata/share/defaults/kata-containers/configuration-qemu.toml"
+          KD_CFG_HOST="$WORKDIR/configuration-qemu.toml"
+
+          kd_cid="$(sudo docker create "$kd_image_ref")"
+          sudo docker cp "$kd_cid":"/$KD_CFG_REL" "$KD_CFG_HOST"
+
+          # Enable debug mode
+          sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)false/\1true/' "$KD_CFG_HOST"
+          sudo grep -Eq '^\s*enable_debug\s*=\s*true' "$KD_CFG_HOST"
+
+          # Increase dial and container creation timeouts for debug boots.
+          sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
+          sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
+
+          # Increase kata vCPU count from the default value.
+          sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
+          sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
+
+          sudo docker cp "$KD_CFG_HOST" "$kd_cid":"/$KD_CFG_REL"
+
+          sudo docker commit "$kd_cid" "$kd_image_ref" >/dev/null
+          sudo docker rm -f "$kd_cid" >/dev/null
+
+          sudo docker save -o "$KATA_DEPLOY_TAR" "$kd_image_ref"
+          sudo chown "$USER":"$USER" "$KATA_DEPLOY_TAR"
+
+          # Patch containerd template in package for debug mode.
+          CONTAINERD_CFG_TPL="$PKG_DIR/containerd/config-v3.toml.tmpl"
+          if [[ ! -f "$CONTAINERD_CFG_TPL" ]]; then
+            echo "Unable to locate containerd config template in package: $CONTAINERD_CFG_TPL"
+            exit 1
+          fi
+
+          if grep -qE '^\[debug\]' "$CONTAINERD_CFG_TPL"; then
+            sudo sed -i -E '/^\[debug\]/,$ s/^\s*level\s*=.*/  level = "debug"/' "$CONTAINERD_CFG_TPL"
+          else
+            printf '\n[debug]\n  level = "debug"\n' | sudo tee -a "$CONTAINERD_CFG_TPL" >/dev/null
+          fi
+
+          grep -nE '^\[debug\]|^\s*level\s*=\s*"debug"' "$CONTAINERD_CFG_TPL"
 
           tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
 
