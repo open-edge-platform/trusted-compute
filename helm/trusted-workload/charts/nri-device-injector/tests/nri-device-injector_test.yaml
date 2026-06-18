@@ -40,7 +40,7 @@ tests:
           value: plugin
       - equal:
           path: spec.template.spec.containers[0].image
-          value: ghcr.io/containerd/nri/plugins/device-injector:v0.10.0
+          value: ghcr.io/containerd/nri/plugins/device-injector@sha256:23953b2ebe4ae3baf5282570b3ec7241da65e338cbbd19920325081b3acbf7ca
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: IfNotPresent
