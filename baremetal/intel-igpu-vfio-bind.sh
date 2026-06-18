@@ -165,6 +165,7 @@ unbind_from_vfio() {
     printf '\000' > "/sys/bus/pci/devices/$GPU_PCI_FULL/driver_override" 2>/dev/null || true
     if [ -e "/sys/bus/pci/drivers/vfio-pci/$GPU_PCI_FULL" ]; then
         echo "$GPU_PCI_FULL" > /sys/bus/pci/drivers/vfio-pci/unbind 2>/dev/null || true
+        echo "$GPU_VENDOR $GPU_DEVICE" > /sys/bus/pci/drivers/vfio-pci/remove_id 2>/dev/null || true
     fi
     modprobe "$preferred" 2>/dev/null || true
     if [ -d "/sys/bus/pci/drivers/$preferred" ]; then
