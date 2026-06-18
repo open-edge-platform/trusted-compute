@@ -124,7 +124,7 @@ start_display_manager() {
             while [ $retries -gt 0 ]; do
                 systemctl is-active --quiet "$svc" && return 0
                 retries=$((retries - 1))
-                read -rt 1 || true
+                sleep 1
             done
             return 0
         fi
