@@ -5,8 +5,8 @@ This document provides a step-by-step guide to enable GPU passthrough in a Trust
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
-- [GPU Driver Management](#gpu-driver-management)
 - [Install Trusted Compute Package](#install-trusted-compute-package)
+- [GPU Driver Management](#gpu-driver-management)
 - [Deploy sample application](#deploy-sample-application)
 - [Pod Deployment and Verification](#pod-deployment-and-verification)
 - [Revert GPU Binding](#revert-gpu-binding)
@@ -33,6 +33,25 @@ GPU passthrough allows a virtual machine to directly access a physical GPU, bypa
    - IOMMU enabled
    - VFIO support
    - DRM/i915 or xe driver support
+
+## Install Trusted Compute Package
+
+
+#### 1. Install on Edge Manageability Framework (EMF) Cluster
+
+1. **Set up the EMF cluster:**  
+  Follow the [Edge Infrastructure Setup Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/set_up_edge_infra/index.html) to prepare your EMF cluster.
+
+2. **Deploy the Trusted Compute package:**  
+  Refer to the [Trusted Compute Package Deployment Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/package_software/extensions/trusted_compute_package.html#deploy-trusted-compute-package) for deployment instructions.
+
+3. **Access the EMF cluster from your local machine:**  
+  Use the `kubeconfig.yaml` file downloaded from the EMF cluster to configure access from your local environment.  
+  For detailed steps, refer to [Organize Cluster Access with a Kubeconfig File](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/set_up_edge_infra/clusters/accessing_clusters.html).
+
+#### 2. Install on Standalone System
+
+  Follow the [Trusted Compute k3s Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
 
 ## GPU Driver Management
 
@@ -62,25 +81,6 @@ $ ls /dev/vfio
 $ lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 # Kernel driver in use: vfio-pci
 ```
-
-## Install Trusted Compute Package
-
-
-#### 1. Install on Edge Manageability Framework (EMF) Cluster
-
-1. **Set up the EMF cluster:**  
-  Follow the [Edge Infrastructure Setup Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/set_up_edge_infra/index.html) to prepare your EMF cluster.
-
-2. **Deploy the Trusted Compute package:**  
-  Refer to the [Trusted Compute Package Deployment Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/package_software/extensions/trusted_compute_package.html#deploy-trusted-compute-package) for deployment instructions.
-
-3. **Access the EMF cluster from your local machine:**  
-  Use the `kubeconfig.yaml` file downloaded from the EMF cluster to configure access from your local environment.  
-  For detailed steps, refer to [Organize Cluster Access with a Kubeconfig File](https://docs.openedgeplatform.intel.com/edge-manage-docs/3.1/user_guide/set_up_edge_infra/clusters/accessing_clusters.html).
-
-#### 2. Install on Standalone System
-
-  Follow the [Trusted Compute k3s Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
 
 ## Deploy Sample Application
 
