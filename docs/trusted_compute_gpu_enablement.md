@@ -176,9 +176,9 @@ The script will:
 
 ```bash
 # Verify the GPU is restored to the native driver:
-lspci -nnk | grep -A2 'VGA.*Intel'
+lspci -nnk | grep -A2 -E '(VGA|Display).*Intel'
 # Output should show:
-# Kernel driver in use: i915
+# Kernel driver in use: i915  (or `xe`, depending on platform/kernel)
 ```
 
 This restores the GPU to its original state for use by the host system.
