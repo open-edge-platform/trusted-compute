@@ -184,7 +184,7 @@ unbind_from_vfio() {
     exit 1
 }
 
-case "${1:-bind}" in
+case "${1:-}" in
     bind)
         detect_gpu
         if [ -e "/sys/bus/pci/drivers/vfio-pci/$GPU_PCI_FULL" ]; then
@@ -200,6 +200,10 @@ case "${1:-bind}" in
             exit 0
         fi
         unbind_from_vfio
+        ;;
+    "")
+        echo "Usage: $0 {bind|unbind}"
+        exit 1
         ;;
     *)
         echo "Usage: $0 {bind|unbind}"
