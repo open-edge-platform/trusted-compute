@@ -40,11 +40,12 @@ build:
 	IMAGES_DIR="$(CURDIR)/images"
 
 	rm -rf "$$STAGEDIR" || true
-	mkdir -p "$$STAGEDIR"/charts "$$STAGEDIR"/containerd "$$STAGEDIR"/images "$$STAGEDIR"/k3s "$$STAGEDIR"/manifests
+	mkdir -p "$$STAGEDIR"/charts "$$STAGEDIR"/containerd "$$STAGEDIR"/images "$$STAGEDIR"/k3s "$$STAGEDIR"/manifests "$$STAGEDIR"/tools
 
 	# Copy existing files from repo
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
+	cp -a "$(CURDIR)/intel-igpu-vfio-bind.sh" "$$STAGEDIR/tools/"
 	cp -a "$(CURDIR)/k3s.sh" "$$STAGEDIR/k3s/k3s.sh"
 	cp -a "$(CURDIR)/trusted-compute.yaml" "$$STAGEDIR/manifests/trusted-compute.yaml"
 
