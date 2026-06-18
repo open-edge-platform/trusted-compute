@@ -23,8 +23,8 @@ spec:
       - args:
         - -idx
         - "10"
-        image: ghcr.io/containerd/nri/plugins/device-injector:v0.12.0
-        imagePullPolicy: IfNotPresent
+        image: {{ .Values.image.repository }}@{{ .Values.image.digest }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: plugin
         resources:
           requests:
