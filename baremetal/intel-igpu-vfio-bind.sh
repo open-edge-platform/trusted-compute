@@ -14,9 +14,14 @@ GPU_DEVICE=""
 
 if [ "$EUID" -ne 0 ]; then echo "Must be run as root"; exit 1; fi
 
+if ! command -v lspci > /dev/null 2>&1; then
+    echo "ERROR: 'lspci' not found. Install pciutils (e.g., 'apt install pciutils' or 'dnf install pciutils')." >&2
+    exit 1
+fi
+
 detect_gpu() {
     local line ids
-    line=$(lspci -Dnn | grep -E 'VGA compatible controller.*Intel' | head -1 || true)
+    line=$(lspci -Dnn | grep -E '(VGA compatible controller|Display controller).*Intel' | head -1 || true)
     if [ -z "$line" ]; then echo "ERROR: No Intel iGPU found!"; exit 1; fi
     GPU_PCI_FULL=$(echo "$line" | awk '{print $1}')
     ids=$(echo "$line" | grep -o '\[[0-9a-fA-F]*:[0-9a-fA-F]*\]' | tail -1 | tr -d '[]')
@@ -43,7 +48,7 @@ iommu_group_for_gpu() {
 platform_native_driver() {
     local modalias driver
     modalias=$(cat "/sys/bus/pci/devices/$GPU_PCI_FULL/modalias" 2>/dev/null) || { echo "i915"; return; }
-    driver=$(modprobe --dry-run --resolve-alias "$modalias" 2>/dev/null | head -1)
+    driver=$(modprobe -R "$modalias" 2>/dev/null | head -1 | xargs basename | sed 's/\.ko$//')
     echo "${driver:-i915}"
 }
 
@@ -110,18 +115,20 @@ write_cdi_spec() {
 }
 
 stop_display_manager() {
-    local svc
-    for svc in display-manager gdm; do
-        systemctl stop "$svc" 2>/dev/null || true
+    local svc stopped=0
+    for svc in display-manager gdm sddm lightdm; do
+        if systemctl is-active --quiet "$svc" 2>/dev/null; then
+            systemctl stop "$svc" 2>/dev/null && stopped=1
+        fi
     done
-    pkill -f "Xwayland|gnome-session|gnome-shell|mutter" 2>/dev/null || true
-    sleep 2
-    pkill -9 -f "Xwayland|gnome-session|gnome-shell|mutter" 2>/dev/null || true
+    if [ "$stopped" -eq 0 ]; then
+        echo "WARNING: No known display manager unit was active; GPU may still be in use by a graphical session." >&2
+    fi
 }
 
 start_display_manager() {
     local svc retries=10
-    for svc in display-manager gdm; do
+    for svc in display-manager gdm sddm lightdm; do
         if systemctl start "$svc" 2>/dev/null; then
             while [ $retries -gt 0 ]; do
                 systemctl is-active --quiet "$svc" && return 0
@@ -131,7 +138,8 @@ start_display_manager() {
             return 0
         fi
     done
-    return 0
+    echo "WARNING: No display manager service (display-manager, gdm, sddm, lightdm) could be started." >&2
+    return 1
 }
 
 bind_to_vfio() {
