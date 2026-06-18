@@ -48,9 +48,16 @@ platform_native_driver() {
 }
 
 snapshot_dri_nodes() {
-    local dev hmaj hmin maj min
+    local sysnode name pci hmaj hmin maj min dev
     DRI_SNAPSHOT=()
-    for dev in /dev/dri/card* /dev/dri/renderD*; do
+
+    for sysnode in /sys/class/drm/card* /sys/class/drm/renderD*; do
+        [ -e "$sysnode" ] || continue
+        name=$(basename "$sysnode")
+        pci=$(basename "$(readlink -f "$sysnode/device")")
+        [ "$pci" = "$GPU_PCI_FULL" ] || continue
+
+        dev="/dev/dri/$name"
         [ -e "$dev" ] || continue
         read -r hmaj hmin < <(stat -c "%t %T" "$dev")
         maj=$((16#$hmaj))
