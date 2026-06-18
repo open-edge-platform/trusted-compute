@@ -57,9 +57,9 @@ The script will:
 
 ```bash
 $ ls /dev/vfio
-# Expected: vfio  1  (control file + IOMMU group number)
+# Expected: vfio  <n>  (control file + one or more IOMMU group numbers)
 
-$ lspci -nnk | grep -A2 'VGA.*Intel'
+$ lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 # Kernel driver in use: vfio-pci
 ```
 
@@ -176,7 +176,7 @@ The script will:
 
 ```bash
 # Verify the GPU is restored to the native driver:
-lspci -nnk | grep -A2 -E '(VGA|Display).*Intel'
+lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 # Output should show:
 # Kernel driver in use: i915  (or `xe`, depending on platform/kernel)
 ```
