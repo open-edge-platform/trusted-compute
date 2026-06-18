@@ -16,7 +16,7 @@ if [ "$EUID" -ne 0 ]; then echo "Must be run as root"; exit 1; fi
 
 detect_gpu() {
     local line ids
-    line=$(lspci -Dnn | grep -E 'VGA compatible controller.*Intel' | head -1)
+    line=$(lspci -Dnn | grep -E 'VGA compatible controller.*Intel' | head -1 || true)
     if [ -z "$line" ]; then echo "ERROR: No Intel iGPU found!"; exit 1; fi
     GPU_PCI_FULL=$(echo "$line" | awk '{print $1}')
     ids=$(echo "$line" | grep -o '\[[0-9a-fA-F]*:[0-9a-fA-F]*\]' | tail -1 | tr -d '[]')
