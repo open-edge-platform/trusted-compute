@@ -114,6 +114,8 @@ stop_display_manager() {
     for svc in display-manager gdm; do
         systemctl stop "$svc" 2>/dev/null || true
     done
+    pkill -f "Xwayland|gnome-session|gnome-shell|mutter" 2>/dev/null || true
+    sleep 2
     pkill -9 -f "Xwayland|gnome-session|gnome-shell|mutter" 2>/dev/null || true
 }
 
@@ -162,7 +164,7 @@ unbind_from_vfio() {
     local preferred
     echo "Unbinding from vfio-pci..."
     preferred=$(platform_native_driver)
-    printf '\000' > "/sys/bus/pci/devices/$GPU_PCI_FULL/driver_override" 2>/dev/null || true
+    echo '' > "/sys/bus/pci/devices/$GPU_PCI_FULL/driver_override" 2>/dev/null || true
     if [ -e "/sys/bus/pci/drivers/vfio-pci/$GPU_PCI_FULL" ]; then
         echo "$GPU_PCI_FULL" > /sys/bus/pci/drivers/vfio-pci/unbind 2>/dev/null || true
         echo "$GPU_VENDOR $GPU_DEVICE" > /sys/bus/pci/drivers/vfio-pci/remove_id 2>/dev/null || true
