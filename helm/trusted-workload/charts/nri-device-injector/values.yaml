@@ -1,3 +1,8 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 ---
+image:
+  repository: ghcr.io/containerd/nri/plugins/device-injector
+  tag: v0.12.0
+  digest: "sha256:23953b2ebe4ae3baf5282570b3ec7241da65e338cbbd19920325081b3acbf7ca"
+  pullPolicy: IfNotPresent
