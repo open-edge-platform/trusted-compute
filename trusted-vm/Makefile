@@ -41,7 +41,7 @@ clone-kata:
 	rm -rf "$(KATA_CONTAINERS_SRC_DIR)"
 	git clone -b $(KATA_CONTAINERS_TAG) $(KATA_CONTAINERS_SRC) $(KATA_CONTAINERS_SRC_DIR)
  
-build: clone build-microvisor-image build-tvm-image
+build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs build all
 
 build-microvisor-image:
@@ -77,7 +77,7 @@ clean-all:
 	echo $@
 	@echo "---END MAKEFILE CLEAN-ALL---"
 
-clean: clean-microvisor clean-kata
+clean: clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs clean all
 	sudo rm -rf $(BUILD_DIR)
 
@@ -88,6 +88,10 @@ clean-microvisor:
 clean-kata:
 	@# Help: Runs clean kata containers
 	sudo rm -rf $(KATA_CONTAINERS_SRC_DIR)
+
+clean-rootfs:
+	@# Help: Runs clean rootfs
+	sudo rm -rf $(BUILD_DIR)/rootfs
 
 lint:
 	@# Help: Runs lint stage
@@ -100,16 +104,6 @@ test:
 	@echo "---MAKEFILE TEST---"
 	echo $@
 	@echo "---END MAKEFILE TEST---"
-
-docker-build:
-	@echo "---Docker Build---"
-	echo $@
-	@echo "---End Docker Build---"
-
-docker-push: ## Push docker images.
-	@echo "---Docker push images---"
-	echo $@
-	@echo "---END Docker push images---"
 
 help:
 	@printf "%-30s %s\n" "Target" "Description"
