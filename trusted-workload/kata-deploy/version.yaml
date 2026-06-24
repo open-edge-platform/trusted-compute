@@ -6,23 +6,19 @@
 description: |
   This file provides version details for the Kata-deploy container image
   along with its associated components.
-
 kata-deploy:
-    description: "Kata-deploy container image"
-    name: "kata-deploy"
-
+  description: "Kata-deploy container image"
+  name: "kata-deploy"
 kernel:
-    description: "Edge Microvisor kernel image"
-    name: "vmlinuz-6.18.23-1.emt26"
-    version: 6.18.23-1.emt26
-    config: "config-6.18.23-1.emt26"
-
+  description: "Edge Microvisor kernel image"
+  name: "vmlinuz-6.18.23-1.emt26"
+  version: 6.18.23-1.emt26
+  config: "config-6.18.23-1.emt26"
 rootfs:
-    description: "Edge Microvisor initrd image"
-    name : "trusted-vm.img"
-
+  description: "Edge Microvisor initrd image"
+  name: "trusted-vm.img"
 kata-containers:
-    description: "Kata Containers github repo"
-    url: "https://github.com/kata-containers/kata-containers.git"
-    name: "kata-containers"
-    version: 3.29.0
+  description: "Kata Containers github repo"
+  url: "https://github.com/kata-containers/kata-containers.git"
+  name: "kata-containers"
+  version: 3.32.0
