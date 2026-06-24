@@ -31,7 +31,7 @@ jobs:
       contents: read
     steps:
       - name: Wait for other post-merge workflows
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           TIMEOUT_SECONDS: "7200"
           POLL_INTERVAL_SECONDS: "60"
