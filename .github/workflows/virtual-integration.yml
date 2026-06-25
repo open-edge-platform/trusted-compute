@@ -44,8 +44,11 @@ jobs:
       contents: read
     needs: [pre-checks]
     runs-on: ubuntu-latest
+    outputs:
+      pre_merge_run_id: ${{ steps.wait-for-pre-merge-run.outputs.pre_merge_run_id }}
     steps:
       - name: Wait for pre-merge-pipeline job to complete
+        id: wait-for-pre-merge-run
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3   # v9.0.0
         env:
           TARGET_WORKFLOW_FILE: pre-merge.yml
@@ -100,6 +103,7 @@ jobs:
                       return;
                     }
 
+                    core.setOutput('pre_merge_run_id', String(run.id));
                     core.info(`All ${targetJobPrefix} jobs completed successfully/skipped for ${targetHeadSha}`);
                     return;
                   }
@@ -125,6 +129,7 @@ jobs:
   run-golden-suite:
     if: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
     permissions:
+      actions: read
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
     name: Run Golden Suite Trusted Compute Tests for baremetal package
@@ -211,6 +216,33 @@ jobs:
 
           echo "Build complete:"
           ls -lh baremetal/trusted-compute-installation-package.tgz
+
+      - name: Download docker-images-attestation-verifier artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-attestation-verifier
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+
+      - name: Download docker-images-kata-deploy artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-kata-deploy
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+
+      - name: Download docker-images-attestation-manager artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-attestation-manager
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
 
       - name: Setup VM prerequisites
         run: |
