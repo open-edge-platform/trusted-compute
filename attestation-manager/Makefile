@@ -40,7 +40,6 @@ clean:
 .PHONY: docker-push
 docker-push: ## Push docker images.
 	aws ecr create-repository --region us-west-2 --repository-name ${DOCKER_REPOSITORY}/attestation-manager || true
-	docker tag attestation-manager:${VERSION} ${DOCKER_IMAGE}
 	docker push ${DOCKER_IMAGE}
 
 .PHONY: docker-build
@@ -48,6 +47,7 @@ DOCKER_ENV := DOCKER_BUILDKIT=1
 docker-build: test ## Build docker images.
 	@echo "---Docker Build---"
 	docker build -f Dockerfile -t attestation-manager:${VERSION} --no-cache .
+	docker tag attestation-manager:${VERSION} ${DOCKER_IMAGE}
 	@echo "---End Docker Build---"
 
 helm-build:

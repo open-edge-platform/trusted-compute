@@ -96,8 +96,7 @@ build:
 
 	# Pull and export images to staging images folder
 	# List of images to pull and export
-	IMAGES="registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-manager:$(ATTESTATION_MANAGER_VERSION) \
-	registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager:$(ATTESTATION_VERIFIER_VERSION) \
+	IMAGES="registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/aas-manager:$(ATTESTATION_VERIFIER_VERSION) \
 	registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/authservice:$(ATTESTATION_VERIFIER_VERSION) \
 	registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/cms:$(ATTESTATION_VERIFIER_VERSION) \
 	registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/attestation-verifier/hvs:$(ATTESTATION_VERIFIER_VERSION) \
