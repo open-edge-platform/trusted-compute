@@ -12,13 +12,142 @@ on:
       - release-*
     paths:
       - 'baremetal/**'
+      - 'attestation-manager/**'
+      - 'attestation-verifier/**'
+      - 'helm/**'
+      - 'trusted-workload/kata-deploy/**'
+      - 'trusted-vm/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  wait-for-other-post-merge:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Wait for other post-merge workflows
+        uses: actions/github-script@v9
+        env:
+          TIMEOUT_SECONDS: "7200"
+          POLL_INTERVAL_SECONDS: "60"
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace('refs/heads/', '');
+            const headSha = context.sha;
+            const baseSha = context.payload.before;
+            const timeoutMs = Number(process.env.TIMEOUT_SECONDS) * 1000;
+            const pollMs = Number(process.env.POLL_INTERVAL_SECONDS) * 1000;
+
+            const workflowDefs = [
+              {
+                id: 'post-merge-attestation-manager.yml',
+                name: 'Post-Merge ATTESTATION MANAGER',
+                pathPrefixes: ['attestation-manager/']
+              },
+              {
+                id: 'post-merge-attestation-verifier.yml',
+                name: 'Post-Merge ATTESTATION-VERIFIER',
+                pathPrefixes: ['attestation-verifier/']
+              },
+              {
+                id: 'post-merge-helm.yml',
+                name: 'Post-Merge helm charts',
+                pathPrefixes: ['helm/']
+              },
+              {
+                id: 'post-merge-kata-deploy.yaml',
+                name: 'Post-Merge kata-deploy',
+                pathPrefixes: ['trusted-workload/kata-deploy/']
+              }
+            ];
+
+            let changedFiles = [];
+            if (baseSha && !/^0+$/.test(baseSha)) {
+              const compare = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${baseSha}...${headSha}`
+              });
+              changedFiles = (compare.data.files || []).map(f => f.filename);
+            }
+
+            const expected = workflowDefs.filter(def => {
+              if (def.mainOnly && branch !== 'main') {
+                return false;
+              }
+              if (def.alwaysOnBranch) {
+                return true;
+              }
+              return changedFiles.some(file => def.pathPrefixes.some(prefix => file.startsWith(prefix)));
+            });
+
+            if (expected.length === 0) {
+              core.info('No sibling post-merge workflows are expected for this push.');
+              return;
+            }
+
+            core.info(`Waiting on workflows: ${expected.map(w => w.name).join(', ')}`);
+            const startedAt = Date.now();
+            const completed = new Set();
+
+            while (true) {
+              for (const wf of expected) {
+                if (completed.has(wf.id)) {
+                  continue;
+                }
+
+                const runs = await github.rest.actions.listWorkflowRuns({
+                  owner,
+                  repo,
+                  workflow_id: wf.id,
+                  event: 'push',
+                  branch,
+                  per_page: 100
+                });
+
+                const run = (runs.data.workflow_runs || []).find(r => r.head_sha === headSha);
+                if (!run) {
+                  continue;
+                }
+
+                if (run.status !== 'completed') {
+                  core.info(`${wf.name} is ${run.status} (run #${run.run_number}).`);
+                  continue;
+                }
+
+                if (run.conclusion !== 'success' && run.conclusion !== 'skipped') {
+                  core.setFailed(`${wf.name} completed with conclusion: ${run.conclusion}`);
+                  return;
+                }
+
+                core.info(`${wf.name} completed with conclusion: ${run.conclusion}.`);
+                completed.add(wf.id);
+              }
+
+              if (completed.size === expected.length) {
+                core.info('All expected sibling post-merge workflows completed successfully.');
+                return;
+              }
+
+              if (Date.now() - startedAt > timeoutMs) {
+                const pending = expected.filter(w => !completed.has(w.id)).map(w => w.name).join(', ');
+                core.setFailed(`Timed out waiting for workflows: ${pending}`);
+                return;
+              }
+
+              await new Promise(resolve => setTimeout(resolve, pollMs));
+            }
+
   post-merge-pipeline:
+    needs: [wait-for-other-post-merge]
+    if: ${{ always() && (github.event_name != 'push' || needs.wait-for-other-post-merge.result == 'success') }}
     permissions:
       contents: read
       security-events: write

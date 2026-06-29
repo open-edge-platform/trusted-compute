@@ -103,12 +103,14 @@ docker-build:
 		docker logs -f $(CONTAINER_NAME); \
 		docker images; \
 	fi
+	@for image in $(DOCKER_TARGETS); do \
+		docker tag attestation-verifier/$$image:$(VERSION) $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)/attestation-verifier/$$image:$(VERSION); \
+	done
 	@echo "---End Docker Build---"
 
 docker-push-%:
 	@echo "---Docker Push for $*---"
 	aws ecr create-repository --region us-west-2 --repository-name ${DOCKER_REPOSITORY}/attestation-verifier/$* || true
-	docker tag attestation-verifier/$*:$(VERSION) ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/attestation-verifier/$*:$(VERSION)
 	docker push ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/attestation-verifier/$*:$(VERSION)
 	@echo "---End Docker Push for $*---"
 

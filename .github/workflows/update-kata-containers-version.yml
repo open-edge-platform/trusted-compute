@@ -1,0 +1,127 @@
+# SPDX-FileCopyrightText: (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: Update Kata Containers Version
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/update-kata-containers-version.yml
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+jobs:
+  update-kata-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Checkout orch-ci repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: open-edge-platform/orch-ci
+          path: ci
+          ref: a95228137803b756aae327668c115db235802982 # 2026.1.3
+          persist-credentials: false
+
+      - name: Bootstrap CI environment
+        uses: ./ci/.github/actions/bootstrap
+        with:
+          bootstrap_tools: yq,jq
+
+      - name: Detect and update Kata Containers version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION_FILE="trusted-workload/kata-deploy/version.yaml"
+
+          CURRENT_VERSION="$(yq -r '.["kata-containers"].version' "${VERSION_FILE}")"
+
+          if [[ -z "${CURRENT_VERSION}" || "${CURRENT_VERSION}" == "null" ]]; then
+            echo "Unable to detect current kata-containers version in ${VERSION_FILE}" >&2
+            exit 1
+          fi
+
+          LATEST_VERSION="$(curl -fsSL -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/kata-containers/kata-containers/releases/latest | jq -r '.tag_name')"
+          LATEST_VERSION="${LATEST_VERSION#v}"
+
+          if [[ -z "${LATEST_VERSION}" || "${LATEST_VERSION}" == "null" ]]; then
+            echo "Unable to detect latest kata-containers release version from GitHub API" >&2
+            exit 1
+          fi
+
+          echo "Current version: ${CURRENT_VERSION}"
+          echo "Latest version: ${LATEST_VERSION}"
+
+          if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]]; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            echo "latest_version=${LATEST_VERSION}" >> "${GITHUB_OUTPUT}"
+            echo "No update required."
+            exit 0
+          fi
+
+          LATEST_VERSION="${LATEST_VERSION}" yq -i '.["kata-containers"].version = strenv(LATEST_VERSION)' "${VERSION_FILE}"
+
+          if git diff --quiet -- "${VERSION_FILE}"; then
+            echo "Version file was not modified as expected" >&2
+            exit 1
+          fi
+
+          echo "changed=true" >> "${GITHUB_OUTPUT}"
+          echo "latest_version=${LATEST_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create pull request
+        if: steps.bump.outputs.changed == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
+          BRANCH: automation/update-kata-containers-version
+          COMMIT_MESSAGE: "chore(kata): bump kata-containers to ${{ steps.bump.outputs.latest_version }}"
+          PR_TITLE: "chore(kata): bump kata-containers to ${{ steps.bump.outputs.latest_version }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION_FILE="trusted-workload/kata-deploy/version.yaml"
+
+          PR_BODY=$(cat <<'EOF'
+          This PR updates `kata-containers.version` in `trusted-workload/kata-deploy/version.yaml`
+          to the latest upstream Kata Containers release.
+
+          - Source: https://github.com/kata-containers/kata-containers/releases/latest
+          - Updated by workflow: `Update Kata Containers Version`
+          EOF
+          )
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B "${BRANCH}"
+          git add "${VERSION_FILE}"
+          git commit -m "${COMMIT_MESSAGE}"
+
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force-with-lease --set-upstream origin "${BRANCH}"
+
+          PR_NUMBER="$(gh pr list --head "${BRANCH}" --state open --json number --jq '.[0].number')"
+
+          if [[ -n "${PR_NUMBER}" && "${PR_NUMBER}" != "null" ]]; then
+            gh pr edit "${PR_NUMBER}" --title "${PR_TITLE}" --body "${PR_BODY}"
+          else
+            gh pr create \
+              --base "${{ github.event.repository.default_branch }}" \
+              --head "${BRANCH}" \
+              --title "${PR_TITLE}" \
+              --body "${PR_BODY}"
+          fi
