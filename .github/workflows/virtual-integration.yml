@@ -30,7 +30,7 @@ jobs:
     outputs:
       changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
         with:
           persist-credentials: false
       - name: "Discover Changed Subfolders"
@@ -44,8 +44,11 @@ jobs:
       contents: read
     needs: [pre-checks]
     runs-on: ubuntu-latest
+    outputs:
+      pre_merge_run_id: ${{ steps.wait-for-pre-merge-run.outputs.pre_merge_run_id }}
     steps:
       - name: Wait for pre-merge-pipeline job to complete
+        id: wait-for-pre-merge-run
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3   # v9.0.0
         env:
           TARGET_WORKFLOW_FILE: pre-merge.yml
@@ -100,6 +103,7 @@ jobs:
                       return;
                     }
 
+                    core.setOutput('pre_merge_run_id', String(run.id));
                     core.info(`All ${targetJobPrefix} jobs completed successfully/skipped for ${targetHeadSha}`);
                     return;
                   }
@@ -125,13 +129,14 @@ jobs:
   run-golden-suite:
     if: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
     permissions:
+      actions: read
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
     name: Run Golden Suite Trusted Compute Tests for baremetal package
     runs-on: ubuntu-24.04-16core-64GB
     steps:
       - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
         with:
           persist-credentials: false
       - name: Build Trusted Compute package
@@ -211,6 +216,92 @@ jobs:
 
           echo "Build complete:"
           ls -lh baremetal/trusted-compute-installation-package.tgz
+
+      - name: Download docker-images-attestation-verifier artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-attestation-verifier
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+
+      - name: Download docker-images-kata-deploy artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-kata-deploy
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+
+      - name: Download docker-images-attestation-manager artifact
+        if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: docker-images-attestation-manager
+          run-id: ${{ needs.wait-for-pre-merge.outputs.pre_merge_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+
+      - name: Add docker images from artifacts to installation package
+        if: ${{ github.actor == 'dependabot[bot]' }}
+        run: |
+          set -euo pipefail
+
+          SRC_REGISTRY="080137407410.dkr.ecr.us-west-2.amazonaws.com"
+          DST_REGISTRY="registry-rs.edgeorchestration.intel.com"
+
+          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          if [[ ! -f "$PKG_TGZ" ]]; then
+            echo "Package not found: $PKG_TGZ"
+            exit 1
+          fi
+
+          WORKDIR="$(mktemp -d)"
+          trap 'rm -rf "$WORKDIR"' EXIT
+
+          tar -xzf "$PKG_TGZ" -C "$WORKDIR"
+          PKG_DIR="$WORKDIR/trusted-compute-installation-package"
+          IMAGES_DIR="$PKG_DIR/images"
+
+          shopt -s nullglob
+          mapfile -t image_tars < <(find . -type f -name "${SRC_REGISTRY}*.tar")
+          shopt -u nullglob
+
+          if [[ ${#image_tars[@]} -eq 0 ]]; then
+            echo "No downloaded ${SRC_REGISTRY} image tars were found."
+          else
+            for tar_file in "${image_tars[@]}"; do
+              echo "Retagging images from artifact tar: $tar_file"
+              load_output="$(sudo docker load -i "$tar_file")"
+              mapfile -t loaded_images < <(printf '%s\n' "$load_output" | awk -F'Loaded image: ' 'NF > 1 {print $2}')
+
+              if [[ ${#loaded_images[@]} -eq 0 ]]; then
+                echo "No loadable image references found in: $tar_file"
+                continue
+              fi
+
+              for src_image in "${loaded_images[@]}"; do
+                if [[ "$src_image" != ${SRC_REGISTRY}/* ]]; then
+                  echo "Skipping non-${SRC_REGISTRY} image: $src_image"
+                  continue
+                fi
+
+                dst_image="${src_image/#${SRC_REGISTRY}/${DST_REGISTRY}}"
+                dst_tar_name="$(echo "$dst_image" | sed 's#[/:]#-#g').tar"
+                dst_tar_path="$IMAGES_DIR/$dst_tar_name"
+
+                sudo docker tag "$src_image" "$dst_image"
+                sudo docker save -o "$dst_tar_path" "$dst_image"
+                sudo chown "$USER":"$USER" "$dst_tar_path"
+                echo "Created RS-tagged tar: $dst_tar_path"
+              done
+            done
+          fi
+
+          tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
+          ls -lh "$PKG_TGZ"
 
       - name: Setup VM prerequisites
         run: |
