@@ -9,6 +9,7 @@ Documentation    Golden Suite - Trusted Compute Docker Installation Test Suite
 
 Library          SSHLibrary
 Library          OperatingSystem
+Library          String
 
 Suite Setup      Open SSH Connection To DUT
 Suite Teardown   SSHLibrary.Close All Connections
@@ -108,12 +109,6 @@ Verify Docker Prerequisites On DUT
     Log    systemctl enable --now docker (rc=${svc_rc}):\n${svc_out}
     Should Be Equal As Integers    ${svc_rc}    0    msg=Failed to enable/start docker service on DUT
 
-    ${grp_out}    ${grp_rc}=    Execute Command
-    ...    sudo usermod -aG docker ${TARGET_USERNAME}
-    ...    return_stdout=True    return_rc=True
-    Log    usermod docker group (rc=${grp_rc}):\n${grp_out}
-    Should Be Equal As Integers    ${grp_rc}    0    msg=Failed to add DUT user to docker group
-
     ${docker_verify_out}    ${docker_verify_rc}=    Execute Command
     ...    docker --version
     ...    return_stdout=True    return_rc=True
@@ -143,6 +138,52 @@ Verify Kata Deploy Container Is Running
     Should Be Equal As Integers    ${ps_rc}    0    msg=failed to list running docker containers
     Should Contain    ${ps_out}    kata-deploy    msg=kata-deploy container not found in running containers
 
+Verify Sample Workload Deployment
+    [Documentation]    Run nginx with Kata runtime, verify it is running and runtime is io.containerd.kata.v2.
+    ${run_out}    ${run_rc}=    Execute Command
+    ...    sudo docker run -d --name nginx-test --runtime io.containerd.kata.v2 nginx:1.27.0
+    ...    return_stdout=True    return_rc=True
+    Log    docker run nginx-test (rc=${run_rc}):\n${run_out}
+    Should Be Equal As Integers    ${run_rc}    0    msg=Failed to run sample nginx workload with Kata runtime
+
+    ${ps_out}    ${ps_rc}=    Execute Command
+    ...    sudo docker ps --format '{{.Names}} {{.Status}}' | grep nginx-test
+    ...    return_stdout=True    return_rc=True
+    Log    verify nginx-test running (rc=${ps_rc}):\n${ps_out}
+    Should Be Equal As Integers    ${ps_rc}    0    msg=nginx-test container is not running
+
+    ${rt_out}    ${rt_rc}=    Execute Command
+    ...    sudo docker inspect nginx-test --format '{{.HostConfig.Runtime}}'
+    ...    return_stdout=True    return_rc=True
+    Log    nginx-test runtime (rc=${rt_rc}):\n${rt_out}
+    Should Be Equal As Integers    ${rt_rc}    0    msg=Failed to inspect nginx-test runtime
+    ${rt}=    Strip String    ${rt_out}
+    Should Be Equal    ${rt}    io.containerd.kata.v2    msg=nginx-test is not using expected Kata runtime
+
+Verify QEMU Process Is Running On DUT
+    [Documentation]    Verify at least one QEMU process is present on the DUT after trusted workload deployment.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system'
+    Log    ${qemu_ps}
+    Should Not Be Empty    ${qemu_ps}    msg=No QEMU process found on DUT
+
+Verify No QEMU Process Is Running On DUT
+    [Documentation]    Verify no QEMU processes are present on the DUT after trusted workload cleanup.
+    ${qemu_ps}=    Execute Command    ps -ef | grep -E '[q]emu-system' || true
+    Log    ${qemu_ps}
+    Should Be Empty    ${qemu_ps}    msg=QEMU process still running on DUT after cleanup
+
+Cleanup Sample Workload
+    [Documentation]    Stop and remove sample workload container.
+    ${stop_out}    ${stop_rc}=    Execute Command
+    ...    sudo docker stop nginx-test 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    docker stop nginx-test (rc=${stop_rc}):\n${stop_out}
+
+    ${rm_out}    ${rm_rc}=    Execute Command
+    ...    sudo docker rm nginx-test 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    docker rm nginx-test (rc=${rm_rc}):\n${rm_out}
+
 Collect Docker Logs
     [Documentation]    Collect docker diagnostics from the DUT into local files.
     OperatingSystem.Create Directory    vm-logs/docker-system-logs
@@ -164,6 +205,52 @@ Collect Docker Logs
     ...    return_stdout=True    return_rc=True
     Log    docker logs kata-deploy (rc=${logs_rc}):\n${logs}
     OperatingSystem.Create File    vm-logs/docker-system-logs/kata-deploy.log    ${logs}
+
+Collect DUT System Logs
+    [Documentation]    Collect DUT runtime/system diagnostics for Docker trusted workload execution.
+    OperatingSystem.Create Directory    vm-logs/dut-system-logs
+
+    ${docker_journal}    ${docker_journal_rc}=    Execute Command
+    ...    sudo journalctl -u docker --no-pager 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    docker journal (rc=${docker_journal_rc}):\n${docker_journal}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/docker-journal.log    ${docker_journal}
+
+    ${containerd_journal}    ${containerd_journal_rc}=    Execute Command
+    ...    sudo journalctl -u containerd --no-pager 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    containerd journal (rc=${containerd_journal_rc}):\n${containerd_journal}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/containerd-journal.log    ${containerd_journal}
+
+    ${docker_info}    ${docker_info_rc}=    Execute Command
+    ...    sudo docker info 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    docker info (rc=${docker_info_rc}):\n${docker_info}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/docker-info.log    ${docker_info}
+
+    ${docker_ps}    ${docker_ps_rc}=    Execute Command
+    ...    sudo docker ps -a 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    docker ps -a snapshot (rc=${docker_ps_rc}):\n${docker_ps}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/docker-ps-all.log    ${docker_ps}
+
+    ${run_vc_tree}    ${run_vc_tree_rc}=    Execute Command
+    ...    sudo ls -alR /run/vc 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc tree (rc=${run_vc_tree_rc}):\n${run_vc_tree}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-tree.log    ${run_vc_tree}
+
+    ${run_vc_logs}    ${run_vc_logs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /run/vc/vm/*/console.log /run/vc/vm/*/*.log /run/vc/sbs/*/*.log /run/vc/sbs/*/*/console.log; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    /run/vc sandbox logs (rc=${run_vc_logs_rc}):\n${run_vc_logs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/run-vc-sandbox-logs.log    ${run_vc_logs}
+
+    ${kata_runtime_configs}    ${kata_runtime_configs_rc}=    Execute Command
+    ...    sudo bash -lc 'for f in /opt/kata/share/defaults/kata-containers/configuration*.toml /etc/kata-containers/*.toml; do if [ -f "$f" ]; then echo "===== $f ====="; cat "$f"; echo; fi; done; true' 2>&1 || true
+    ...    return_stdout=True    return_rc=True
+    Log    Kata runtime configs (rc=${kata_runtime_configs_rc}):\n${kata_runtime_configs}
+    OperatingSystem.Create File    vm-logs/dut-system-logs/kata-runtime-configs.log    ${kata_runtime_configs}
 
 *** Test Cases ***
 TC-GS-DK-01 Upload Trusted Compute Package To DUT
@@ -191,7 +278,15 @@ TC-GS-DK-05 Verify Kata Deploy Container Is Running
     [Tags]    golden-suite    docker    validate
     Verify Kata Deploy Container Is Running
 
-TC-GS-DK-06 Collect Docker Logs
+TC-GS-DK-06 Verify Sample Workload Deployment
+    [Documentation]    Deploy sample nginx workload with Kata runtime and verify runtime mapping.
+    [Tags]    golden-suite    docker    validate    trusted-workload    sample
+    Verify Sample Workload Deployment
+    Verify QEMU Process Is Running On DUT
+    [Teardown]    Run Keywords    Cleanup Sample Workload    AND    Verify No QEMU Process Is Running On DUT
+
+TC-GS-DK-07 Collect Docker Logs
     [Documentation]    Collect docker diagnostics for troubleshooting.
     [Tags]    golden-suite    docker    collect    logs
     Collect Docker Logs
+    Collect DUT System Logs
