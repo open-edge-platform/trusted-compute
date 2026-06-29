@@ -177,7 +177,7 @@ git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
 
 #copy the build artifacts to the kata repo
 echo "INFO: Copying build artifacts to Kata Containers repo"
-cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/"
+cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
 
 #build the kata deploy image
 pushd "${KATA_CONTAINERS_DIR}"
