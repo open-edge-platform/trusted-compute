@@ -116,6 +116,16 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
         echo "ERROR: failed to enable virtio_mem in ${KATA_CONFIG_FILE}"
         exit 1
     fi
+
+    # Enable guest hooks for GPU device readiness wait
+    echo "INFO: Enabling guest_hook_path in configuration.toml"
+    sed -i 's|^guest_hook_path = ""$|guest_hook_path = "/usr/share/oci/hooks"|' "${KATA_CONFIG_FILE}"
+    if grep -q '^guest_hook_path = "/usr/share/oci/hooks"' "${KATA_CONFIG_FILE}"; then
+        echo "INFO: guest_hook_path enabled in ${KATA_CONFIG_FILE}"
+    else
+        echo "ERROR: failed to enable guest_hook_path in ${KATA_CONFIG_FILE}"
+        exit 1
+    fi
 else
     echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
     exit 1

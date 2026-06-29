@@ -258,6 +258,34 @@ check_no_tc_k3s_conflict() {
     fi
 }
 
+enable_docker_kata_annotations() {
+    local kata_config="/etc/kata-containers/configuration.toml"
+    local extra_annotations=("pcie_root_port" "hot_plug_vfio" "enable_virtio_mem" "default_memory")
+
+    if [[ ! -f "$kata_config" ]]; then
+        print_error "Kata configuration not found at $kata_config"
+        exit 1
+    fi
+
+    # Build comma-separated string for sed
+    local annotations_str=""
+    for ann in "${extra_annotations[@]}"; do
+        annotations_str+=", \"${ann}\""
+    done
+
+    sed -i "s/^\(enable_annotations = \[.*\)\]/\1${annotations_str}]/" "$kata_config"
+
+    # Verify all annotations were added
+    local missing=""
+    for ann in "${extra_annotations[@]}"; do
+        grep -q "^enable_annotations.*${ann}" "$kata_config" || missing+=" ${ann}"
+    done
+    if [[ -n "$missing" ]]; then
+        print_error "Failed to enable annotations in $kata_config (missing:$missing)"
+        exit 1
+    fi
+}
+
 install_tc_k3s() {
     check_no_tc_docker_conflict
     check_secure_boot
@@ -287,6 +315,7 @@ install_tc_docker() {
     print_status "Starting TC installation for Docker..."
     import_kata_deploy_image
     start_docker_deploy
+    sleep 5 && enable_docker_kata_annotations
     print_tc_docker_summary
 }
 

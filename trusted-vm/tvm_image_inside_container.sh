@@ -70,6 +70,16 @@ install_tvm_agent() {
     install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
 }
 
+#install guest OCI hooks
+install_guest_hooks() {
+    echo "INFO: Installing guest OCI hooks in rootfs"
+    local hooks_src="/trusted-vm/hooks"
+    local hooks_dest="${ROOTFS_DIR}/usr/share/oci/hooks"
+    mkdir -p "${hooks_dest}/prestart"
+    install -o root -g root -m 0550 "${hooks_src}/prestart/scan-for-gpu.sh" "${hooks_dest}/prestart/"
+    echo "INFO: Guest hooks installed successfully"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
@@ -97,5 +107,6 @@ copy_tc_image(){
 ################
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
+install_guest_hooks
 build_trusted_vm_image
 copy_tc_image
