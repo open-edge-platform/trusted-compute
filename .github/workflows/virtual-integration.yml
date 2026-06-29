@@ -132,7 +132,19 @@ jobs:
       actions: read
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
-    name: Run Golden Suite Trusted Compute Tests for baremetal package
+    name: Run Golden Suite Trusted Compute Tests for baremetal package (${{ matrix.deployment }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deployment: k3s
+            robot_test_file: tests/golden_suite_install_tests.robot
+            vm_logs_artifact: vm-boot-logs-k3s
+            robot_results_artifact: robot-results-k3s
+          - deployment: docker
+            robot_test_file: tests/golden_suite_install_tests_docker.robot
+            vm_logs_artifact: vm-boot-logs-docker
+            robot_results_artifact: robot-results-docker
     runs-on: ubuntu-24.04-16core-64GB
     steps:
       - name: Checkout code
@@ -671,7 +683,7 @@ jobs:
 
           python3 -m pip install --no-deps --require-hashes -r /tmp/robot-requirements.txt
 
-      - name: Install Trusted Compute package via Robot Framework
+      - name: Run Robot Framework golden suite
         run: |
           set -euo pipefail
 
@@ -690,7 +702,7 @@ jobs:
             exit 1
           fi
 
-          echo "Running Robot Framework golden suite against DUT at $DUT_IP"
+          echo "Running Robot Framework golden suite (${{ matrix.deployment }}) against DUT at $DUT_IP"
           robot \
             --outputdir vm-logs/robot-results \
             --variable DUT_HOST:"$DUT_IP" \
@@ -698,7 +710,7 @@ jobs:
             --variable DUT_PASSWORD:user \
             --variable TC_PACKAGE:baremetal/trusted-compute-installation-package.tgz \
             --variable INSTALL_TIMEOUT:600 \
-            tests/golden_suite_install_tests.robot
+            ${{ matrix.robot_test_file }}
 
       - name: Collect VM boot logs
         if: always()
@@ -725,7 +737,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: vm-boot-logs
+          name: ${{ matrix.vm_logs_artifact }}
           path: vm-logs
           if-no-files-found: warn
 
@@ -733,7 +745,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: robot-results
+          name: ${{ matrix.robot_results_artifact }}
           path: vm-logs/robot-results
           if-no-files-found: warn
 

@@ -61,18 +61,70 @@ Extract Package On Remote
     Should Be Equal As Integers    ${rc}    0    msg=tar extraction failed (rc=${rc})
 
 Verify Docker Prerequisites On DUT
-    [Documentation]    Verify docker and docker compose are available on the DUT.
-    ${docker_v}    ${docker_rc}=    Execute Command
-    ...    sudo docker --version
+    [Documentation]    Install docker and docker compose if missing, then verify availability.
+    ${docker_check_out}    ${docker_check_rc}=    Execute Command
+    ...    docker --version
     ...    return_stdout=True    return_rc=True
-    Log    ${docker_v}
-    Should Be Equal As Integers    ${docker_rc}    0    msg=docker is not available on DUT
+    Log    pre-check docker --version (rc=${docker_check_rc}):\n${docker_check_out}
+    ${docker_present}=    Evaluate    ${docker_check_rc} == 0
 
-    ${compose_v}    ${compose_rc}=    Execute Command
-    ...    sudo docker compose version
+    ${compose_check_out}    ${compose_check_rc}=    Execute Command
+    ...    sudo bash -lc 'docker compose version || docker-compose --version'
     ...    return_stdout=True    return_rc=True
-    Log    ${compose_v}
-    Should Be Equal As Integers    ${compose_rc}    0    msg=docker compose plugin is not available on DUT
+    Log    pre-check compose version (rc=${compose_check_rc}):\n${compose_check_out}
+    ${compose_present}=    Evaluate    ${compose_check_rc} == 0
+
+    IF    not ${docker_present}
+        ${update_out}    ${update_rc}=    Execute Command
+        ...    sudo apt-get update -qq
+        ...    return_stdout=True    return_rc=True
+        Log    apt-get update for docker (rc=${update_rc}):\n${update_out}
+        Should Be Equal As Integers    ${update_rc}    0    msg=apt-get update failed while preparing Docker install
+
+        ${docker_install_out}    ${docker_install_rc}=    Execute Command
+        ...    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io
+        ...    return_stdout=True    return_rc=True
+        Log    apt-get install docker.io (rc=${docker_install_rc}):\n${docker_install_out}
+        Should Be Equal As Integers    ${docker_install_rc}    0    msg=Failed to install docker.io on DUT
+    END
+
+    IF    not ${compose_present}
+        ${update_out}    ${update_rc}=    Execute Command
+        ...    sudo apt-get update -qq
+        ...    return_stdout=True    return_rc=True
+        Log    apt-get update for compose (rc=${update_rc}):\n${update_out}
+        Should Be Equal As Integers    ${update_rc}    0    msg=apt-get update failed while preparing compose install
+
+        ${compose_install_out}    ${compose_install_rc}=    Execute Command
+        ...    sudo bash -lc 'set -euo pipefail; if ! DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-plugin; then if ! DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-v2; then DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose; fi; fi'
+        ...    return_stdout=True    return_rc=True
+        Log    compose package install (rc=${compose_install_rc}):\n${compose_install_out}
+        Should Be Equal As Integers    ${compose_install_rc}    0    msg=Failed to install docker compose on DUT
+    END
+
+    ${svc_out}    ${svc_rc}=    Execute Command
+    ...    sudo systemctl enable --now docker
+    ...    return_stdout=True    return_rc=True
+    Log    systemctl enable --now docker (rc=${svc_rc}):\n${svc_out}
+    Should Be Equal As Integers    ${svc_rc}    0    msg=Failed to enable/start docker service on DUT
+
+    ${grp_out}    ${grp_rc}=    Execute Command
+    ...    sudo usermod -aG docker ${TARGET_USERNAME}
+    ...    return_stdout=True    return_rc=True
+    Log    usermod docker group (rc=${grp_rc}):\n${grp_out}
+    Should Be Equal As Integers    ${grp_rc}    0    msg=Failed to add DUT user to docker group
+
+    ${docker_verify_out}    ${docker_verify_rc}=    Execute Command
+    ...    docker --version
+    ...    return_stdout=True    return_rc=True
+    Log    verify docker --version (rc=${docker_verify_rc}):\n${docker_verify_out}
+    Should Be Equal As Integers    ${docker_verify_rc}    0    msg=docker CLI is not available on DUT
+
+    ${compose_verify_out}    ${compose_verify_rc}=    Execute Command
+    ...    sudo bash -lc 'set -euo pipefail; docker compose version || docker-compose --version'
+    ...    return_stdout=True    return_rc=True
+    Log    verify compose version (rc=${compose_verify_rc}):\n${compose_verify_out}
+    Should Be Equal As Integers    ${compose_verify_rc}    0    msg=docker compose is not available on DUT
 
 Install Trusted Compute In Docker Mode
     [Documentation]    Run install.sh with --docker mode.
