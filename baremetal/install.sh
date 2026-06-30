@@ -295,7 +295,7 @@ wait_for_kata_config() {
         fi
         sleep 2
     done
-    echo "ERROR: kata config not ready after $((timeout * 2))s" >&2
+    print_error "kata config not ready after $((timeout * 2))s"
     return 1
 }
 
