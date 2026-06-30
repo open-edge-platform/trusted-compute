@@ -286,6 +286,19 @@ enable_docker_kata_annotations() {
     fi
 }
 
+wait_for_kata_config() {
+    local config="/etc/kata-containers/configuration.toml"
+    local timeout="${1:-15}"
+    for i in $(seq 1 "$timeout"); do
+        if [[ -f "$config" ]] && grep -q '^enable_annotations' "$config"; then
+            return 0
+        fi
+        sleep 2
+    done
+    echo "ERROR: kata config not ready after $((timeout * 2))s" >&2
+    return 1
+}
+
 install_tc_k3s() {
     check_no_tc_docker_conflict
     check_secure_boot
@@ -315,7 +328,8 @@ install_tc_docker() {
     print_status "Starting TC installation for Docker..."
     import_kata_deploy_image
     start_docker_deploy
-    sleep 5 && enable_docker_kata_annotations
+    wait_for_kata_config
+    enable_docker_kata_annotations
     print_tc_docker_summary
 }
 
