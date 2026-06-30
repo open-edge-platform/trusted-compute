@@ -622,25 +622,29 @@ jobs:
             exit 1
           fi
 
-          KD_CFG_REL="opt/kata-artifacts/opt/kata/share/defaults/kata-containers/configuration-qemu.toml"
-          KD_CFG_HOST="$WORKDIR/configuration-qemu.toml"
-
           kd_cid="$(sudo docker create "$kd_image_ref")"
-          sudo docker cp "$kd_cid":"/$KD_CFG_REL" "$KD_CFG_HOST"
+          for KD_CFG_REL in \
+            "opt/kata-artifacts/opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
+            "opt/kata-artifacts/opt/kata/share/defaults/kata-containers/configuration.toml"; do
+            KD_CFG_BASENAME="$(basename "$KD_CFG_REL")"
+            KD_CFG_HOST="$WORKDIR/$KD_CFG_BASENAME"
 
-          # Enable debug mode
-          sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)false/\1true/' "$KD_CFG_HOST"
-          sudo grep -Eq '^\s*enable_debug\s*=\s*true' "$KD_CFG_HOST"
+            sudo docker cp "$kd_cid":"/$KD_CFG_REL" "$KD_CFG_HOST"
 
-          # Increase dial and container creation timeouts for debug boots.
-          sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
-          sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
+            # Enable debug mode.
+            sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)false/\1true/' "$KD_CFG_HOST"
+            sudo grep -Eq '^\s*enable_debug\s*=\s*true' "$KD_CFG_HOST"
 
-          # Increase kata vCPU count from the default value.
-          sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
-          sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
+            # Increase dial and container creation timeouts for debug boots.
+            sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
+            sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
 
-          sudo docker cp "$KD_CFG_HOST" "$kd_cid":"/$KD_CFG_REL"
+            # Increase kata vCPU count from the default value.
+            sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
+            sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
+
+            sudo docker cp "$KD_CFG_HOST" "$kd_cid":"/$KD_CFG_REL"
+          done
 
           sudo docker commit "$kd_cid" "$kd_image_ref" >/dev/null
           sudo docker rm -f "$kd_cid" >/dev/null
