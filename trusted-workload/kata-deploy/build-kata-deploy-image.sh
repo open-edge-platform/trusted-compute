@@ -126,6 +126,20 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
         echo "ERROR: failed to enable guest_hook_path in ${KATA_CONFIG_FILE}"
         exit 1
     fi
+
+    # Add memhp_default_state=online to kernel parameters for memory hotplug
+    echo "INFO: Adding memhp_default_state=online to kernel parameters"
+    if grep -q '^kernel_params = ' "${KATA_CONFIG_FILE}"; then
+        sed -i 's/^\(kernel_params = ".*\)"/\1 memhp_default_state=online"/' "${KATA_CONFIG_FILE}"
+        if grep -q 'memhp_default_state=online' "${KATA_CONFIG_FILE}"; then
+            echo "INFO: memhp_default_state=online added to kernel parameters"
+        else
+            echo "ERROR: failed to add memhp_default_state=online to kernel parameters"
+            exit 1
+        fi
+    else
+        echo "WARNING: kernel_params line not found in ${KATA_CONFIG_FILE}"
+    fi
 else
     echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
     exit 1

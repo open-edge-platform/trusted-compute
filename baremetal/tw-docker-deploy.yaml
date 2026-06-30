@@ -1,6 +1,7 @@
+name: kata-deploy
 services:
   kata-deploy:
-    image: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:${VERSION}
+    image: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:1.5.1
     container_name: kata-deploy
     privileged: true
     entrypoint: ["/opt/kata-artifacts/opt/kata/bin/tc-docker-deploy"]
