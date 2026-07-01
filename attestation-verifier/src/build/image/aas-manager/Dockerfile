@@ -2,9 +2,9 @@
 #  SPDX-License-Identifier: BSD-3-Clause
 
 # Dependabot can update kubectl by tracking this image tag.
-FROM registry.k8s.io/kubectl:v1.36.1@sha256:d08f476d04d0e30f426f06bc6ff6c38913aaa4591943046b77e2f74a72d3611c AS kubectl
+FROM registry.k8s.io/kubectl:v1.36.2@sha256:b0d792e0d8dfb9bb1b922b78b23137e2a34bb6f9667640353a9d2aadd1fd7761 AS kubectl
 
-FROM debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716
+FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
 
 LABEL org.label-schema.name="Authservice Manager" \
       org.label-schema.vendor="Intel Corporation" \
