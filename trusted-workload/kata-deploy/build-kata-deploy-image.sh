@@ -131,7 +131,7 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
     echo "INFO: Adding memhp_default_state=online to kernel parameters"
     if grep -q '^kernel_params = ' "${KATA_CONFIG_FILE}"; then
         sed -i 's/^\(kernel_params = ".*\)"/\1 memhp_default_state=online"/' "${KATA_CONFIG_FILE}"
-        if grep -q 'memhp_default_state=online' "${KATA_CONFIG_FILE}"; then
+        if grep -q '^kernel_params = ".*memhp_default_state=online' "${KATA_CONFIG_FILE}"; then
             echo "INFO: memhp_default_state=online added to kernel parameters"
         else
             echo "ERROR: failed to add memhp_default_state=online to kernel parameters"
