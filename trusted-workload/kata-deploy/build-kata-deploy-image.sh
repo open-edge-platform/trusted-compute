@@ -175,9 +175,20 @@ tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 echo "INFO: Cloning Kata Containers repo"
 git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
 
-#copy the build artifacts to the kata repo
+#create kata-artifacts directory for new Dockerfile structure
+echo "INFO: Creating kata-artifacts directory"
+mkdir -p "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
+
+#copy the build artifacts to the kata repo with version suffix
 echo "INFO: Copying build artifacts to Kata Containers repo"
-cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
+cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.zst"
+
+#build kata-deploy-static component tarballs required by new Dockerfile
+echo "INFO: Building kata-deploy-static component tarballs"
+pushd "${KATA_CONTAINERS_DIR}"
+bash tools/packaging/kata-deploy/local-build/kata-deploy-build-components-tarballs.sh all
+cp tools/packaging/kata-deploy/local-build/build/kata-deploy-static-*.tar.zst tools/packaging/kata-deploy/kata-artifacts/
+popd
 
 #build the kata deploy image
 pushd "${KATA_CONTAINERS_DIR}"
