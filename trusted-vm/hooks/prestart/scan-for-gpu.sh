@@ -8,8 +8,7 @@
 # Handles i915 (Raptor Lake), xe (Panther Lake+), and any render node number.
 
 # Check if any PCI device with display class (0x0300xx) exists
-if ! ls /sys/bus/pci/devices/*/class 2>/dev/null | \
-     xargs grep -ql "0x0300" 2>/dev/null; then
+if ! grep -q "0x0300" /sys/bus/pci/devices/*/class 2>/dev/null; then
     exit 0  # No GPU device, skip wait
 fi
 
