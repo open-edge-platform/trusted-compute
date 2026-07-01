@@ -8,8 +8,8 @@ BUILD_DIR := $(shell pwd)/build
 MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 $(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
-EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
-EDGE_MICROVISOR_BRANCH?=3.0
+EDGE_MICROVISOR_SRC=https://github.com/kumara1-intel/edge-microvisor-toolkit.git
+EDGE_MICROVISOR_BRANCH?=enable_memory_hotplug_auto_online
 EDGE_MICROVISOR_COMMIT?="26.06-20260526"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
@@ -33,7 +33,7 @@ clone-microvisor:
 	mkdir -p $(BUILD_DIR)
 	rm -rf "$(EDGE_MICROVISOR_SRC_DIR)"
 	git clone -b $(EDGE_MICROVISOR_BRANCH) $(EDGE_MICROVISOR_SRC) $(EDGE_MICROVISOR_SRC_DIR)
-	cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
+	#cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
 
 clone-kata:
 	@# Help: Runs clone kata containers
