@@ -17,6 +17,7 @@ build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
 	VERSION=${VERSION} sudo -E bash build-kata-deploy-image.sh
+	docker tag ${DOCKER_IMAGE_NAME}:${VERSION} ${DOCKER_IMAGE}
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -47,7 +48,6 @@ docker-build:
 	
 docker-push:
 	aws ecr create-repository --region us-west-2 --repository-name ${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME} || true
-	docker tag ${DOCKER_IMAGE_NAME}:${VERSION} ${DOCKER_IMAGE}
 	docker push ${DOCKER_IMAGE}
 
 helm-build:

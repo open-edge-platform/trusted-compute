@@ -4,7 +4,7 @@
 # */
 
 # Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
-FROM golang:1.26.4-bookworm@sha256:5d2b868674b57c9e48cdd39e891acce4196b6926ca6d11e9c270a8f85106203d AS builder
+FROM golang:1.26.4-bookworm@sha256:b305420a68d0f229d91eb3b3ed9e519fcf2cf5461da4bef997bf927e8c0bfd2b AS builder
 
 WORKDIR /src/cfssl
 
@@ -29,17 +29,15 @@ RUN set -eux; \
     # cleanup builder apt caches
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM debian:bookworm-slim@sha256:0104b334637a5f19aa9c983a91b54c89887c0984081f2068983107a6f6c21eeb
-ARG KUBECTL_VER
+# Dependabot can update kubectl by tracking this image tag.
+FROM registry.k8s.io/kubectl:v1.36.1@sha256:d08f476d04d0e30f426f06bc6ff6c38913aaa4591943046b77e2f74a72d3611c AS kubectl
+
+FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
+COPY --from=kubectl --chmod=0755 /bin/kubectl /usr/local/bin/kubectl
 
 RUN set -eux; \
     apt-get update && \
     apt-get -yq install --no-install-recommends ca-certificates curl && \
-    : ${KUBECTL_VER:=$(curl -fsSL https://dl.k8s.io/release/stable.txt)} && \
-    curl -fsSLo /tmp/kubectl "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl" && \
-    curl -fsSLo /tmp/kubectl.sha256 "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl.sha256" && \
-    echo "$(cat /tmp/kubectl.sha256)  /tmp/kubectl" | sha256sum -c - && \
-    install -m 0755 /tmp/kubectl /usr/local/bin/kubectl && rm -f /tmp/kubectl /tmp/kubectl.sha256 && \
     mkdir -p /secrets && touch /.container-env && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
