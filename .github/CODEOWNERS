@@ -11,3 +11,18 @@
 
 # CI files
 .github/ @adimoft @daveroge @shanedonohue @manilk1x @srinivasmusti @vtcao297 @shahmitu @hemanthsm @pchand20 @kumara1-intel
+
+# Dependabot is used to manage dependencies in this repository. It is configured to automatically open pull requests to
+# update dependencies when new versions are available. The following files are managed by Dependabot and do not require
+# manual review or approval for changes. However, if you want to review the changes made by Dependabot, you can do so
+# by checking the pull requests it opens. This workaround was shared in
+# https://github.com/orgs/community/discussions/23064#discussioncomment-8383923 and can be removed once GitHub properly
+# supports CODEOWNERS for GitHub apps.
+# Go modules dependencies
+**/*.mod
+**/*.sum
+# Helm dependencies
+**/Chart.yaml
+**/values.yaml
+# Docker dependencies
+**/Dockerfile
