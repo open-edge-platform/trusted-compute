@@ -140,11 +140,19 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
     else
         echo "WARNING: kernel_params line not found in ${KATA_CONFIG_FILE}"
     fi
+
+    # Enable additional annotations in configuration.toml
+    echo "INFO: Enabling additional annotations in configuration.toml"
+    extra_annotations=("pcie_root_port" "hot_plug_vfio" "enable_virtio_mem" "default_memory")
+    annotations_str=""
+    for ann in "${extra_annotations[@]}"; do
+        annotations_str+=", \"${ann}\""
+    done
+    sed -i "s/^\(enable_annotations = \[.*\)\]/\1${annotations_str}]/" "${KATA_CONFIG_FILE}"
 else
     echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
     exit 1
 fi
-
 
 #build kata binary and copy to artifacts
 "${BUILD_DIR}/build-kata-binary.sh"
