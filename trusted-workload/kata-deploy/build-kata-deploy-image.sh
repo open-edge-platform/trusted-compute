@@ -116,11 +116,43 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
         echo "ERROR: failed to enable virtio_mem in ${KATA_CONFIG_FILE}"
         exit 1
     fi
+
+    # Enable guest hooks for GPU device readiness wait
+    echo "INFO: Enabling guest_hook_path in configuration.toml"
+    sed -i 's|^guest_hook_path = ""$|guest_hook_path = "/usr/share/oci/hooks"|' "${KATA_CONFIG_FILE}"
+    if grep -q '^guest_hook_path = "/usr/share/oci/hooks"' "${KATA_CONFIG_FILE}"; then
+        echo "INFO: guest_hook_path enabled in ${KATA_CONFIG_FILE}"
+    else
+        echo "ERROR: failed to enable guest_hook_path in ${KATA_CONFIG_FILE}"
+        exit 1
+    fi
+
+    # Add memhp_default_state=online to kernel parameters for memory hotplug
+    echo "INFO: Adding memhp_default_state=online to kernel parameters"
+    if grep -q '^kernel_params = ' "${KATA_CONFIG_FILE}"; then
+        sed -i 's/^\(kernel_params = ".*\)"/\1 memhp_default_state=online"/' "${KATA_CONFIG_FILE}"
+        if grep -q '^kernel_params = ".*memhp_default_state=online' "${KATA_CONFIG_FILE}"; then
+            echo "INFO: memhp_default_state=online added to kernel parameters"
+        else
+            echo "ERROR: failed to add memhp_default_state=online to kernel parameters"
+            exit 1
+        fi
+    else
+        echo "WARNING: kernel_params line not found in ${KATA_CONFIG_FILE}"
+    fi
+
+    # Enable additional annotations in configuration.toml
+    echo "INFO: Enabling additional annotations in configuration.toml"
+    extra_annotations=("pcie_root_port" "hot_plug_vfio" "enable_virtio_mem" "default_memory")
+    annotations_str=""
+    for ann in "${extra_annotations[@]}"; do
+        annotations_str+=", \"${ann}\""
+    done
+    sed -i "s/^\(enable_annotations = \[.*\)\]/\1${annotations_str}]/" "${KATA_CONFIG_FILE}"
 else
     echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
     exit 1
 fi
-
 
 #build kata binary and copy to artifacts
 "${BUILD_DIR}/build-kata-binary.sh"
