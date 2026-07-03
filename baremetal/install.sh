@@ -167,6 +167,15 @@ print_tc_k3s_summary() {
     echo "  - Users and groups: bm-agents group, tc-agent user, tc-ima user"
 }
 
+configure_kata_symlinks() {
+    local KATA_CONFIG_DIR="/opt/kata/share/defaults/kata-containers"
+    local SOURCE="$KATA_CONFIG_DIR/configuration.toml"
+    local DEST="$KATA_CONFIG_DIR/runtimes/qemu/configuration-qemu.toml"
+    for i in {1..20}; do [[ -f "$SOURCE" ]] && { cp "$SOURCE" "$DEST"; return 0; } || sleep 2; done
+    print_error "TC configuration file not found: $SOURCE"
+    exit 1
+}
+
 
 # Function to wait for a namespace's resources using kubectl rollout status
 wait_for_namespace_ready() {
@@ -274,6 +283,7 @@ install_tc_k3s() {
     create_users_groups
     restart_k3s
     print_tc_k3s_summary
+    configure_kata_symlinks
     print_status "Wait for daemonsets and deployments to become ready..."
     sleep 180
     wait_for_namespace_ready "trusted-compute" "$TIMEOUT"
