@@ -1,3 +1,4 @@
+name: kata-deploy
 services:
   kata-deploy:
     image: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:${VERSION}
