@@ -30,7 +30,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/vmware/govmomi v0.54.1
+	github.com/vmware/govmomi v0.55.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.53.0
 	golang.org/x/net v0.56.0
