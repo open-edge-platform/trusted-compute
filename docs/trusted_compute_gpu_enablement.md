@@ -96,16 +96,16 @@ spec:
   runtimeClassName: kata-qemu
   restartPolicy: Never
   containers:
-  - name: intel-opencl-icd
-    image: <repository>/intel-opencl-icd:0.36.0  # update based on your repository
-    imagePullPolicy: Always
-    resources: # modify as per your requirement
-      requests:
-        cpu: 1
-        memory: "2Gi"
-      limits:
-        cpu: 2
-        memory: "4Gi"
+    - name: intel-opencl-icd
+      image: <repository>/intel-opencl-icd:0.36.0  # update based on your repository
+      imagePullPolicy: Always
+      resources: # modify as per your requirement
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "4Gi"
 ```
 
 Save the pod spec above as `opencl-pod.yaml`, then deploy and verify:
