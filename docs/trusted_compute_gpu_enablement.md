@@ -108,7 +108,7 @@ spec:
         memory: "4Gi"
 ```
 
-Deploy and verify:
+Save the pod spec above as `opencl-pod.yaml`, then deploy and verify:
 
 ```bash
 # Deploy the pod
