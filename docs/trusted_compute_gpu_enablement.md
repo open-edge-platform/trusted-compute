@@ -28,7 +28,7 @@ GPU passthrough allows a virtual machine to directly access a physical GPU, bypa
 
 ## Install Trusted Compute Package
 
-Follow the [Trusted Compute k3s Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
+Follow the [Trusted Compute Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
 
 > **Note:** During the Trusted Compute installation, you will set up either K3s or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation.
 
