@@ -144,10 +144,10 @@ Deploy and verify:
 
 ```bash
 # Start the container
-$ docker-compose up -d
+$ docker compose up -d
 
 # Verify GPU access
-$ docker-compose exec intel-opencl-icd clinfo
+$ docker compose exec intel-opencl-icd clinfo
 ```
 
 If GPU passthrough is successful, `clinfo` will display the detected GPU and its OpenCL capabilities.
