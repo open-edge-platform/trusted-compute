@@ -128,7 +128,7 @@ For Docker deployments, create a `docker-compose.yml` file:
 services:
   intel-opencl-icd:
     image: <repository>/intel-opencl-icd:0.36.0
-    runtime: kata-qemu
+    runtime: io.containerd.kata.v2
     # Required for GPU passthrough
     annotations:
       io.katacontainers.config.hypervisor.default_memory: "4096"
