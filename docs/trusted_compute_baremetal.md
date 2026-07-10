@@ -34,6 +34,7 @@ The installation script supports two deployment options:
 	- Create a bootable USB and install Ubuntu 24.04 on your edge node.
 3. **Enable Secure Boot:**
 	- During installation, ensure Secure Boot is enabled in the BIOS/UEFI settings for enhanced security.
+	- For detailed instructions, see: [Enabling UEFI Secure Boot](https://docs.openedgeplatform.intel.com/2026.1/OEP-articles/application-security/enable_uefi.html)
 
 > **Note:** Both K3s and Docker installations are mutually exclusive. If one is already installed, the script will prompt you to uninstall it first before proceeding with the other.
 
