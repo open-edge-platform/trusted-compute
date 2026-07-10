@@ -33,15 +33,44 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Approve Dependabot PR
+        id: approve_pr
         if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        continue-on-error: true
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
       - name: Enable auto-merge for Dependabot PR
+        id: enable_auto_merge
         if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        continue-on-error: true
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
+
+      - name: Checkout PR branch
+        id: checkout_pr
+        if: steps.approve_pr.outcome == 'failure' || steps.enable_auto_merge.outcome == 'failure'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        if: steps.checkout_pr.outcome == 'success'
+        run: |
+          git config user.name "dependabot[bot]"
+          git config user.email "dependabot[bot]@users.noreply.github.com"
+
+      - name: Create empty commit to retrigger workflow
+        if: steps.checkout_pr.outcome == 'success'
+        run: |
+          if [ "$(git log -1 --pretty=%s)" = "chore: retrigger workflow" ]; then
+            echo "Last commit is already a retrigger commit; skipping to avoid loops."
+            exit 0
+          fi
+          git commit --allow-empty -m "chore: retrigger workflow"
+          git push origin ${{ github.event.pull_request.head.ref }}
