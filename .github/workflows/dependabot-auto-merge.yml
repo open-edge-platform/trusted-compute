@@ -34,6 +34,7 @@ jobs:
 
       - name: Approve Dependabot PR
         if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        continue-on-error: true
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
@@ -41,7 +42,28 @@ jobs:
 
       - name: Enable auto-merge for Dependabot PR
         if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        continue-on-error: true
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
+
+      - name: Checkout PR branch
+        if: failure()
+        uses: actions/checkout@11bd71901efe0b5b596a9a00f1027a0e475b5362 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        if: failure()
+        run: |
+          git config user.name "dependabot[bot]"
+          git config user.email "dependabot[bot]@users.noreply.github.com"
+
+      - name: Create empty commit to retrigger workflow
+        if: failure()
+        run: |
+          git commit --allow-empty -m "chore: retrigger workflow"
+          git push origin ${{ github.event.pull_request.head.ref }}
