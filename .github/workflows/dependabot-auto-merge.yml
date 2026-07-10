@@ -57,13 +57,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git
-        if: failure()
+        if: steps.checkout_pr.outcome == 'success'
         run: |
           git config user.name "dependabot[bot]"
           git config user.email "dependabot[bot]@users.noreply.github.com"
 
       - name: Create empty commit to retrigger workflow
-        if: failure()
+        if: steps.checkout_pr.outcome == 'success'
         run: |
+          if [ "$(git log -1 --pretty=%s)" = "chore: retrigger workflow" ]; then
+            echo "Last commit is already a retrigger commit; skipping to avoid loops."
+            exit 0
+          fi
           git commit --allow-empty -m "chore: retrigger workflow"
           git push origin ${{ github.event.pull_request.head.ref }}
