@@ -9,6 +9,8 @@ name: Auto Update PR
 # and have auto-merge enabled. If the branch is currently out of date with the base branch,
 # it must be first manually updated and then will be kept up to date on future runs.
 on:
+  schedule:
+    - cron: '0 3-12 * * *'  # Every hour 8:30am-5:30pm IST (UTC+5:30)
   push:
     branches:
       - main
