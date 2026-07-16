@@ -1,0 +1,27 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# Generic GPU telemetry collector for kata-container guests (bash agent).
+#
+# Installed in the guest rootfs at:
+#   /etc/systemd/system/gpu-telemetry.service
+# Enabled by symlinking into kata-containers.target.wants/ (NOT
+# multi-user.target — Kata boots to kata-containers.target).
+
+[Unit]
+Description=Generic GPU telemetry collector (kata guest)
+# Start as part of the Kata boot target, after the agent is up.
+After=kata-agent.service
+Wants=kata-containers.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/gpu-telemetry/gpu-telemetry.env
+ExecStart=/usr/local/bin/gpu-telemetry-agent.sh
+# Agent exits 0 when no GPU is present (no restart); non-zero if qmassa dies.
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=kata-containers.target

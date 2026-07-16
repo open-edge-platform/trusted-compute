@@ -13,6 +13,7 @@ apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils par
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
 TVM_AGENT_DIR="/trusted-vm/tvm-agent"
+GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
 TRUSTED_VM_IMAGE="trusted-vm.img"
 
 # edge_microvisor image
@@ -84,6 +85,36 @@ install_guest_hooks() {
     echo "INFO: Guest hooks installed successfully"
 }
 
+#build gpu telemetry tools (qmassa, jq)
+build_gpu_telemetry_tools() {
+    bash /trusted-vm/build_gpu_telemetry_tools.sh
+}
+
+# Install GPU telemetry binaries and config into the rootfs.
+install_gpu_telemetry() {
+    echo "INFO: Installing GPU telemetry agent in rootfs"
+    local bin_src="${GPU_TELEMETRY_DIR}/binaries"
+    local files_src="${GPU_TELEMETRY_DIR}/files"
+
+    [[ -d "${bin_src}" ]]        || { echo "ERROR: ${bin_src} not found"; exit 1; }
+    [[ -x "${bin_src}/qmassa" ]] || { echo "ERROR: qmassa not found in ${bin_src}"; exit 1; }
+    [[ -x "${bin_src}/jq" ]]     || { echo "ERROR: jq not found in ${bin_src}"; exit 1; }
+    [[ -d "${files_src}" ]]      || { echo "ERROR: ${files_src} not found"; exit 1; }
+
+    mkdir -p "${ROOTFS_DIR}/etc/gpu-telemetry" \
+             "${ROOTFS_DIR}/etc/udev/rules.d" \
+             "${ROOTFS_DIR}/etc/systemd/system/kata-containers.target.wants"
+    install -o root -g root -m 0755 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
+    install -o root -g root -m 0755 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
+    install -o root -g root -m 0550 "${files_src}/gpu-telemetry-agent.sh" "${ROOTFS_DIR}/usr/local/bin/gpu-telemetry-agent.sh"
+    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.env" "${ROOTFS_DIR}/etc/gpu-telemetry/gpu-telemetry.env"
+    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.service" "${ROOTFS_DIR}/etc/systemd/system/gpu-telemetry.service"
+    ln -sf ../gpu-telemetry.service "${ROOTFS_DIR}/etc/systemd/system/kata-containers.target.wants/gpu-telemetry.service"
+    install -o root -g root -m 0444 "${files_src}/90-gpu-telemetry.rules" "${ROOTFS_DIR}/etc/udev/rules.d/90-gpu-telemetry.rules"
+
+    echo "INFO: GPU telemetry installed successfully"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
@@ -112,5 +143,7 @@ copy_tc_image(){
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
 install_guest_hooks
+build_gpu_telemetry_tools
+install_gpu_telemetry
 build_trusted_vm_image
 copy_tc_image

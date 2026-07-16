@@ -1,0 +1,111 @@
+#!/bin/bash
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# GPU telemetry agent for kata guests. Collects GPU stats via qmassa and
+# emits InfluxDB line protocol over HTTP to a configurable collector endpoint.
+#
+# Metrics emitted:
+#     gpu_engine_usage,engine=<e>,type=<e>,host=<h>,gpu_id=<n> usage=<v> <ts_ns>
+#     gpu_frequency,type=cur_freq,host=<h>,gpu_id=<n> value=<v> <ts_ns>
+#     gpu_power,type=<k>,host=<h>,gpu_id=<n> value=<v> <ts_ns>
+#
+# The collector endpoint is configured via PUSH_HOST/PUSH_PORT/PUSH_PATH.
+# Any HTTP listener that accepts InfluxDB line protocol (Telegraf, Victoria
+# Metrics, InfluxDB, etc.) can be used as the target.
+#
+# Implemented in bash + static jq.
+#
+# Guest install paths:
+#   /usr/local/bin/qmassa            (GPU stats tool)
+#   /usr/local/bin/jq                (static jq)
+#   /usr/local/bin/gpu-telemetry-agent.sh
+
+set -u
+
+# Kernel cmdline params (injected at deploy time via kata kernel_params annotation)
+# take priority over the env file values so the image needs no modification per deployment.
+_cmdline_host=$(grep -o 'push_host=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
+_cmdline_port=$(grep -o 'push_port=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
+PUSH_HOST="${_cmdline_host:-${PUSH_HOST:-}}"
+PUSH_PORT="${_cmdline_port:-${PUSH_PORT:-}}"
+
+if [ -z "${PUSH_HOST}" ]; then
+  log "PUSH_HOST not configured; telemetry disabled."
+  exit 0
+fi
+: "${PUSH_PORT:?PUSH_PORT must be set}"
+: "${PUSH_PATH:?PUSH_PATH must be set}"
+INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
+QMASSA_BIN="${QMASSA_BIN:-/usr/local/bin/qmassa}"
+JQ_BIN="${JQ_BIN:-/usr/local/bin/jq}"
+# The guest has no `hostname` binary; bash sets $HOSTNAME natively. Fall back to
+# /etc/hostname then a literal so the influx `host=` tag is never empty.
+HOSTTAG="${METRICS_HOSTNAME:-${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo kata-guest)}}"
+RUNDIR="/run/gpu-telemetry"
+FIFO="${RUNDIR}/qmassa.fifo"
+
+log() { echo "[gpu-telemetry] $*" >&2; }
+
+# Wait up to 60s for a GPU render node (hot-plugged after boot).
+for _ in $(seq 1 60); do
+  ls /dev/dri/renderD* >/dev/null 2>&1 && break
+  sleep 1
+done
+ls /dev/dri/renderD* >/dev/null 2>&1 || { log "no GPU render node present; exiting."; exit 0; }
+
+mkdir -p "$RUNDIR"
+[ -p "$FIFO" ] || mkfifo "$FIFO"
+
+# jq program that parses qmassa JSON output into InfluxDB line protocol.
+JQ_FILTER='
+  ( now * 1000000000 | floor ) as $ts
+  | .devs_state[]?
+  | ((.dev_nodes // "") | capture("renderD(?<n>[0-9]+)") | .n | tonumber) as $rd
+  | select($rd >= 128)
+  | ($rd - 128) as $gid
+  | .dev_stats as $s
+  | (
+      ( $s.eng_usage // {} | to_entries[] | select((.value|length) > 0)
+        | "gpu_engine_usage,engine=\(.key),type=\(.key),host=\($h),gpu_id=\($gid) usage=\(.value[-1]) \($ts)" ),
+      ( if (($s.freqs|length) > 0) and ($s.freqs[-1]|type=="array")
+             and (($s.freqs[-1]|length) > 0) and ($s.freqs[-1][0].cur_freq != null)
+        then "gpu_frequency,type=cur_freq,host=\($h),gpu_id=\($gid) value=\($s.freqs[-1][0].cur_freq) \($ts)"
+        else empty end ),
+      ( if ($s.power|length) > 0
+        then ( $s.power[-1] | to_entries[]
+               | "gpu_power,type=\(.key),host=\($h),gpu_id=\($gid) value=\(.value) \($ts)" )
+        else empty end )
+    )
+'
+
+post() {
+  local body="$1"
+  [ -n "$body" ] || return 0
+  exec 9<>"/dev/tcp/${PUSH_HOST}/${PUSH_PORT}" 2>/dev/null || {
+    log "connect to ${PUSH_HOST}:${PUSH_PORT} failed"
+    return 1
+  }
+  printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
+    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9
+  cat <&9 >/dev/null 2>&1
+  exec 9>&- 2>/dev/null
+  exec 9<&- 2>/dev/null
+}
+
+log "GPU detected; pushing to http://${PUSH_HOST}:${PUSH_PORT}${PUSH_PATH} (InfluxDB line protocol)"
+
+"$QMASSA_BIN" --no-tui -m "$INTERVAL_MS" --to-json "$FIFO" &
+QPID=$!
+trap 'kill "$QPID" 2>/dev/null' EXIT
+
+exec 3<"$FIFO"
+while IFS= read -r line <&3; do
+  [ -n "$line" ] || continue
+  lp="$(printf '%s' "$line" | "$JQ_BIN" -rc --arg h "$HOSTTAG" "$JQ_FILTER" 2>/dev/null)"
+  [ -n "$lp" ] && post "$lp"
+done
+
+wait "$QPID"
+log "qmassa exited; restarting via systemd."
+exit 1
