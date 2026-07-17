@@ -145,6 +145,6 @@ while IFS= read -r line <&3; do
   fi
 done
 
-wait "$QPID"
+wait "$QPID" || true
 log "qmassa exited; restarting via systemd."
 exit 1
