@@ -115,7 +115,11 @@ post() {
     return 1
   }
   printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
-    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9
+    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9 2>/dev/null || {
+    log "write to ${PUSH_HOST}:${PUSH_PORT} failed"
+    exec 9>&- 2>/dev/null; exec 9<&- 2>/dev/null
+    return 1
+  }
   exec 9>&- 2>/dev/null
   exec 9<&- 2>/dev/null
 }
