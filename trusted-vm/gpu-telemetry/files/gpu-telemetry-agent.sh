@@ -21,7 +21,7 @@
 #   /usr/local/bin/jq                (static jq)
 #   /usr/local/bin/gpu-telemetry-agent.sh
 
-set -u
+set -euo pipefail
 
 log() { echo "[gpu-telemetry] $*" >&2; }
 
@@ -70,7 +70,8 @@ done
 ls /dev/dri/renderD* >/dev/null 2>&1 || { log "no GPU render node present; exiting."; exit 0; }
 
 mkdir -p "$RUNDIR"
-[ -p "$FIFO" ] || mkfifo "$FIFO"
+# Remove any stale path that is not a FIFO; then create the FIFO.
+[ -p "$FIFO" ] || { rm -f "$FIFO"; mkfifo "$FIFO"; }
 
 # jq program that parses qmassa JSON output into InfluxDB line protocol.
 JQ_FILTER='
@@ -103,7 +104,6 @@ post() {
   }
   printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
     "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9
-  cat <&9 >/dev/null 2>&1
   exec 9>&- 2>/dev/null
   exec 9<&- 2>/dev/null
 }

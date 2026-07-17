@@ -21,7 +21,7 @@ OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 mkdir -p "${OUT_DIR}"
 
 echo "INFO: Downloading jq ${JQ_VERSION}"
-apt-get update -qq && apt-get install -y --no-install-recommends curl ca-certificates libudev-dev musl-tools
+apt-get update -qq && apt-get install -y --no-install-recommends binutils curl ca-certificates libudev-dev musl-tools
 curl -fsSL --retry 3 \
     "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-amd64" \
     -o "${OUT_DIR}/jq"
@@ -31,6 +31,8 @@ echo "INFO: jq downloaded: $(${OUT_DIR}/jq --version)"
 
 echo "INFO: Building qmassa v${QMASSA_VERSION} with Rust ${RUST_TOOLCHAIN}"
 apt-get install -y --no-install-recommends rustup
+mkdir -p "${CARGO_HOME:-${HOME}/.cargo}/bin"
+ln -sf "$(command -v rustup)" "${CARGO_HOME:-${HOME}/.cargo}/bin/rustup"
 rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal
 rustup target add --toolchain "${RUST_TOOLCHAIN}" x86_64-unknown-linux-musl
 rustup run "${RUST_TOOLCHAIN}" cargo install --locked \
