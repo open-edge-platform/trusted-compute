@@ -62,6 +62,10 @@ if [[ "${PUSH_PATH}" != /* ]]; then
   exit 0
 fi
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
+if ! [[ "${INTERVAL_MS}" =~ ^[0-9]+$ ]] || (( INTERVAL_MS < 1 )); then
+  log "COLLECT_INTERVAL_MS is invalid (${INTERVAL_MS}); telemetry disabled."
+  exit 0
+fi
 QMASSA_BIN="${QMASSA_BIN:-/usr/local/bin/qmassa}"
 JQ_BIN="${JQ_BIN:-/usr/local/bin/jq}"
 # The guest has no `hostname` binary; bash sets $HOSTNAME natively. Fall back to
