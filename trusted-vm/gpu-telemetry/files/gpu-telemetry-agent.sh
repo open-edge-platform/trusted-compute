@@ -25,12 +25,16 @@ set -u
 
 log() { echo "[gpu-telemetry] $*" >&2; }
 
-# Kernel cmdline params (injected at deploy time via kata kernel_params annotation)
-# take priority over the env file values so the image needs no modification per deployment.
+# Collector endpoint must be supplied via kata kernel_params annotation:
+#   push_host=<ip> push_port=<port> push_path=<path>
+# The agent exits cleanly if any are absent.
+
 _cmdline_host=$(grep -o 'push_host=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
 _cmdline_port=$(grep -o 'push_port=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
-PUSH_HOST="${_cmdline_host:-${PUSH_HOST:-}}"
-PUSH_PORT="${_cmdline_port:-${PUSH_PORT:-}}"
+_cmdline_path=$(grep -o 'push_path=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
+PUSH_HOST="${_cmdline_host}"
+PUSH_PORT="${_cmdline_port}"
+PUSH_PATH="${_cmdline_path}"
 
 if [ -z "${PUSH_HOST}" ]; then
   log "PUSH_HOST not configured; telemetry disabled."
@@ -40,7 +44,10 @@ if [ -z "${PUSH_PORT}" ]; then
   log "PUSH_PORT not configured; telemetry disabled."
   exit 0
 fi
-: "${PUSH_PATH:?PUSH_PATH must be set}"
+if [ -z "${PUSH_PATH}" ]; then
+  log "PUSH_PATH not configured; telemetry disabled."
+  exit 0
+fi
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
 QMASSA_BIN="${QMASSA_BIN:-/usr/local/bin/qmassa}"
 JQ_BIN="${JQ_BIN:-/usr/local/bin/jq}"
