@@ -57,8 +57,12 @@ if [ -z "${PUSH_PATH}" ]; then
   log "PUSH_PATH not configured; telemetry disabled."
   exit 0
 fi
-if [[ "${PUSH_PATH}" != /* ]]; then
-  log "PUSH_PATH must start with '/': '${PUSH_PATH}'; telemetry disabled."
+if [[ "${PUSH_PATH}" != /* ]] || [[ "${PUSH_PATH}" == *[[:space:]]* ]]; then
+  log "PUSH_PATH must start with '/' and contain no whitespace: '${PUSH_PATH}'; telemetry disabled."
+  exit 0
+fi
+if ! [[ "${PUSH_HOST}" =~ ^[A-Za-z0-9.-]+$ ]]; then
+  log "PUSH_HOST must be an IP/hostname with only [A-Za-z0-9.-]: '${PUSH_HOST}'; telemetry disabled."
   exit 0
 fi
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
