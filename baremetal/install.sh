@@ -168,12 +168,10 @@ print_tc_k3s_summary() {
 }
 
 configure_kata_qemu_config() {
-    local KATA_CONFIG_DIR="/opt/kata/share/defaults/kata-containers"
-    local SOURCE="$KATA_CONFIG_DIR/configuration.toml"
-    local DEST="$KATA_CONFIG_DIR/runtimes/qemu/configuration-qemu.toml"
-    for i in {1..20}; do [[ -f "$SOURCE" ]] && { cp "$SOURCE" "$DEST"; return 0; } || sleep 2; done
-    print_error "TC configuration file not found: $SOURCE"
-    exit 1
+    local SOURCE="/opt/kata/share/defaults/kata-containers/configuration.toml"
+    local DEST="/opt/kata/share/defaults/kata-containers/runtimes/qemu/configuration-qemu.toml"
+    for _ in {1..60}; do [[ -f "$SOURCE" ]] && { mkdir -p "$(dirname "$DEST")"; cp "$SOURCE" "$DEST"; return 0; }; sleep 5; done
+    print_error "TC configuration file not found after 5 minutes: $SOURCE"; exit 1
 }
 
 
