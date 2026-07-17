@@ -72,6 +72,8 @@ if ! [[ "${INTERVAL_MS}" =~ ^[0-9]+$ ]] || (( INTERVAL_MS < 1 )); then
 fi
 QMASSA_BIN="${QMASSA_BIN:-/usr/local/bin/qmassa}"
 JQ_BIN="${JQ_BIN:-/usr/local/bin/jq}"
+[[ -x "$QMASSA_BIN" ]] || { log "QMASSA_BIN not executable: $QMASSA_BIN"; exit 1; }
+[[ -x "$JQ_BIN" ]] || { log "JQ_BIN not executable: $JQ_BIN"; exit 1; }
 # The guest has no `hostname` binary; bash sets $HOSTNAME natively. Fall back to
 # /etc/hostname then a literal so the influx `host=` tag is never empty.
 HOSTTAG="${METRICS_HOSTNAME:-${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo kata-guest)}}"
