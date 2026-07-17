@@ -35,7 +35,9 @@ mkdir -p "${CARGO_HOME:-${HOME}/.cargo}/bin"
 ln -sf "$(command -v rustup)" "${CARGO_HOME:-${HOME}/.cargo}/bin/rustup"
 rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal
 rustup target add --toolchain "${RUST_TOOLCHAIN}" x86_64-unknown-linux-musl
-rustup run "${RUST_TOOLCHAIN}" cargo install --locked \
+# musl target is treated as cross-compilation by pkg-config even though the
+# architecture is the same; allow it so libudev-sys build.rs can proceed.
+PKG_CONFIG_ALLOW_CROSS=1 rustup run "${RUST_TOOLCHAIN}" cargo install --locked \
     --target x86_64-unknown-linux-musl \
     --git https://github.com/ulissesf/qmassa \
     --rev "${QMASSA_REV}" \
