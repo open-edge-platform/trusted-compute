@@ -15,7 +15,7 @@ QMASSA_REV="590302e8353d9205c40bd9522e93949173e3dae9"
 JQ_VERSION="1.7.1"
 JQ_SHA256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
 # Pin the Rust toolchain for reproducible builds.
-RUST_TOOLCHAIN="1.87.0"
+RUST_TOOLCHAIN="1.88.0"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
 mkdir -p "${OUT_DIR}"
