@@ -1,7 +1,10 @@
 #  Copyright (C) 2025 Intel Corporation
 #  SPDX-License-Identifier: BSD-3-Clause
 
-FROM debian:bookworm-slim@sha256:0104b334637a5f19aa9c983a91b54c89887c0984081f2068983107a6f6c21eeb
+# Dependabot can update kubectl by tracking this image tag.
+FROM registry.k8s.io/kubectl:v1.36.2@sha256:b0d792e0d8dfb9bb1b922b78b23137e2a34bb6f9667640353a9d2aadd1fd7761 AS kubectl
+
+FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
 
 LABEL org.label-schema.name="Authservice Manager" \
       org.label-schema.vendor="Intel Corporation" \
@@ -9,21 +12,13 @@ LABEL org.label-schema.name="Authservice Manager" \
       org.label-schema.url="https://github.com/open-edge-platform/trusted-compute"
 
 COPY tools/aas-manager/populate-users /usr/bin/populate-users
-
-# Allow optionally pinning kubectl version at build time. If not provided, resolve stable release.
-ARG KUBECTL_VER
+COPY --chmod=0755 --from=kubectl /bin/kubectl /usr/local/bin/kubectl
 
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
-    # determine stable kubectl version, download binary and its sha256, verify and install
-    : ${KUBECTL_VER:=$(curl -fsSL https://dl.k8s.io/release/stable.txt)} && \
-    curl -fsSLo kubectl "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl" && \
-    curl -fsSLo kubectl.sha256 "https://dl.k8s.io/${KUBECTL_VER}/bin/linux/amd64/kubectl.sha256" && \
-    echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c - && \
-    install -m 0755 kubectl /usr/local/bin/kubectl && \
+    apt-get install -y --no-install-recommends ca-certificates && \
     chmod +x /usr/bin/populate-users && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* kubectl kubectl.sha256
+    rm -rf /var/lib/apt/lists/*
 
 # Add a user and switch to it
 USER 503

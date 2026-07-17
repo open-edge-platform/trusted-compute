@@ -21,7 +21,6 @@ shims:
     enabled: true
     supportedArches:
       - amd64
-    allowedHypervisorAnnotations: [default_memory pcie_root_port hot_plug_vfio enable_virtio_mem]
     containerd:
       snapshotter: ""
 # Default shim per architecture

@@ -1,109 +1,47 @@
 # SPDX-FileCopyrightText: (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-name: Dependabot Auto-merge
+
+---
+name: Dependabot auto-approve and auto-merge PR
 
 on:
-  workflow_run: # zizmor: ignore[dangerous-triggers]
-    workflows: ["Virtual Integration"]
-    types: [completed]
+  # Trigger workflow on PRs to all branches
   pull_request:
-    types: [closed]
     branches:
-      - main
+      - "*"
+    types:
+      - opened
+      - synchronize
+      - reopened
 
-permissions: {}
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
-  # Triggered when Virtual Integration passes: enables GitHub auto-merge on the PR.
-  # GitHub will then merge it once all branch-protection requirements are met.
-  auto-merge:
-      permissions:
-        pull-requests: write   # for gh pr merge --auto and PR listing
-      if: |
-        github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'pull_request' &&
-        github.event.workflow_run.actor.login == 'dependabot[bot]' &&
-        github.event.workflow_run.head_repository.full_name == github.repository
-      runs-on: ubuntu-latest
-      steps:
-      - name: Resolve Dependabot PR number
-        id: pr
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
-        with:
-          script: |
-            // workflow_run populates pull_requests for same-repo PRs
-            const prs = context.payload.workflow_run.pull_requests;
-            if (prs && prs.length > 0) {
-              core.setOutput('number', String(prs[0].number));
-              return;
-            }
-            // Fallback: find the open Dependabot PR by head SHA
-            const headSha = context.payload.workflow_run.head_sha;
-            const { data: openPrs } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-            });
-            const match = openPrs.find(
-              p => p.head.sha === headSha && p.user.login === 'dependabot[bot]'
-            );
-            if (match) {
-              core.setOutput('number', String(match.number));
-            } else {
-              core.setFailed('No open Dependabot PR found for SHA ' + headSha);
-            }
-
-      - name: Enable auto-merge
-        run: |
-          gh pr merge "$PR_NUMBER" \
-            --auto \
-            --squash \
-            --repo "$GITHUB_REPOSITORY"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-
-  # Triggered when a Dependabot PR is actually merged into main: calls the
-  # GitHub API to update the branch of every remaining open Dependabot PR so
-  # each one re-runs CI and re-enters the auto-merge cycle.
-  rebase-remaining:
+  dependabot:
     permissions:
-      contents: write        # for updateBranch API call
-      pull-requests: read    # for listing open PRs
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - name: Rebase remaining open Dependabot PRs
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
-          script: |
-            const mergedNumber = context.payload.pull_request.number;
-            const { data: openPrs } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-            });
-            const remaining = openPrs.filter(
-              p => p.user.login === 'dependabot[bot]' && p.number !== mergedNumber
-            );
-            if (remaining.length === 0) {
-              core.info('No other open Dependabot PRs to rebase.');
-              return;
-            }
-            for (const pr of remaining) {
-              core.info(`Updating branch for PR #${pr.number}: ${pr.title}`);
-              try {
-                await github.rest.pulls.updateBranch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                });
-                core.info(`Branch updated for PR #${pr.number}`);
-              } catch (error) {
-                core.warning(`Failed to update branch for PR #${pr.number}: ${error.message}`);
-              }
-            }
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Approve Dependabot PR
+        if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for Dependabot PR
+        if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","version-update:semver-major"]'), steps.metadata.outputs.update-type)
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

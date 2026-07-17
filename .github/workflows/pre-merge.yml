@@ -38,7 +38,7 @@ jobs:
         uses: open-edge-platform/orch-ci/verify-branch-name@a95228137803b756aae327668c115db235802982  # 2026.1.3
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@c460294361ed63e9a7a7703e8b96ddac1ac98715  # 2026.1.3
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@cda43140ad4881079bc4f8a92f1b07bddcdb2929  # 2026.1.3
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
         env:
@@ -71,12 +71,12 @@ jobs:
       - run: |
           npm install -g \
           "markdownlint-cli@${{ env.MARKDOWNLINT_CLI_VER }}"
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405   # v6.2.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1   # v6.3.0
         id: setup_python
         with:
           python-version: '3.13'
       - name: Restore cached virtualenv
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae    # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9    # v6.1.0
         with:
           key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
           path: venv_infra
@@ -94,7 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.docker_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@587c67a41629ce30ddbc6e5f06c0990b13c4118c  # 2026.1.3
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@cda43140ad4881079bc4f8a92f1b07bddcdb2929  # 2026.1.3
     with:
       run_security_scans: true
       run_version_check: false
@@ -119,7 +119,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.no_docker_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@587c67a41629ce30ddbc6e5f06c0990b13c4118c  # 2026.1.3
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@cda43140ad4881079bc4f8a92f1b07bddcdb2929  # 2026.1.3
     with:
       run_security_scans: true
       run_version_check: false
