@@ -103,13 +103,13 @@ install_gpu_telemetry() {
 
     mkdir -p "${ROOTFS_DIR}/etc/gpu-telemetry" \
              "${ROOTFS_DIR}/etc/udev/rules.d" \
-             "${ROOTFS_DIR}/etc/systemd/system/kata-containers.target.wants"
+             "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
     install -o root -g root -m 0755 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
     install -o root -g root -m 0755 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
     install -o root -g root -m 0550 "${files_src}/gpu-telemetry-agent.sh" "${ROOTFS_DIR}/usr/local/bin/gpu-telemetry-agent.sh"
     install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.env" "${ROOTFS_DIR}/etc/gpu-telemetry/gpu-telemetry.env"
-    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.service" "${ROOTFS_DIR}/etc/systemd/system/gpu-telemetry.service"
-    ln -sf ../gpu-telemetry.service "${ROOTFS_DIR}/etc/systemd/system/kata-containers.target.wants/gpu-telemetry.service"
+    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.service" "${ROOTFS_DIR}/usr/lib/systemd/system/gpu-telemetry.service"
+    ln -sf ../gpu-telemetry.service "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants/gpu-telemetry.service"
     install -o root -g root -m 0444 "${files_src}/90-gpu-telemetry.rules" "${ROOTFS_DIR}/etc/udev/rules.d/90-gpu-telemetry.rules"
 
     echo "INFO: GPU telemetry installed successfully"

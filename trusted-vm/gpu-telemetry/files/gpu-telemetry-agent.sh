@@ -23,6 +23,8 @@
 
 set -u
 
+log() { echo "[gpu-telemetry] $*" >&2; }
+
 # Kernel cmdline params (injected at deploy time via kata kernel_params annotation)
 # take priority over the env file values so the image needs no modification per deployment.
 _cmdline_host=$(grep -o 'push_host=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
@@ -34,7 +36,10 @@ if [ -z "${PUSH_HOST}" ]; then
   log "PUSH_HOST not configured; telemetry disabled."
   exit 0
 fi
-: "${PUSH_PORT:?PUSH_PORT must be set}"
+if [ -z "${PUSH_PORT}" ]; then
+  log "PUSH_PORT not configured; telemetry disabled."
+  exit 0
+fi
 : "${PUSH_PATH:?PUSH_PATH must be set}"
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
 QMASSA_BIN="${QMASSA_BIN:-/usr/local/bin/qmassa}"
@@ -45,10 +50,8 @@ HOSTTAG="${METRICS_HOSTNAME:-${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo
 RUNDIR="/run/gpu-telemetry"
 FIFO="${RUNDIR}/qmassa.fifo"
 
-log() { echo "[gpu-telemetry] $*" >&2; }
-
 # Wait up to 60s for a GPU render node (hot-plugged after boot).
-for _ in $(seq 1 60); do
+for _ in {1..60}; do
   ls /dev/dri/renderD* >/dev/null 2>&1 && break
   sleep 1
 done

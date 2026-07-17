@@ -4,7 +4,7 @@
 # Generic GPU telemetry collector for kata-container guests (bash agent).
 #
 # Installed in the guest rootfs at:
-#   /etc/systemd/system/gpu-telemetry.service
+#   /usr/lib/systemd/system/gpu-telemetry.service
 # Enabled by symlinking into kata-containers.target.wants/ (NOT
 # multi-user.target — Kata boots to kata-containers.target).
 

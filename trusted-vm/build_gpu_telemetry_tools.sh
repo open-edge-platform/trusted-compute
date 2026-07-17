@@ -12,6 +12,7 @@ set -euo pipefail
 
 QMASSA_VERSION="2.1.0"
 JQ_VERSION="1.7.1"
+JQ_SHA256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
 mkdir -p "${OUT_DIR}"
@@ -21,11 +22,13 @@ apt-get update -qq && apt-get install -y --no-install-recommends curl ca-certifi
 curl -fsSL --retry 3 \
     "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-amd64" \
     -o "${OUT_DIR}/jq"
+echo "${JQ_SHA256}  ${OUT_DIR}/jq" | sha256sum -c -
 chmod +x "${OUT_DIR}/jq"
 echo "INFO: jq downloaded: $(${OUT_DIR}/jq --version)"
 
 echo "INFO: Building qmassa v${QMASSA_VERSION}"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+apt-get install -y --no-install-recommends rustup
+rustup toolchain install stable --profile minimal
 # shellcheck source=/dev/null
 source "${HOME}/.cargo/env"
 rustup target add x86_64-unknown-linux-musl
