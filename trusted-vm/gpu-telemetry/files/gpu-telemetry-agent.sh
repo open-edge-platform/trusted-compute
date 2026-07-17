@@ -114,6 +114,12 @@ log "GPU detected; pushing to http://${PUSH_HOST}:${PUSH_PORT}${PUSH_PATH} (Infl
 QPID=$!
 trap 'kill "$QPID" 2>/dev/null' EXIT
 
+sleep 1
+if ! kill -0 "$QPID" 2>/dev/null; then
+  log "qmassa exited immediately (pid $QPID); check binary and GPU state"
+  exit 1
+fi
+
 exec 3<"$FIFO"
 while IFS= read -r line <&3; do
   [ -n "$line" ] || continue

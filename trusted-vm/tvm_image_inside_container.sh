@@ -103,6 +103,7 @@ install_gpu_telemetry() {
 
     mkdir -p "${ROOTFS_DIR}/etc/gpu-telemetry" \
              "${ROOTFS_DIR}/etc/udev/rules.d" \
+             "${ROOTFS_DIR}/usr/local/bin" \
              "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
     install -o root -g root -m 0755 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
     install -o root -g root -m 0755 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
