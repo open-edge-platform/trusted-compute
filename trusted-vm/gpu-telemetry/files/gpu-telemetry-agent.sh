@@ -28,13 +28,18 @@ log() { echo "[gpu-telemetry] $*" >&2; }
 # Collector endpoint must be supplied via kata kernel_params annotation:
 #   push_host=<ip> push_port=<port> push_path=<path>
 # The agent exits cleanly if any are absent.
-
-_cmdline_host=$(grep -o 'push_host=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
-_cmdline_port=$(grep -o 'push_port=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
-_cmdline_path=$(grep -o 'push_path=[^ ]*' /proc/cmdline 2>/dev/null | cut -d= -f2 || true)
-PUSH_HOST="${_cmdline_host}"
-PUSH_PORT="${_cmdline_port}"
-PUSH_PATH="${_cmdline_path}"
+# Read cmdline as a single line, split on spaces, and take the first matching
+# key to avoid multi-match newlines from grep -o.
+_cmdline_val() {
+  local key="$1"
+  local token
+  for token in $(cat /proc/cmdline 2>/dev/null); do
+    case "${token}" in "${key}="*) echo "${token#"${key}="}"; return;; esac
+  done
+}
+PUSH_HOST="$(_cmdline_val push_host)"
+PUSH_PORT="$(_cmdline_val push_port)"
+PUSH_PATH="$(_cmdline_val push_path)"
 
 if [ -z "${PUSH_HOST}" ]; then
   log "PUSH_HOST not configured; telemetry disabled."
@@ -71,7 +76,7 @@ mkdir -p "$RUNDIR"
 JQ_FILTER='
   ( now * 1000000000 | floor ) as $ts
   | .devs_state[]?
-  | ((.dev_nodes // "") | capture("renderD(?<n>[0-9]+)") | .n | tonumber) as $rd
+  | ((.dev_nodes // "") | capture("renderD(?<n>[0-9]+)")? | .n | tonumber) as $rd
   | select($rd >= 128)
   | ($rd - 128) as $gid
   | .dev_stats as $s

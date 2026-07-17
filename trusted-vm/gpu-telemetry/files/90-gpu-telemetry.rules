@@ -10,4 +10,4 @@
 # This handles hotplug *timing*: the guest may boot before the GPU is attached,
 # so instead of a one-shot boot check we let udev trigger systemd on device add.
 
-ACTION=="add", SUBSYSTEM=="drm", KERNEL=="renderD*", TAG+="systemd", ENV{SYSTEMD_WANTS}="gpu-telemetry.service"
+ACTION=="add", SUBSYSTEM=="drm", KERNEL=="renderD*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="gpu-telemetry.service"

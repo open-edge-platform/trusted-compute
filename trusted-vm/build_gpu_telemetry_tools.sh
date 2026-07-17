@@ -11,8 +11,11 @@
 set -euo pipefail
 
 QMASSA_VERSION="2.1.0"
+QMASSA_REV="590302e8353d9205c40bd9522e93949173e3dae9"
 JQ_VERSION="1.7.1"
 JQ_SHA256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
+# Pin the Rust toolchain for reproducible builds.
+RUST_TOOLCHAIN="1.87.0"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
 mkdir -p "${OUT_DIR}"
@@ -26,16 +29,17 @@ echo "${JQ_SHA256}  ${OUT_DIR}/jq" | sha256sum -c -
 chmod +x "${OUT_DIR}/jq"
 echo "INFO: jq downloaded: $(${OUT_DIR}/jq --version)"
 
-echo "INFO: Building qmassa v${QMASSA_VERSION}"
+echo "INFO: Building qmassa v${QMASSA_VERSION} with Rust ${RUST_TOOLCHAIN}"
 apt-get install -y --no-install-recommends rustup
-rustup toolchain install stable --profile minimal
+rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal
 # shellcheck source=/dev/null
 source "${HOME}/.cargo/env"
+rustup default "${RUST_TOOLCHAIN}"
 rustup target add x86_64-unknown-linux-musl
 cargo install --locked \
     --target x86_64-unknown-linux-musl \
     --git https://github.com/ulissesf/qmassa \
-    --tag "qmassa-v${QMASSA_VERSION}" \
+    --rev "${QMASSA_REV}" \
     qmassa
 cp "${CARGO_HOME:-${HOME}/.cargo}/bin/qmassa" "${OUT_DIR}/qmassa"
 strip "${OUT_DIR}/qmassa"
