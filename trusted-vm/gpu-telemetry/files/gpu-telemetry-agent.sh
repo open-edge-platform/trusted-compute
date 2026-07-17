@@ -49,8 +49,16 @@ if [ -z "${PUSH_PORT}" ]; then
   log "PUSH_PORT not configured; telemetry disabled."
   exit 0
 fi
+if ! [[ "${PUSH_PORT}" =~ ^[0-9]+$ ]] || (( PUSH_PORT < 1 || PUSH_PORT > 65535 )); then
+  log "PUSH_PORT is invalid (${PUSH_PORT}); telemetry disabled."
+  exit 0
+fi
 if [ -z "${PUSH_PATH}" ]; then
   log "PUSH_PATH not configured; telemetry disabled."
+  exit 0
+fi
+if [[ "${PUSH_PATH}" != /* ]]; then
+  log "PUSH_PATH must start with '/': '${PUSH_PATH}'; telemetry disabled."
   exit 0
 fi
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
