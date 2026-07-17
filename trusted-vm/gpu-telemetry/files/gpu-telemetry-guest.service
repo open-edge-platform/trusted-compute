@@ -11,8 +11,8 @@
 [Unit]
 Description=Generic GPU telemetry collector (kata guest)
 # Start as part of the Kata boot target, after the agent is up.
-After=kata-agent.service kata-containers.target
-
+After=kata-agent.service
+Wants=kata-agent.service
 [Service]
 Type=simple
 EnvironmentFile=-/etc/gpu-telemetry/gpu-telemetry.env
