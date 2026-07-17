@@ -32,11 +32,8 @@ echo "INFO: jq downloaded: $(${OUT_DIR}/jq --version)"
 echo "INFO: Building qmassa v${QMASSA_VERSION} with Rust ${RUST_TOOLCHAIN}"
 apt-get install -y --no-install-recommends rustup
 rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal
-# shellcheck source=/dev/null
-source "${HOME}/.cargo/env"
-rustup default "${RUST_TOOLCHAIN}"
-rustup target add x86_64-unknown-linux-musl
-cargo install --locked \
+rustup target add --toolchain "${RUST_TOOLCHAIN}" x86_64-unknown-linux-musl
+rustup run "${RUST_TOOLCHAIN}" cargo install --locked \
     --target x86_64-unknown-linux-musl \
     --git https://github.com/ulissesf/qmassa \
     --rev "${QMASSA_REV}" \
