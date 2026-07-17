@@ -132,8 +132,7 @@ log "GPU detected; pushing to http://${PUSH_HOST}:${PUSH_PORT}${PUSH_PATH} (Infl
 
 "$QMASSA_BIN" --no-tui -m "$INTERVAL_MS" --to-json "$FIFO" &
 QPID=$!
-trap 'kill "$QPID" 2>/dev/null' EXIT
-
+trap 'kill "$QPID" 2>/dev/null; wait "$QPID" 2>/dev/null || true' EXIT
 sleep 1
 if ! kill -0 "$QPID" 2>/dev/null; then
   log "qmassa exited immediately (pid $QPID); check binary and GPU state"
