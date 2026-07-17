@@ -123,7 +123,7 @@ fi
 exec 3<"$FIFO"
 while IFS= read -r line <&3; do
   [ -n "$line" ] || continue
-  lp="$(printf '%s' "$line" | "$JQ_BIN" -rc --arg h "$HOSTTAG" "$JQ_FILTER" 2>/dev/null)"
+  lp="$(printf '%s' "$line" | "$JQ_BIN" -rc --arg h "$HOSTTAG" "$JQ_FILTER" 2>/dev/null)" || continue
   [ -n "$lp" ] && post "$lp"
 done
 
