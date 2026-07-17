@@ -21,7 +21,7 @@ OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 mkdir -p "${OUT_DIR}"
 
 echo "INFO: Downloading jq ${JQ_VERSION}"
-apt-get update -qq && apt-get install -y --no-install-recommends binutils curl ca-certificates libudev-dev musl-tools pkg-config rustup
+apt-get update -qq && apt-get install -o Acquire::Retries=3 -y --no-install-recommends binutils curl ca-certificates libudev-dev musl-tools pkg-config rustup
 curl -fsSL --retry 3 \
     "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-amd64" \
     -o "${OUT_DIR}/jq"

@@ -87,7 +87,10 @@ install_guest_hooks() {
 
 #build gpu telemetry tools (qmassa, jq)
 build_gpu_telemetry_tools() {
-    bash /trusted-vm/build_gpu_telemetry_tools.sh
+    local script="/trusted-vm/build_gpu_telemetry_tools.sh"
+    [[ -f "$script" ]] || { echo "ERROR: build script not found: $script"; exit 1; }
+    echo "INFO: Running $script"
+    bash "$script"
 }
 
 # Install GPU telemetry binaries and config into the rootfs.
@@ -105,8 +108,8 @@ install_gpu_telemetry() {
              "${ROOTFS_DIR}/etc/udev/rules.d" \
              "${ROOTFS_DIR}/usr/local/bin" \
              "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
-    install -o root -g root -m 0755 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
-    install -o root -g root -m 0755 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
+    install -o root -g root -m 0550 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
+    install -o root -g root -m 0550 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
     install -o root -g root -m 0550 "${files_src}/gpu-telemetry-agent.sh" "${ROOTFS_DIR}/usr/local/bin/gpu-telemetry-agent.sh"
     install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.env" "${ROOTFS_DIR}/etc/gpu-telemetry/gpu-telemetry.env"
     install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.service" "${ROOTFS_DIR}/usr/lib/systemd/system/gpu-telemetry.service"

@@ -15,6 +15,8 @@ After=kata-agent.service
 Wants=kata-agent.service
 [Service]
 Type=simple
+RuntimeDirectory=gpu-telemetry
+RuntimeDirectoryMode=0755
 EnvironmentFile=-/etc/gpu-telemetry/gpu-telemetry.env
 ExecStart=/usr/local/bin/gpu-telemetry-agent.sh
 # Agent exits 0 when no GPU is present (no restart); non-zero if qmassa dies.

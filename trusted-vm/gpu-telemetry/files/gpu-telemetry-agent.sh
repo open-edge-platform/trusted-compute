@@ -81,7 +81,6 @@ for _ in {1..60}; do
 done
 ls /dev/dri/renderD* >/dev/null 2>&1 || { log "no GPU render node present; exiting."; exit 0; }
 
-mkdir -p "$RUNDIR"
 # Remove any stale path that is not a FIFO; then create the FIFO.
 [ -p "$FIFO" ] || { rm -f "$FIFO"; mkfifo "$FIFO"; }
 
@@ -114,12 +113,13 @@ post() {
     log "connect to ${PUSH_HOST}:${PUSH_PORT} failed"
     return 1
   }
-  printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
-    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9 2>/dev/null || {
+  if ! printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
+    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9; then
     log "write to ${PUSH_HOST}:${PUSH_PORT} failed"
-    exec 9>&- 2>/dev/null; exec 9<&- 2>/dev/null
+    exec 9>&- 2>/dev/null
+    exec 9<&- 2>/dev/null
     return 1
-  }
+  fi
   exec 9>&- 2>/dev/null
   exec 9<&- 2>/dev/null
 }
@@ -140,7 +140,9 @@ exec 3<"$FIFO"
 while IFS= read -r line <&3; do
   [ -n "$line" ] || continue
   lp="$(printf '%s' "$line" | "$JQ_BIN" -rc --arg h "$HOSTTAG" "$JQ_FILTER" 2>/dev/null)" || continue
-  [ -n "$lp" ] && post "$lp"
+  if [ -n "$lp" ]; then
+    post "$lp" || log "push failed; continuing"
+  fi
 done
 
 wait "$QPID"
