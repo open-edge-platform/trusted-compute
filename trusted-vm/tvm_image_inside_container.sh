@@ -8,7 +8,7 @@
 set -euo pipefail
 
 apt update
-apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential
+apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
 
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
@@ -85,6 +85,26 @@ install_guest_hooks() {
     echo "INFO: Guest hooks installed successfully"
 }
 
+# Download jq binary with SHA256 verification
+download_jq() {
+    echo "INFO: Downloading jq binary"
+    local jq_version="1.7.1"
+    local jq_sha256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
+    local bin_src="${GPU_TELEMETRY_DIR}/binaries"
+    local jq_path="${bin_src}/jq"
+    
+    mkdir -p "${bin_src}"
+    curl -fsSL --retry 3 "https://github.com/jqlang/jq/releases/download/jq-${jq_version}/jq-linux-amd64" -o "${jq_path}"
+    
+    # Verify SHA256 checksum
+    echo "${jq_sha256}  ${jq_path}" | sha256sum -c - > /dev/null || {
+        echo "ERROR: jq binary checksum verification failed"
+        exit 1
+    }
+    chmod +x "${jq_path}"
+    echo "INFO: jq downloaded and verified successfully"
+}
+
 # Install GPU telemetry binaries and config into the rootfs.
 install_gpu_telemetry() {
     echo "INFO: Installing GPU telemetry agent in rootfs"
@@ -145,6 +165,7 @@ copy_tc_image(){
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
 install_guest_hooks
+download_jq
 install_gpu_telemetry
 build_trusted_vm_image
 copy_tc_image

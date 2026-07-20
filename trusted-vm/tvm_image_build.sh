@@ -19,20 +19,7 @@ docker run --rm \
     docker.io/library/rust:1.88 \
     /bin/bash /trusted-vm/build_gpu_telemetry_tools.sh
 
-# Download jq
-echo "INFO: Downloading jq"
-mkdir -p "${SCRIPT_DIR}/gpu-telemetry/binaries"
 
-jq_version="1.7.1"
-jq_sha256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
-jq_path="${SCRIPT_DIR}/gpu-telemetry/binaries/jq"
-curl -fsSL --retry 3 "https://github.com/jqlang/jq/releases/download/jq-${jq_version}/jq-linux-amd64" -o "${jq_path}"
-# Verify SHA256 checksum
-echo "${jq_sha256}  ${jq_path}" | sha256sum -c - > /dev/null || {
-    echo "ERROR: jq binary checksum verification failed"
-    exit 1
-}
-chmod +x "${jq_path}"
 
 # Build Trusted VM image in Ubuntu container
 echo "INFO: Building Trusted-VM image in Ubuntu container"
