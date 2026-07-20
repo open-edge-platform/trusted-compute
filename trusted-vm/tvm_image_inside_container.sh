@@ -85,12 +85,31 @@ install_guest_hooks() {
     echo "INFO: Guest hooks installed successfully"
 }
 
-#build gpu telemetry tools (qmassa, jq)
+#build gpu telemetry tools (qmassa, qmmd, jq)
 build_gpu_telemetry_tools() {
     local script="/trusted-vm/build_gpu_telemetry_tools.sh"
-    [[ -f "$script" ]] || { echo "ERROR: build script not found: $script"; exit 1; }
-    echo "INFO: Running $script"
-    bash "$script"
+    local bin_dir="${GPU_TELEMETRY_DIR}/binaries"
+    mkdir -p "${bin_dir}"
+
+    # Download jq locally
+    local jq_version="1.7.1"
+    local jq_sha256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
+    echo "INFO: Downloading jq ${jq_version}"
+    curl -fsSL --retry 3 "https://github.com/jqlang/jq/releases/download/jq-${jq_version}/jq-linux-amd64" -o "${bin_dir}/jq"
+    echo "${jq_sha256}  ${bin_dir}/jq" | sha256sum -c -
+    chmod +x "${bin_dir}/jq"
+    echo "INFO: jq downloaded: $(${bin_dir}/jq --version)"
+
+    # Build qmassa and qmmd in rust:1.88 container
+    echo "INFO: Building qmassa and qmmd in rust container"
+    docker run --rm -v "$(dirname "${GPU_TELEMETRY_DIR}"):/trusted-vm" docker.io/library/rust:1.88 bash "${script}"
+
+    # Verify binaries were built
+    [[ -x "${bin_dir}/qmassa" ]] || { echo "ERROR: qmassa not found in ${bin_dir}"; exit 1; }
+    [[ -x "${bin_dir}/qmmd" ]]   || { echo "ERROR: qmmd not found in ${bin_dir}"; exit 1; }
+
+    echo "INFO: GPU telemetry tools ready in ${bin_dir}"
+    ls -lh "${bin_dir}"
 }
 
 # Install GPU telemetry binaries and config into the rootfs.
@@ -101,6 +120,7 @@ install_gpu_telemetry() {
 
     [[ -d "${bin_src}" ]]        || { echo "ERROR: ${bin_src} not found"; exit 1; }
     [[ -x "${bin_src}/qmassa" ]] || { echo "ERROR: qmassa not found in ${bin_src}"; exit 1; }
+    [[ -x "${bin_src}/qmmd" ]]   || { echo "ERROR: qmmd not found in ${bin_src}"; exit 1; }
     [[ -x "${bin_src}/jq" ]]     || { echo "ERROR: jq not found in ${bin_src}"; exit 1; }
     [[ -d "${files_src}" ]]      || { echo "ERROR: ${files_src} not found"; exit 1; }
 
@@ -109,6 +129,7 @@ install_gpu_telemetry() {
              "${ROOTFS_DIR}/usr/local/bin" \
              "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
     install -o root -g root -m 0550 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
+    install -o root -g root -m 0550 "${bin_src}/qmmd"   "${ROOTFS_DIR}/usr/local/bin/qmmd"
     install -o root -g root -m 0550 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
     install -o root -g root -m 0550 "${files_src}/gpu-telemetry-agent.sh" "${ROOTFS_DIR}/usr/local/bin/gpu-telemetry-agent.sh"
     install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.env" "${ROOTFS_DIR}/etc/gpu-telemetry/gpu-telemetry.env"
@@ -117,6 +138,8 @@ install_gpu_telemetry() {
     install -o root -g root -m 0444 "${files_src}/90-gpu-telemetry.rules" "${ROOTFS_DIR}/etc/udev/rules.d/90-gpu-telemetry.rules"
 
     echo "INFO: GPU telemetry installed successfully"
+    echo "INFO: Cleaning up GPU telemetry binaries"
+    rm -rf "${bin_src}"
 }
 
 #build Trusted vm image from rootfs

@@ -3,47 +3,34 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Builds qmassa (static musl binary) from source and downloads static jq.
-# Output: /trusted-vm/gpu-telemetry/binaries/{qmassa,jq}
-# Runs inside the TVM build container (ubuntu:24.04).
+# Builds qmassa and qmmd from source.
+# Runs inside a docker.io/library/rust:1.88 container.
+# Binaries are copied to /trusted-vm/gpu-telemetry/binaries (mounted volume).
 #
 
 set -euo pipefail
 
+QMMD_VERSION="0.2.0"
 QMASSA_VERSION="2.1.0"
-QMASSA_REV="590302e8353d9205c40bd9522e93949173e3dae9"
-JQ_VERSION="1.7.1"
-JQ_SHA256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
-# Pin the Rust toolchain for reproducible builds.
-RUST_TOOLCHAIN="1.88.0"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
+DEBIAN_FRONTEND=noninteractive
+apt-get update && apt-get install -y --no-install-recommends ca-certificates libudev-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
+export PATH="$HOME/.cargo/bin:$PATH"
+
+echo "INFO: Building qmmd v${QMMD_VERSION} from GitHub"
+cargo install --locked --force --git https://github.com/ulissesf/qmassa --tag qmmd-v${QMMD_VERSION} qmmd
+command -v qmmd > /dev/null || { echo "ERROR: qmmd binary not found in PATH"; exit 1; }
+echo "INFO: qmmd installed: $(qmmd --version)"
+
+echo "INFO: Building qmassa v${QMASSA_VERSION} from GitHub"
+cargo install --locked --force --git https://github.com/ulissesf/qmassa --tag qmassa-v${QMASSA_VERSION} qmassa
+command -v qmassa > /dev/null || { echo "ERROR: qmassa binary not found in PATH"; exit 1; }
+echo "INFO: qmassa installed: $(qmassa --version)"
+
+# Copy binaries to output directory (mounted volume)
 mkdir -p "${OUT_DIR}"
-
-echo "INFO: Downloading jq ${JQ_VERSION}"
-apt-get update -qq && apt-get install -o Acquire::Retries=3 -y --no-install-recommends binutils curl ca-certificates libudev-dev musl-tools pkg-config rustup
-curl -fsSL --retry 3 \
-    "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-amd64" \
-    -o "${OUT_DIR}/jq"
-echo "${JQ_SHA256}  ${OUT_DIR}/jq" | sha256sum -c -
-chmod +x "${OUT_DIR}/jq"
-echo "INFO: jq downloaded: $(${OUT_DIR}/jq --version)"
-
-echo "INFO: Building qmassa v${QMASSA_VERSION} with Rust ${RUST_TOOLCHAIN}"
-mkdir -p "${CARGO_HOME:-${HOME}/.cargo}/bin"
-ln -sf "$(command -v rustup)" "${CARGO_HOME:-${HOME}/.cargo}/bin/rustup"
-rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal
-rustup target add --toolchain "${RUST_TOOLCHAIN}" x86_64-unknown-linux-musl
-# musl target is treated as cross-compilation by pkg-config even though the
-# architecture is the same; allow it so libudev-sys build.rs can proceed.
-PKG_CONFIG_ALLOW_CROSS=1 rustup run "${RUST_TOOLCHAIN}" cargo install --locked \
-    --target x86_64-unknown-linux-musl \
-    --git https://github.com/ulissesf/qmassa \
-    --rev "${QMASSA_REV}" \
-    qmassa
-cp "${CARGO_HOME:-${HOME}/.cargo}/bin/qmassa" "${OUT_DIR}/qmassa"
-strip "${OUT_DIR}/qmassa"
-echo "INFO: qmassa built: $(${OUT_DIR}/qmassa --version 2>&1 || true)"
-
-echo "INFO: GPU telemetry tools ready in ${OUT_DIR}"
+cp /usr/local/cargo/bin/qmmd "${OUT_DIR}/qmmd"
+cp /usr/local/cargo/bin/qmassa "${OUT_DIR}/qmassa"
+echo "INFO: Binaries copied to ${OUT_DIR}"
 ls -lh "${OUT_DIR}"
