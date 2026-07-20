@@ -11,20 +11,22 @@
 set -euo pipefail
 
 QMMD_VERSION="0.2.0"
+QMMD_COMMIT="590302e8353d9205c40bd9522e93949173e3dae9"
 QMASSA_VERSION="2.1.0"
+QMASSA_COMMIT="590302e8353d9205c40bd9522e93949173e3dae9"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends ca-certificates libudev-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 export PATH="$HOME/.cargo/bin:$PATH"
 
-echo "INFO: Building qmmd v${QMMD_VERSION} from GitHub"
-cargo install --locked --force --git https://github.com/ulissesf/qmassa --tag qmmd-v${QMMD_VERSION} qmmd
+echo "INFO: Building qmmd v${QMMD_VERSION} (commit: ${QMMD_COMMIT}) from GitHub"
+cargo install --locked --force --git https://github.com/ulissesf/qmassa --rev ${QMMD_COMMIT} qmmd
 command -v qmmd > /dev/null || { echo "ERROR: qmmd binary not found in PATH"; exit 1; }
 echo "INFO: qmmd installed: $(qmmd --version)"
 
-echo "INFO: Building qmassa v${QMASSA_VERSION} from GitHub"
-cargo install --locked --force --git https://github.com/ulissesf/qmassa --tag qmassa-v${QMASSA_VERSION} qmassa
+echo "INFO: Building qmassa v${QMASSA_VERSION} (commit: ${QMASSA_COMMIT}) from GitHub"
+cargo install --locked --force --git https://github.com/ulissesf/qmassa --rev ${QMASSA_COMMIT} qmassa
 command -v qmassa > /dev/null || { echo "ERROR: qmassa binary not found in PATH"; exit 1; }
 echo "INFO: qmassa installed: $(qmassa --version)"
 
