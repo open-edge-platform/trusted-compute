@@ -13,7 +13,7 @@ echo "INFO: Building Trusted-VM image"
 echo "INFO: Building qmassa and qmmd in rust:1.88 container"
 docker run --rm \
     -e DEBIAN_FRONTEND=noninteractive \
-    -v ${PWD}/trusted-vm:/trusted-vm \
+    -v "${PWD}/trusted-vm:/trusted-vm" \
     docker.io/library/rust:1.88 \
     /bin/bash /trusted-vm/build_gpu_telemetry_tools.sh
 
