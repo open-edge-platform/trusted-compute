@@ -14,7 +14,7 @@ QMMD_VERSION="0.2.0"
 QMASSA_VERSION="2.1.0"
 OUT_DIR="/trusted-vm/gpu-telemetry/binaries"
 
-DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends ca-certificates libudev-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 export PATH="$HOME/.cargo/bin:$PATH"
 

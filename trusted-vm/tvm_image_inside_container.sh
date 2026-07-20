@@ -85,33 +85,6 @@ install_guest_hooks() {
     echo "INFO: Guest hooks installed successfully"
 }
 
-#build gpu telemetry tools (qmassa, qmmd, jq)
-build_gpu_telemetry_tools() {
-    local script="/trusted-vm/build_gpu_telemetry_tools.sh"
-    local bin_dir="${GPU_TELEMETRY_DIR}/binaries"
-    mkdir -p "${bin_dir}"
-
-    # Download jq locally
-    local jq_version="1.7.1"
-    local jq_sha256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
-    echo "INFO: Downloading jq ${jq_version}"
-    curl -fsSL --retry 3 "https://github.com/jqlang/jq/releases/download/jq-${jq_version}/jq-linux-amd64" -o "${bin_dir}/jq"
-    echo "${jq_sha256}  ${bin_dir}/jq" | sha256sum -c -
-    chmod +x "${bin_dir}/jq"
-    echo "INFO: jq downloaded: $(${bin_dir}/jq --version)"
-
-    # Build qmassa and qmmd in rust:1.88 container
-    echo "INFO: Building qmassa and qmmd in rust container"
-    docker run --rm -v "$(dirname "${GPU_TELEMETRY_DIR}"):/trusted-vm" docker.io/library/rust:1.88 bash "${script}"
-
-    # Verify binaries were built
-    [[ -x "${bin_dir}/qmassa" ]] || { echo "ERROR: qmassa not found in ${bin_dir}"; exit 1; }
-    [[ -x "${bin_dir}/qmmd" ]]   || { echo "ERROR: qmmd not found in ${bin_dir}"; exit 1; }
-
-    echo "INFO: GPU telemetry tools ready in ${bin_dir}"
-    ls -lh "${bin_dir}"
-}
-
 # Install GPU telemetry binaries and config into the rootfs.
 install_gpu_telemetry() {
     echo "INFO: Installing GPU telemetry agent in rootfs"
@@ -123,6 +96,8 @@ install_gpu_telemetry() {
     [[ -x "${bin_src}/qmmd" ]]   || { echo "ERROR: qmmd not found in ${bin_src}"; exit 1; }
     [[ -x "${bin_src}/jq" ]]     || { echo "ERROR: jq not found in ${bin_src}"; exit 1; }
     [[ -d "${files_src}" ]]      || { echo "ERROR: ${files_src} not found"; exit 1; }
+
+    echo "INFO: GPU telemetry tools ready in ${bin_src}"
 
     mkdir -p "${ROOTFS_DIR}/etc/gpu-telemetry" \
              "${ROOTFS_DIR}/etc/udev/rules.d" \
@@ -170,7 +145,6 @@ copy_tc_image(){
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
 install_guest_hooks
-build_gpu_telemetry_tools
 install_gpu_telemetry
 build_trusted_vm_image
 copy_tc_image
