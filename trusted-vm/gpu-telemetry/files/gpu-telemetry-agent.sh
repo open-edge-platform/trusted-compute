@@ -119,7 +119,7 @@ post() {
   {
     printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
       "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body"
-  } | timeout 10s cat > /dev/tcp/${PUSH_HOST}/${PUSH_PORT} 2>/dev/null || {
+  } | timeout 10s bash -c 'cat >"/dev/tcp/$1/$2"' _ "$PUSH_HOST" "$PUSH_PORT" 2>/dev/null || {
     log "POST to ${PUSH_HOST}:${PUSH_PORT} failed or timed out"
     return 1
   }
