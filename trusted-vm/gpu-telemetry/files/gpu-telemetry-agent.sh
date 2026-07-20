@@ -115,19 +115,14 @@ JQ_FILTER='
 post() {
   local body="$1"
   [ -n "$body" ] || return 0
-  exec 9<>"/dev/tcp/${PUSH_HOST}/${PUSH_PORT}" 2>/dev/null || {
-    log "connect to ${PUSH_HOST}:${PUSH_PORT} failed"
+  
+  {
+    printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
+      "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body"
+  } | timeout 10s cat > /dev/tcp/${PUSH_HOST}/${PUSH_PORT} 2>/dev/null || {
+    log "POST to ${PUSH_HOST}:${PUSH_PORT} failed or timed out"
     return 1
   }
-  if ! printf 'POST %s HTTP/1.1\r\nHost: %s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s' \
-    "$PUSH_PATH" "$PUSH_HOST" "${#body}" "$body" >&9; then
-    log "write to ${PUSH_HOST}:${PUSH_PORT} failed"
-    exec 9>&- 2>/dev/null
-    exec 9<&- 2>/dev/null
-    return 1
-  fi
-  exec 9>&- 2>/dev/null
-  exec 9<&- 2>/dev/null
 }
 
 log "GPU detected; pushing to http://${PUSH_HOST}:${PUSH_PORT}${PUSH_PATH} (InfluxDB line protocol)"
