@@ -6,7 +6,7 @@ index 4066c85e4..fd888805f 100644
  				Slot:          strconv.FormatUint(uint64(i), 10),
  				Multifunction: multiFunction,
  				Addr:          addr,
-+				MemReserve:    "32m",
++				MemReserve:    "256m",
 +				Pref64Reserve: "512m",
  			},
  		)
@@ -15,7 +15,7 @@ index 4066c85e4..fd888805f 100644
  		Slot:          strconv.FormatUint(uint64(0), 10),
  		Multifunction: false,
  		Addr:          "0",
-+		MemReserve:    "32m",
++		MemReserve:    "256m",
 +		Pref64Reserve: "512m",
  	}
  
