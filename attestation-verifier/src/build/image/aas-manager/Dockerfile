@@ -4,7 +4,7 @@
 # Dependabot can update kubectl by tracking this image tag.
 FROM registry.k8s.io/kubectl:v1.36.2@sha256:b0d792e0d8dfb9bb1b922b78b23137e2a34bb6f9667640353a9d2aadd1fd7761 AS kubectl
 
-FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
+FROM debian:bookworm-slim@sha256:7b140f374b289a7c2befc338f42ebe6441b7ea838a042bbd5acbfca6ec875818
 
 LABEL org.label-schema.name="Authservice Manager" \
       org.label-schema.vendor="Intel Corporation" \
