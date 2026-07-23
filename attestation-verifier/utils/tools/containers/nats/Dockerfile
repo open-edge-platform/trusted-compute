@@ -4,7 +4,7 @@
 # */
 
 # Multi-stage Dockerfile: build cfssl/cfssljson in a builder stage, copy only binaries into final image
-FROM golang:1.26.5-bookworm@sha256:18aedc16aa19b3fd7ded7245fc14b109e054d65d22ed53c355c899582bbb2113 AS builder
+FROM golang:1.26.5-bookworm@sha256:1ecb7edf62a0408027bd5729dfd6b1b8766e578e8df93995b225dfd0944eb651 AS builder
 
 WORKDIR /src/cfssl
 
@@ -32,7 +32,7 @@ RUN set -eux; \
 # Dependabot can update kubectl by tracking this image tag.
 FROM registry.k8s.io/kubectl:v1.36.2@sha256:b0d792e0d8dfb9bb1b922b78b23137e2a34bb6f9667640353a9d2aadd1fd7761 AS kubectl
 
-FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
+FROM debian:bookworm-slim@sha256:7b140f374b289a7c2befc338f42ebe6441b7ea838a042bbd5acbfca6ec875818
 COPY --from=kubectl --chmod=0755 /bin/kubectl /usr/local/bin/kubectl
 
 RUN set -eux; \
