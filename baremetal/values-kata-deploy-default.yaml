@@ -23,6 +23,7 @@ shims:
       - amd64
     containerd:
       snapshotter: ""
+    allowedHypervisorAnnotations: ["pcie_root_port", "hot_plug_vfio", "enable_virtio_mem", "default_memory"]
 # Default shim per architecture
 defaultShim:
   amd64: qemu

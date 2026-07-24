@@ -38,6 +38,7 @@ KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
 KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_CONFIG_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/defaults/kata-containers"
+KATA_DOCKERFILE="${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/Dockerfile"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
 KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
@@ -207,8 +208,9 @@ tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 echo "INFO: Cloning Kata Containers repo"
 git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
 
-#create kata-artifacts directory for new Dockerfile structure
-echo "INFO: Creating kata-artifacts directory"
+#patch the kata-deploy Dockerfile to add tc-docker-deploy support
+"${BUILD_DIR}/patch-dockerfile.sh" "${KATA_DOCKERFILE}"
+
 mkdir -p "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
 
 #copy the build artifacts to the kata repo with version suffix
@@ -221,6 +223,17 @@ pushd "${KATA_CONTAINERS_DIR}"
 bash tools/packaging/kata-deploy/local-build/kata-deploy-build-components-tarballs.sh all
 cp tools/packaging/kata-deploy/local-build/build/kata-deploy-static-*.tar.zst tools/packaging/kata-deploy/kata-artifacts/
 popd
+
+#package tc-docker-deploy as a separate kata-deploy-static tarball (-> /usr/bin/tc-docker-deploy in image)
+echo "INFO: Packaging tc-docker-deploy as kata-deploy-static tarball"
+_TC_PKG_DIR=$(mktemp -d)
+mkdir -p "${_TC_PKG_DIR}/usr/bin"
+cp "${BUILD_DIR}/tc-docker-deploy/target/x86_64-unknown-linux-musl/release/tc-docker-deploy" "${_TC_PKG_DIR}/usr/bin/"
+tar --zstd -cf "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/kata-deploy-static-tc-docker-deploy.tar.zst" -C "${_TC_PKG_DIR}" .
+rm -rf "${_TC_PKG_DIR}"
+
+#patch shim-components.json so kata-deploy finds our monolithic kata-static tarball at runtime
+"${BUILD_DIR}/patch-shim-components.sh" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/shim-components.json" "${KATA_CONTAINERS_TAG}"
 
 #build the kata deploy image
 pushd "${KATA_CONTAINERS_DIR}"
