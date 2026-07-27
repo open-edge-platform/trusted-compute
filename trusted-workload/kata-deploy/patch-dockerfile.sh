@@ -28,4 +28,14 @@ awk '
 { print }
 ' "${DOCKERFILE}" > "${DOCKERFILE}.tmp" && mv "${DOCKERFILE}.tmp" "${DOCKERFILE}"
 
+grep -q 'kata-deploy-static-tc-docker-deploy\.tar\.zst' "${DOCKERFILE}" || {
+  echo "ERROR: Failed to patch ${DOCKERFILE} to extract tc-docker-deploy tarball"
+  exit 1
+}
+
+grep -q '^COPY --from=artifact-stage /opt/prebuilt/usr/bin/tc-docker-deploy /usr/bin/tc-docker-deploy$' "${DOCKERFILE}" || {
+  echo "ERROR: Failed to patch ${DOCKERFILE} to copy tc-docker-deploy into /usr/bin"
+  exit 1
+}
+
 echo "INFO: Dockerfile patched successfully"

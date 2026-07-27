@@ -82,13 +82,31 @@ fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
                 .ok_or_else(|| anyhow::anyhow!("Symlink has no link name: {}", raw_path.display()))?
                 .into_owned();
 
-            // rewrite absolute symlinks that point into /opt/kata so they resolve on the host
+            // Validate symlink target to avoid host path escapes.
+            if link_target
+                .components()
+                .any(|c| matches!(c, Component::ParentDir))
+            {
+                anyhow::bail!(
+                    "Tarball {} contains symlink with '..' in target: {} -> {}",
+                    tarball_path.display(),
+                    raw_path.display(),
+                    link_target.display()
+                );
+            }
+
+            // Rewrite absolute symlinks that point into /opt/kata so they resolve on the host.
             let final_target: PathBuf = if link_target.is_absolute() {
-                if let Ok(rel) = link_target.strip_prefix(TARBALL_ABS_PREFIX) {
-                    dest_path.join(rel)
-                } else {
-                    link_target
-                }
+                let rel = link_target.strip_prefix(TARBALL_ABS_PREFIX).map_err(|_| {
+                    anyhow::anyhow!(
+                        "Tarball {} contains symlink with absolute target outside {}: {} -> {}",
+                        tarball_path.display(),
+                        TARBALL_ABS_PREFIX,
+                        raw_path.display(),
+                        link_target.display()
+                    )
+                })?;
+                dest_path.join(rel)
             } else {
                 link_target
             };
@@ -256,7 +274,7 @@ fn main() -> Result<()> {
     match copy_artifacts() {
         Ok(_) => info!("Artifacts installed"),
         Err(e) => {
-            error!("Failed to copy artifacts: {}", e);
+            error!("Failed to install artifacts: {}", e);
             if let Err(ce) = cleanup_artifacts() {
                 error!("Cleanup after failed install also failed: {}", ce);
             }
