@@ -167,19 +167,6 @@ print_tc_k3s_summary() {
     echo "  - Users and groups: bm-agents group, tc-agent user, tc-ima user"
 }
 
-configure_kata_qemu_config() {
-    local SOURCE="/opt/kata/share/defaults/kata-containers/configuration.toml"
-    local DEST="/opt/kata/share/defaults/kata-containers/runtimes/qemu/configuration-qemu.toml"
-    for _ in {1..60}; do
-        [[ -f "$SOURCE" ]] || { sleep 5; continue; }
-        mkdir -p "$(dirname "$DEST")" || { print_error "Failed to create $(dirname "$DEST")"; exit 1; }
-        cp "$SOURCE" "$DEST"         || { print_error "Failed to copy $SOURCE to $DEST"; exit 1; }
-        return 0
-    done
-    print_error "TC configuration file not found after 5 minutes: $SOURCE"; exit 1
-}
-
-
 # Function to wait for a namespace's resources using kubectl rollout status
 wait_for_namespace_ready() {
     local ns="$1"
@@ -285,7 +272,6 @@ install_tc_k3s() {
     set_permissions
     create_users_groups
     restart_k3s
-    sleep 5 && configure_kata_qemu_config
     print_tc_k3s_summary
     print_status "Wait for daemonsets and deployments to become ready..."
     sleep 180

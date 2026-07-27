@@ -105,10 +105,11 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-# Enable virtio_mem in configuration.toml to fix kernel 6.12 memory hotplug issue
-# NOTE: This workaround is required for kernel 6.12.x due to broken memory probe mechanism
-echo "INFO: Enabling virtio_mem in configuration.toml for kernel 6.12 compatibility"
-KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/configuration.toml"
+# Enable virtio_mem in configuration.toml
+echo "INFO: Enabling virtio_mem in configuration.toml"
+for KATA_CONFIG_FILE in \
+    "${KATA_CONFIG_DIR}/configuration.toml" \
+    "${KATA_CONFIG_DIR}/configuration-qemu.toml"; do
 if [ -f "${KATA_CONFIG_FILE}" ]; then
     sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
     if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
@@ -151,9 +152,10 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
     done
     sed -i "s/^\(enable_annotations = \[.*\)\]/\1${annotations_str}]/" "${KATA_CONFIG_FILE}"
 else
-    echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    echo "ERROR: ${KATA_CONFIG_FILE} not found"
     exit 1
 fi
+done
 
 #build kata binary and copy to artifacts
 "${BUILD_DIR}/build-kata-binary.sh"
