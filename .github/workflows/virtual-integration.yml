@@ -635,7 +635,7 @@ jobs:
           KD_TARBALL_BASENAME="$(basename "$KD_TARBALL_HOST")"
 
           mkdir -p "$KD_EXTRACT_DIR"
-          zstd -dc "$KD_TARBALL_HOST" | tar -xf - -C "$KD_EXTRACT_DIR"
+          sudo zstd -dc "$KD_TARBALL_HOST" | sudo tar -xf - -C "$KD_EXTRACT_DIR"
 
           for KD_CFG_REL in \
             "opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
@@ -656,7 +656,7 @@ jobs:
             sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
           done
 
-          tar -cf - -C "$KD_EXTRACT_DIR" . | zstd -o "$KD_TARBALL_HOST"
+          sudo tar -cf - -C "$KD_EXTRACT_DIR" . | sudo zstd -f -o "$KD_TARBALL_HOST"
           sudo docker cp "$KD_TARBALL_HOST" "$kd_cid:/opt/kata-artifacts/tarballs/$KD_TARBALL_BASENAME"
           sudo rm -rf "$KD_TARBALLS_WORKDIR" "$KD_EXTRACT_DIR"
 
