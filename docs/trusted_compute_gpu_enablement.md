@@ -44,7 +44,7 @@ To enable GPU passthrough, use the `intel-igpu-vfio-bind.sh` script located in t
 sudo ./tools/intel-igpu-vfio-bind.sh bind
 ```
 
-The script auto-detects the Intel iGPU, stops the display manager, unbinds the GPU from its native driver (`i915` or `xe`), binds it to `vfio-pci`, and generates a CDI spec at `/etc/cdi/intel-igpu-tc-cdi.yaml`.
+The script auto-detects the Intel iGPU, stops the display manager, unbinds the GPU from its native driver (`i915` or `xe`), binds it to `vfio-pci`, prints the assigned VFIO device path (`/dev/vfio/<n>`), and generates a CDI spec at `/etc/cdi/intel-igpu-tc-cdi.yaml`.
 
 ### Verify VFIO Binding
 

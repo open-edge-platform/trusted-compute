@@ -46,6 +46,7 @@ build:
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/intel-igpu-vfio-bind.sh" "$$STAGEDIR/tools/"
+	cp -a "$(CURDIR)/intel-npu-vfio-bind.sh" "$$STAGEDIR/tools/"
 	cp -a "$(CURDIR)/k3s.sh" "$$STAGEDIR/k3s/k3s.sh"
 	cp -a "$(CURDIR)/trusted-compute.yaml" "$$STAGEDIR/manifests/trusted-compute.yaml"
 
