@@ -65,8 +65,8 @@ if ! [[ "${PUSH_HOST}" =~ ^[A-Za-z0-9.-]+$ ]]; then
 fi
 
 INTERVAL_MS="${COLLECT_INTERVAL_MS:-1000}"
-if ! [[ "${INTERVAL_MS}" =~ ^[0-9]+$ ]] || (( INTERVAL_MS < 1 )); then
-  log "COLLECT_INTERVAL_MS is invalid (${INTERVAL_MS}); telemetry disabled."
+if ! [[ "${INTERVAL_MS}" =~ ^[0-9]+$ ]] || (( INTERVAL_MS < 100 )); then
+  log "COLLECT_INTERVAL_MS must be an integer >= 100 (got: ${INTERVAL_MS}); telemetry disabled."
   exit 0
 fi
 

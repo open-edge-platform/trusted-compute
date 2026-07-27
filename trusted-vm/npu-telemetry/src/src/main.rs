@@ -202,12 +202,14 @@ impl PmtCtx {
 // ---------------------------------------------------------------------------
 // Locate /sys/bus/pci/drivers/intel_vpu/<0000:xx:xx.x>
 // ---------------------------------------------------------------------------
+/// Locate /sys/bus/pci/drivers/intel_vpu/<domain:bus:slot.fn>
+/// Match any PCI BDF directory (domain:bus:slot.func), not just domain 0000.
 fn find_npu_dev_path() -> Option<String> {
     let base = "/sys/bus/pci/drivers/intel_vpu";
     for entry in fs::read_dir(base).ok()?.flatten() {
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        if name.starts_with("0000:") {
+        if name.contains(':') && name.contains('.') {
             return Some(format!("{}/{}", base, name));
         }
     }
@@ -221,23 +223,33 @@ fn now_ns() -> u64 {
         .as_nanos() as u64
 }
 
+/// Escape a tag value for InfluxDB line protocol.
+/// Tag values must escape: backslash, comma, equals sign, and space.
+fn escape_tag(s: &str) -> String {
+    s.replace('\\', "\\\\")
+     .replace(',', "\\,")
+     .replace('=', "\\=")
+     .replace(' ', "\\ ")
+}
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
 fn main() {
-    let hosttag = env::var("METRICS_HOSTNAME")
-        .ok()
-        .filter(|s| !s.is_empty())
-        .or_else(|| read_str("/etc/hostname"))
-        .unwrap_or_else(|| "kata-guest".to_string());
+    let hosttag = escape_tag(
+        &env::var("METRICS_HOSTNAME")
+            .ok()
+            .filter(|s| !s.is_empty())
+            .or_else(|| read_str("/etc/hostname"))
+            .unwrap_or_else(|| "kata-guest".to_string()),
+    );
 
     let interval_ms: u64 = env::var("NPU_INTERVAL_MS")
         .ok()
         .and_then(|v| v.parse().ok())
         .filter(|&v: &u64| v >= 100)
         .unwrap_or(1000);
-    let sleep_dur  = Duration::from_millis(interval_ms);
-    let interval_s = interval_ms as f64 / 1000.0;
+    let sleep_dur = Duration::from_millis(interval_ms);
 
     let mut pmt = pmt_init().unwrap_or_else(|| {
         eprintln!("[npu-reader] PMT unavailable; sleeping indefinitely");
@@ -277,9 +289,9 @@ fn main() {
             continue;
         }
 
-        // Power (W) — energy delta over actual elapsed time
+        // Power (W) — energy delta over actual elapsed time; clamp to 0 on counter reset/wrap
         let curr_energy = pmt.energy_j();
-        let power_w = if elapsed_s > 0.0 { (curr_energy - prev_energy) / elapsed_s } else { 0.0 };
+        let power_w = if elapsed_s > 0.0 { (curr_energy - prev_energy).max(0.0) / elapsed_s } else { 0.0 };
         prev_energy = curr_energy;
 
         // Frequency (Hz)
