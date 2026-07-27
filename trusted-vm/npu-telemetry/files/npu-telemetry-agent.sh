@@ -18,7 +18,7 @@
 # Implemented in bash + static npu-reader binary (no Python in VM).
 #
 # Guest install paths:
-#   /usr/local/bin/npu-reader              (NPU stats tool — static C binary)
+#   /usr/local/bin/npu-reader              (NPU stats tool — static Rust binary, musl target)
 #   /usr/local/bin/npu-telemetry-agent.sh
 
 set -euo pipefail

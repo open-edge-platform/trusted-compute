@@ -121,9 +121,15 @@ fn pmt_init() -> Option<PmtCtx> {
             continue;
         }
 
-        let base       = format!("{}/{}", pmt_root, name);
-        let guid       = read_str(&format!("{}/guid", base))?;
-        let size: usize = read_str(&format!("{}/size", base))?.parse().ok()?;
+        let base = format!("{}/{}", pmt_root, name);
+        let guid = match read_str(&format!("{}/guid", base)) {
+            Some(g) => g,
+            None => continue,
+        };
+        let size: usize = match read_str(&format!("{}/size", base)).and_then(|s| s.parse().ok()) {
+            Some(sz) => sz,
+            None => continue,
+        };
         let telem_path = format!("{}/telem", base);
         if !Path::new(&telem_path).exists() {
             continue;
@@ -150,12 +156,9 @@ fn pmt_init() -> Option<PmtCtx> {
 impl PmtCtx {
     /// Read a fresh binary snapshot from the PMT telem file.
     fn update(&mut self) -> bool {
-        let mut f = match fs::File::open(&self.telem_path) {
-            Ok(f)  => f,
-            Err(_) => return false,
-        };
-        let n = f.read(&mut self.buf).unwrap_or(0);
-        n >= self.buf.len()
+        fs::File::open(&self.telem_path)
+            .and_then(|mut f| f.read_exact(&mut self.buf))
+            .is_ok()
     }
 
     fn freq_mhz(&self) -> f64 {
@@ -166,7 +169,12 @@ impl PmtCtx {
         }
     }
 
-    /// Display frequency in Hz — matches get_display_freq_hz() in npu_monitor_tool.py.
+    /// Hardware-scaled frequency value emitted as the `frequency=` field in InfluxDB LP.
+    /// Formula matches `get_display_freq_hz()` in npu_monitor_tool.py exactly:
+    ///   freq_mhz * 1000 / 2
+    /// This is intentional hardware-specific scaling — not a standard MHz→Hz conversion
+    /// (which would be * 1_000_000). Changing this would diverge from the upstream
+    /// Python npu_reader.py and break metrics-manager dashboards.
     fn freq_hz(&self) -> f64 {
         self.freq_mhz() * 1000.0 / 2.0
     }
@@ -283,9 +291,9 @@ fn main() {
         // Tile configuration
         let tile_config = pmt.tile_config();
 
-        // NoC bandwidth delta (MB/s)
+        // NoC bandwidth delta (MB/s) — clamp to 0 on counter reset/wrap
         let curr_bw = pmt.noc_bw();
-        let bw_mbs  = curr_bw - prev_bw;
+        let bw_mbs  = (curr_bw - prev_bw).max(0.0);
         prev_bw = curr_bw;
 
         // Utilization (%) — delta of monotonic busy_time_us counter
