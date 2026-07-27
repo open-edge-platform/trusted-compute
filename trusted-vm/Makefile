@@ -34,6 +34,10 @@ clone-microvisor:
 	rm -rf "$(EDGE_MICROVISOR_SRC_DIR)"
 	git clone -b $(EDGE_MICROVISOR_BRANCH) $(EDGE_MICROVISOR_SRC) $(EDGE_MICROVISOR_SRC_DIR)
 	cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
+	@# Patch trusted-compute-os.json in-place with intel-npu-driver and intel-npu-firmware
+	jq '.SystemConfigs[0].packages |= (. + ["intel-npu-driver", "intel-npu-firmware"] | unique)' \
+		$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json > $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json.tmp \
+		&& mv $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json.tmp $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
 
 clone-kata:
 	@# Help: Runs clone kata containers
