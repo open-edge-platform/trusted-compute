@@ -1,0 +1,15 @@
+[package]
+name = "npu-reader"
+version = "0.1.0"
+edition = "2021"
+description = "Intel NPU telemetry reader — emits InfluxDB line protocol to stdout"
+license = "Apache-2.0"
+
+[[bin]]
+name = "npu-reader"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"   # minimise binary size
+strip = true
+lto = true

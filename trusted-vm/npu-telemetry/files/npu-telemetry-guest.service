@@ -1,0 +1,29 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# Systemd service for the NPU telemetry agent inside a kata-container guest.
+#
+# Installed in the guest rootfs at:
+#   /usr/lib/systemd/system/npu-telemetry.service
+# Enabled by symlinking into kata-containers.target.wants/ (NOT
+# multi-user.target — Kata boots to kata-containers.target).
+
+[Unit]
+Description=Intel NPU telemetry collector (kata guest)
+After=kata-agent.service
+Wants=kata-agent.service
+ConditionPathExistsGlob=/dev/accel/accel*
+
+[Service]
+Type=simple
+RuntimeDirectory=npu-telemetry
+RuntimeDirectoryMode=0755
+EnvironmentFile=-/etc/npu-telemetry/npu-telemetry.env
+ExecStart=/usr/local/bin/npu-telemetry-agent.sh
+# Agent exits 0 when no NPU is present (no restart); non-zero if npu-reader dies.
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=kata-containers.target
