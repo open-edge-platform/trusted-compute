@@ -31,14 +31,15 @@ use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 // ---------------------------------------------------------------------------
-// PMT GUID constants
+// PMT GUID constants (numeric — avoids brittle string comparison with sysfs
+// values that may differ only in leading zeros, e.g. "0x03072005" vs "0x3072005")
 // ---------------------------------------------------------------------------
-const PMT_GUID_MTL:   &str = "0x130670b2";
-const PMT_GUID_ARL:   &str = "0x1306a0b3";
-const PMT_GUID_ARL_H: &str = "0x1306a0b2";
-const PMT_GUID_ARL_S: &str = "0x1306a0b4";
-const PMT_GUID_LNL:   &str = "0x3072005";
-const PMT_GUID_PTL:   &str = "0x3086000";
+const PMT_GUID_MTL:   u64 = 0x130670b2;
+const PMT_GUID_ARL:   u64 = 0x1306a0b3;
+const PMT_GUID_ARL_H: u64 = 0x1306a0b2;
+const PMT_GUID_ARL_S: u64 = 0x1306a0b4;
+const PMT_GUID_LNL:   u64 = 0x3072005;
+const PMT_GUID_PTL:   u64 = 0x3086000;
 
 // ---------------------------------------------------------------------------
 // Platform generation — ordered so Ptl > Lnl > Arl > Mtl for mem_supported check
@@ -109,6 +110,13 @@ fn read_i64(path: &str) -> Option<i64> {
     read_str(path)?.parse().ok()
 }
 
+/// Parse a GUID string from sysfs (e.g. "0x03072005" or "0x3072005") into u64.
+/// Strips the optional "0x"/"0X" prefix then parses as hex, normalising leading zeros.
+fn parse_guid(s: &str) -> Option<u64> {
+    let hex = s.trim().strip_prefix("0x").or_else(|| s.trim().strip_prefix("0X")).unwrap_or(s.trim());
+    u64::from_str_radix(hex, 16).ok()
+}
+
 // ---------------------------------------------------------------------------
 // PMT init: scan /sys/class/intel_pmt for a known GUID
 // ---------------------------------------------------------------------------
@@ -122,7 +130,7 @@ fn pmt_init() -> Option<PmtCtx> {
         }
 
         let base = format!("{}/{}", pmt_root, name);
-        let guid = match read_str(&format!("{}/guid", base)) {
+        let guid = match read_str(&format!("{}/guid", base)).and_then(|s| parse_guid(&s)) {
             Some(g) => g,
             None => continue,
         };
@@ -135,12 +143,12 @@ fn pmt_init() -> Option<PmtCtx> {
             continue;
         }
 
-        let gen = match guid.as_str() {
-            g if g == PMT_GUID_MTL                                                   => CpuGen::Mtl,
-            g if g == PMT_GUID_ARL || g == PMT_GUID_ARL_H || g == PMT_GUID_ARL_S   => CpuGen::Arl,
-            g if g == PMT_GUID_LNL                                                   => CpuGen::Lnl,
-            g if g == PMT_GUID_PTL                                                   => CpuGen::Ptl,
-            _                                                                        => continue,
+        let gen = match guid {
+            PMT_GUID_MTL                                               => CpuGen::Mtl,
+            PMT_GUID_ARL | PMT_GUID_ARL_H | PMT_GUID_ARL_S           => CpuGen::Arl,
+            PMT_GUID_LNL                                               => CpuGen::Lnl,
+            PMT_GUID_PTL                                               => CpuGen::Ptl,
+            _                                                          => continue,
         };
 
         return Some(PmtCtx {
@@ -251,15 +259,21 @@ fn main() {
         .unwrap_or(1000);
     let sleep_dur = Duration::from_millis(interval_ms);
 
-    let mut pmt = pmt_init().unwrap_or_else(|| {
-        eprintln!("[npu-reader] PMT unavailable; sleeping indefinitely");
-        loop { thread::sleep(Duration::from_secs(3600)); }
-    });
+    let mut pmt = match pmt_init() {
+        Some(p) => p,
+        None => {
+            eprintln!("[npu-reader] PMT unavailable");
+            std::process::exit(1);
+        }
+    };
 
-    let dev_path = find_npu_dev_path().unwrap_or_else(|| {
-        eprintln!("[npu-reader] intel_vpu device not found; sleeping indefinitely");
-        loop { thread::sleep(Duration::from_secs(3600)); }
-    });
+    let dev_path = match find_npu_dev_path() {
+        Some(p) => p,
+        None => {
+            eprintln!("[npu-reader] intel_vpu device not found");
+            std::process::exit(1);
+        }
+    };
 
     let busy_path = format!("{}/npu_busy_time_us",       dev_path);
     let mem_path  = format!("{}/npu_memory_utilization", dev_path);
