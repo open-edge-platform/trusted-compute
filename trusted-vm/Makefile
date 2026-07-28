@@ -5,6 +5,7 @@
 
 # Variables
 BUILD_DIR := $(shell pwd)/build
+export GOTOOLCHAIN := go1.26.0
 MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 $(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
