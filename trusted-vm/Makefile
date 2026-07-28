@@ -9,8 +9,8 @@ MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 $(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
 EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
-EDGE_MICROVISOR_BRANCH?=3.0
-EDGE_MICROVISOR_COMMIT?="26.06-20260526"
+EDGE_MICROVISOR_BRANCH?=26.06
+EDGE_MICROVISOR_COMMIT?="26097ad2ef11057d4722ca92db98be8ca2114da3"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
@@ -34,10 +34,6 @@ clone-microvisor:
 	rm -rf "$(EDGE_MICROVISOR_SRC_DIR)"
 	git clone -b $(EDGE_MICROVISOR_BRANCH) $(EDGE_MICROVISOR_SRC) $(EDGE_MICROVISOR_SRC_DIR)
 	cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
-	@# Patch trusted-compute-os.json in-place with intel-npu-driver and intel-npu-firmware
-	jq '.SystemConfigs[0].packages |= (. + ["intel-npu-driver", "intel-npu-firmware"] | unique)' \
-		$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json > $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json.tmp \
-		&& mv $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json.tmp $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
 
 clone-kata:
 	@# Help: Runs clone kata containers
