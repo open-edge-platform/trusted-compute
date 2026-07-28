@@ -635,13 +635,13 @@ jobs:
           KD_TARBALL_BASENAME="$(basename "$KD_TARBALL_HOST")"
 
           mkdir -p "$KD_EXTRACT_DIR"
-          sudo zstd -dc "$KD_TARBALL_HOST" | sudo tar -xf - -C "$KD_EXTRACT_DIR"
+          sudo tar --zstd -xf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR"
 
           for KD_CFG_REL in \
             "opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
             "opt/kata/share/defaults/kata-containers/configuration.toml"; do
             KD_CFG_HOST="$KD_EXTRACT_DIR/$KD_CFG_REL"
-            [[ -f "$KD_CFG_HOST" ]] || continue
+            sudo test -f "$KD_CFG_HOST" || continue
 
             # Enable debug mode.
             sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)false/\1true/' "$KD_CFG_HOST"
@@ -656,7 +656,7 @@ jobs:
             sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
           done
 
-          sudo tar -cf - -C "$KD_EXTRACT_DIR" . | sudo zstd -f -o "$KD_TARBALL_HOST"
+          sudo tar --zstd -cf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR" .
           sudo docker cp "$KD_TARBALL_HOST" "$kd_cid:/opt/kata-artifacts/tarballs/$KD_TARBALL_BASENAME"
           sudo rm -rf "$KD_TARBALLS_WORKDIR" "$KD_EXTRACT_DIR"
 
