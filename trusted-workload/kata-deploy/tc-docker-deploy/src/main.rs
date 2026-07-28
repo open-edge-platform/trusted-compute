@@ -23,6 +23,13 @@ const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
 const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
 
 fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
+    let file_meta = fs::metadata(tarball_path)
+        .with_context(|| format!("Failed to stat tarball: {}", tarball_path.display()))?;
+    info!(
+        "Opening tarball {} ({} bytes)",
+        tarball_path.display(),
+        file_meta.len()
+    );
     let file = fs::File::open(tarball_path)
         .with_context(|| format!("Failed to open tarball: {}", tarball_path.display()))?;
     // stream-decompress with pure-Rust zstd decoder; no C dependency required
@@ -31,8 +38,10 @@ fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
     let mut archive = tar::Archive::new(decoder);
     let dest_path = Path::new(dest_dir);
     let dot_slash_prefix = Path::new("./opt/kata");
+    let mut entry_count: u64 = 0;
 
     for entry_result in archive.entries()? {
+        entry_count += 1;
         let mut entry = entry_result.context("Failed to read tar entry")?;
         let raw_path = entry
             .path()
@@ -136,6 +145,11 @@ fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
                 .with_context(|| format!("Failed to unpack entry to: {}", dest_entry.display()))?;
         }
     }
+    info!(
+        "Finished extracting {} ({} entries)",
+        tarball_path.display(),
+        entry_count
+    );
     Ok(())
 }
 

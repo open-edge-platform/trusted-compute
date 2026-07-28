@@ -219,12 +219,25 @@ import_kata_deploy_image() {
     docker load -i "$tar_file" && print_status "Successfully loaded kata-deploy image" || { print_error "Failed to load kata-deploy image"; exit 1; }
 }
 
-# Function to start the docker compose service
+# Function to start the docker compose service and wait until kata-deploy finishes installing
 start_docker_deploy() {
     print_status "Starting kata-deploy via Docker Compose..."
     docker compose -f "$SCRIPT_DIR/docker/tw-docker-deploy.yaml" up -d \
         && print_status "kata-deploy container started successfully" \
         || { print_error "Failed to start kata-deploy container"; exit 1; }
+
+    local deadline=$(( $(date +%s) + 120 ))
+    while true; do
+        if docker logs kata-deploy 2>&1 | grep -q "Installation complete"; then
+            return 0
+        fi
+        if [[ $(date +%s) -ge $deadline ]]; then
+            print_error "Timed out waiting for kata-deploy to finish installation (120s)"
+            docker logs kata-deploy 2>&1 || true
+            exit 1
+        fi
+        sleep 5
+    done
 }
 
 # Function to print summary (TC installation for Docker)
