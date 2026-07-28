@@ -15,7 +15,7 @@
 # Any HTTP listener that accepts InfluxDB line protocol (Telegraf, Victoria
 # Metrics, InfluxDB, etc.) can be used as the target.
 #
-# Implemented in bash + static npu-reader binary (no Python in VM).
+# Implemented in bash + static npu-reader binary.
 #
 # Guest install paths:
 #   /usr/local/bin/npu-reader              (NPU stats tool — static Rust binary, musl target)
@@ -85,9 +85,9 @@ for _ in {1..60}; do
 done
 ls /dev/accel/accel* >/dev/null 2>&1 || { log "no NPU accel device present; exiting."; exit 0; }
 
-# ---------------------------------------------------------------------------
-# HTTP POST helper (pure bash /dev/tcp — no curl/wget in the VM)
-# ---------------------------------------------------------------------------
+# -----------------------------
+# HTTP POST helper 
+# -----------------------------
 post() {
   local body="$1"
   [ -n "$body" ] || return 0

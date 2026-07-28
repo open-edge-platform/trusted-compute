@@ -23,9 +23,9 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends ca-certificates libudev-dev musl-tools && apt-get clean && rm -rf /var/lib/apt/lists/*
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# ---------------------------------------------------------------------------
-# GPU tools: qmmd and qmassa (dynamic, glibc — same as before)
-# ---------------------------------------------------------------------------
+# --------------------------
+# GPU tools: qmmd and qmassa
+# --------------------------
 echo "INFO: Building qmmd v${QMMD_VERSION} (commit: ${QMMD_COMMIT})"
 cargo install --locked --force --git https://github.com/ulissesf/qmassa --rev ${QMMD_COMMIT} qmmd
 command -v qmmd > /dev/null || { echo "ERROR: qmmd binary not found in PATH"; exit 1; }
@@ -42,9 +42,9 @@ cp /usr/local/cargo/bin/qmassa "${GPU_OUT_DIR}/qmassa"
 echo "INFO: GPU binaries copied to ${GPU_OUT_DIR}"
 ls -lh "${GPU_OUT_DIR}"
 
-# ---------------------------------------------------------------------------
-# NPU tool: npu-reader (static, musl — no runtime dependency in the guest)
-# ---------------------------------------------------------------------------
+# --------------------
+# NPU tool: npu-reader
+# --------------------
 echo "INFO: Building npu-reader (static musl binary)"
 rustup target add x86_64-unknown-linux-musl
 

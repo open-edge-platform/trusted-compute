@@ -17,7 +17,7 @@ docker run --rm \
     -e DEBIAN_FRONTEND=noninteractive \
     -v "${SCRIPT_DIR}:/trusted-vm" \
     docker.io/library/rust:1.88 \
-    /bin/bash /trusted-vm/build_gpu_telemetry_tools.sh
+    /bin/bash /trusted-vm/build_telemetry_tools.sh
 
 
 
