@@ -21,7 +21,7 @@ fi
 
 detect_npu() {
     local line ids
-    if [ -e /sys/class/accel/accel0 ]; then
+    if [ -e /sys/class/accel/accel0 ] && [ -L /sys/class/accel/accel0/device/driver ] && [ "$(basename "$(readlink -f /sys/class/accel/accel0/device/driver)")" = "intel_vpu" ]; then
         NPU_PCI_FULL=$(basename "$(readlink -f /sys/class/accel/accel0/device)")
         line=$(lspci -Dnn -s "$NPU_PCI_FULL" | head -1 || true)
     else
