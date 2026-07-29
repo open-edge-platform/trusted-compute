@@ -162,7 +162,7 @@ lspci -nnk | grep -A3 -iE 'Processing accelerators.*Intel'
 
 ## NPU Telemetry
 
-The Trusted Compute environment automatically collects NPU telemetry metrics (power, frequency, temperature, utilization, memory) from workloads running in Kata VMs. To receive these metrics, configure the collection endpoint via Kata kernel parameters in your pod/container annotations:
+The Trusted Compute environment supports NPU telemetry collection from workloads running in Kata VMs. To enable telemetry, configure the collection endpoint via Kata kernel parameters in your pod/container annotations:
 
 ```yaml
 # In pod annotations (K3s):
@@ -172,13 +172,4 @@ io.katacontainers.config.kernel_params: "push_host=<collector-ip> push_port=<por
 io.katacontainers.config.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
 ```
 
-Metrics are emitted in InfluxDB line protocol format (one line per second) and include:
-- `power` — NPU power consumption (W)
-- `frequency` — NPU frequency (Hz)
-- `temperature` — NPU die temperature (°C)
-- `bandwidth` — NoC bandwidth (MB/s)
-- `utilization` — NPU busy time (percent)
-- `memory_mb` — memory usage (MB; only available on PTL and later)
-- `tile_config` — active tile configuration (count)
-
-If no collector is configured, telemetry collection is silently disabled.
+Metrics are emitted in InfluxDB line protocol format. If no collector is configured, telemetry collection is silently disabled.
