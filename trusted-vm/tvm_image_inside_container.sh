@@ -14,6 +14,7 @@ BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
 TVM_AGENT_DIR="/trusted-vm/tvm-agent"
 GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
+NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
 TRUSTED_VM_IMAGE="trusted-vm.img"
 
 # edge_microvisor image
@@ -137,6 +138,32 @@ install_gpu_telemetry() {
     rm -rf "${bin_src}"
 }
 
+# Install NPU telemetry binary and config into the rootfs.
+install_npu_telemetry() {
+    echo "INFO: Installing NPU telemetry agent in rootfs"
+    local bin_src="${NPU_TELEMETRY_DIR}/binaries"
+    local files_src="${NPU_TELEMETRY_DIR}/files"
+
+    [[ -d "${bin_src}" ]]             || { echo "ERROR: ${bin_src} not found"; exit 1; }
+    [[ -x "${bin_src}/npu-reader" ]]  || { echo "ERROR: npu-reader not found in ${bin_src}"; exit 1; }
+    [[ -d "${files_src}" ]]           || { echo "ERROR: ${files_src} not found"; exit 1; }
+
+    mkdir -p "${ROOTFS_DIR}/etc/npu-telemetry" \
+             "${ROOTFS_DIR}/etc/udev/rules.d" \
+             "${ROOTFS_DIR}/usr/local/bin" \
+             "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
+    install -o root -g root -m 0550 "${bin_src}/npu-reader"                           "${ROOTFS_DIR}/usr/local/bin/npu-reader"
+    install -o root -g root -m 0550 "${files_src}/npu-telemetry-agent.sh"             "${ROOTFS_DIR}/usr/local/bin/npu-telemetry-agent.sh"
+    install -o root -g root -m 0440 "${files_src}/npu-telemetry-guest.env"            "${ROOTFS_DIR}/etc/npu-telemetry/npu-telemetry.env"
+    install -o root -g root -m 0440 "${files_src}/npu-telemetry-guest.service"        "${ROOTFS_DIR}/usr/lib/systemd/system/npu-telemetry.service"
+    ln -sf ../npu-telemetry.service  "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants/npu-telemetry.service"
+    install -o root -g root -m 0444 "${files_src}/90-npu-telemetry.rules"             "${ROOTFS_DIR}/etc/udev/rules.d/90-npu-telemetry.rules"
+
+    echo "INFO: NPU telemetry installed successfully"
+    echo "INFO: Cleaning up NPU telemetry binaries"
+    rm -rf "${bin_src}"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
@@ -167,5 +194,6 @@ install_tvm_agent
 install_guest_hooks
 download_jq
 install_gpu_telemetry
+install_npu_telemetry
 build_trusted_vm_image
 copy_tc_image
