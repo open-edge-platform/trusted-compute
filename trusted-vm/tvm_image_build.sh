@@ -20,8 +20,9 @@ docker run --rm \
     /bin/bash /trusted-vm/build_gpu_telemetry_tools.sh
 
 # Build NPU telemetry tool (npu-reader) using PyInstaller.
-# Downloads npu_monitor_tool.py from edge-ai-libraries at a pinned commit and
-# bundles it with the TC-specific npu_reader_tc.py into a standalone binary.
+# Downloads npu_reader.py and npu_monitor_tool.py from edge-ai-libraries at a
+# pinned commit, applies TC-specific patches to npu_reader.py, then bundles
+# them into a standalone binary.
 echo "INFO: Building npu-reader in python:3.11-slim container (PyInstaller)"
 docker run --rm \
     -v "${SCRIPT_DIR}:/trusted-vm" \
