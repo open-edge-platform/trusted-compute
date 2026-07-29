@@ -11,13 +11,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "INFO: Building Trusted-VM image"
 
-# Build all native telemetry tools (GPU: qmassa/qmmd, NPU: npu-reader) in one rust:1.88 container
-echo "INFO: Building telemetry tools (qmassa, qmmd, npu-reader) in rust:1.88 container"
+# Build GPU telemetry tools (qmassa, qmmd) in a Rust container
+echo "INFO: Building GPU telemetry tools (qmassa, qmmd) in rust:1.88 container"
 docker run --rm \
     -e DEBIAN_FRONTEND=noninteractive \
     -v "${SCRIPT_DIR}:/trusted-vm" \
     docker.io/library/rust:1.88 \
-    /bin/bash /trusted-vm/build_telemetry_tools.sh
+    /bin/bash /trusted-vm/build_gpu_telemetry_tools.sh
+
+# Build NPU telemetry tool (npu-reader) using PyInstaller.
+# Downloads npu_monitor_tool.py from edge-ai-libraries at a pinned commit and
+# bundles it with the TC-specific npu_reader_tc.py into a standalone binary.
+echo "INFO: Building npu-reader in python:3.11-slim container (PyInstaller)"
+docker run --rm \
+    -v "${SCRIPT_DIR}:/trusted-vm" \
+    docker.io/library/python:3.11-slim \
+    /bin/bash /trusted-vm/npu-telemetry/build_npu_reader.sh
 
 
 
