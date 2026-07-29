@@ -27,7 +27,7 @@ NPU_OUT_DIR="/trusted-vm/npu-telemetry/binaries"
 BUILD_DIR="/tmp/npu-reader-build"
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+apt-get update && apt-get install -y --no-install-recommends ca-certificates curl binutils && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 pip install --no-cache-dir pyinstaller
 
