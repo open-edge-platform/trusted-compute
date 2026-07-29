@@ -4,7 +4,7 @@ services:
     image: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy:${VERSION}
     container_name: kata-deploy
     privileged: true
-    entrypoint: ["/opt/kata-artifacts/opt/kata/bin/tc-docker-deploy"]
+    entrypoint: ["/usr/bin/tc-docker-deploy"]
     volumes:
       - /opt:/host/opt
       - /usr/bin:/host/usr/bin

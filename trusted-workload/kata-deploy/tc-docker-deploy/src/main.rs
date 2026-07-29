@@ -11,9 +11,10 @@ use std::os::unix::fs as unix_fs;
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use walkdir::WalkDir;
 
-const ARTIFACTS_SOURCE: &str = "/opt/kata-artifacts/opt/kata";
+const TARBALLS_DIR: &str = "/opt/kata-artifacts/tarballs";
+const TAR_PREFIX: &str = "opt/kata";
+const TARBALL_ABS_PREFIX: &str = "/opt/kata";
 const KATA_DEST: &str = "/host/opt/kata";
 const SHIM_SOURCE: &str = "/host/opt/kata/bin/containerd-shim-kata-v2";
 const SHIM_DEST: &str = "/host/usr/bin/containerd-shim-kata-v2";
@@ -21,199 +22,249 @@ const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/confi
 const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
 const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
 
-/// Allow only plain relative symlink targets rooted within the artifacts tree.
-///
-/// Reject absolute paths and any `..` components to avoid writing host
-/// symlinks that can escape the intended destination layout.
-fn validate_symlink_target(link_target: &Path) -> Result<()> {
-    if link_target.is_absolute() {
-        return Err(anyhow::anyhow!(
-            "Refusing to install symlink with absolute target: {:?}",
-            link_target
-        ));
-    }
+fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
+    let file_meta = fs::metadata(tarball_path)
+        .with_context(|| format!("Failed to stat tarball: {}", tarball_path.display()))?;
+    info!(
+        "Opening tarball {} ({} bytes)",
+        tarball_path.display(),
+        file_meta.len()
+    );
+    let file = fs::File::open(tarball_path)
+        .with_context(|| format!("Failed to open tarball: {}", tarball_path.display()))?;
+    // stream-decompress with pure-Rust zstd decoder; no C dependency required
+    let decoder = ruzstd::streaming_decoder::StreamingDecoder::new(file)
+        .map_err(|e| anyhow::anyhow!("Failed to create zstd decoder for {}: {}", tarball_path.display(), e))?;
+    let mut archive = tar::Archive::new(decoder);
+    let dest_path = Path::new(dest_dir);
+    let dot_slash_prefix = Path::new("./opt/kata");
+    let mut entry_count: u64 = 0;
 
-    if link_target
-        .components()
-        .any(|component| matches!(component, Component::ParentDir))
-    {
-        return Err(anyhow::anyhow!(
-            "Refusing to install symlink with non-canonical relative target: {:?}",
-            link_target
-        ));
-    }
+    for entry_result in archive.entries()? {
+        entry_count += 1;
+        let mut entry = entry_result.context("Failed to read tar entry")?;
+        let raw_path = entry
+            .path()
+            .context("Failed to get tar entry path")?
+            .into_owned();
 
-    Ok(())
-}
+        // strip "opt/kata" or "./opt/kata" prefix; skip unrelated entries
+        let stripped = if let Ok(p) = raw_path.strip_prefix(TAR_PREFIX) {
+            p.to_path_buf()
+        } else if let Ok(p) = raw_path.strip_prefix(dot_slash_prefix) {
+            p.to_path_buf()
+        } else {
+            log::debug!(
+                "Skipping entry without expected prefix: {}",
+                raw_path.display()
+            );
+            continue;
+        };
 
-/// Copy all artifacts from source to destination
-fn copy_artifacts() -> Result<()> {
-    info!("Copying Kata artifacts from {} to {}", ARTIFACTS_SOURCE, KATA_DEST);
-    
-    if !Path::new(ARTIFACTS_SOURCE).exists() {
-        return Err(anyhow::anyhow!("Artifacts source directory {} does not exist", ARTIFACTS_SOURCE));
-    }
-
-    // Create destination directory
-    fs::create_dir_all(KATA_DEST)
-        .with_context(|| format!("Failed to create directory {}", KATA_DEST))?;
-
-    // Copy all files and directories
-    for entry in WalkDir::new(ARTIFACTS_SOURCE)
-        .follow_links(false)
-        .into_iter()
-    {
-        let entry = entry.with_context(|| {
-            format!(
-                "Failed to traverse artifacts source directory {}",
-                ARTIFACTS_SOURCE
-            )
-        })?;
-        let src_path = entry.path();
-        let relative_path = src_path.strip_prefix(ARTIFACTS_SOURCE)
-            .context("Failed to get relative path")?;
-        
-        if relative_path.as_os_str().is_empty() {
-            continue; // Skip root directory
+        // root "opt/kata/" entry itself — just ensure dest exists
+        if stripped.as_os_str().is_empty() {
+            fs::create_dir_all(dest_path)?;
+            continue;
         }
 
-        let dest_path = PathBuf::from(KATA_DEST).join(relative_path);
+        // reject path traversal attempts
+        for component in stripped.components() {
+            if component == Component::ParentDir {
+                anyhow::bail!(
+                    "Tarball {} contains path traversal in entry: {}",
+                    tarball_path.display(),
+                    raw_path.display()
+                );
+            }
+        }
 
-        if entry.file_type().is_dir() {
-            fs::create_dir_all(&dest_path)
-                .with_context(|| format!("Failed to create directory {:?}", dest_path))?;
-        } else if entry.file_type().is_symlink() {
-            let link_target = fs::read_link(src_path)
-                .with_context(|| format!("Failed to read symlink {:?}", src_path))?;
+        let dest_entry = dest_path.join(&stripped);
+        let entry_type = entry.header().entry_type();
 
-            validate_symlink_target(&link_target).with_context(|| {
+        if entry_type.is_dir() {
+            fs::create_dir_all(&dest_entry)
+                .with_context(|| format!("Failed to create directory: {}", dest_entry.display()))?;
+        } else if entry_type.is_symlink() {
+            let link_target = entry
+                .header()
+                .link_name()?
+                .ok_or_else(|| anyhow::anyhow!("Symlink has no link name: {}", raw_path.display()))?
+                .into_owned();
+
+            // Validate symlink target to avoid host path escapes.
+            if link_target
+                .components()
+                .any(|c| matches!(c, Component::ParentDir))
+            {
+                anyhow::bail!(
+                    "Tarball {} contains symlink with '..' in target: {} -> {}",
+                    tarball_path.display(),
+                    raw_path.display(),
+                    link_target.display()
+                );
+            }
+
+            // Rewrite absolute symlinks that point into /opt/kata so they resolve on the host.
+            let final_target: PathBuf = if link_target.is_absolute() {
+                let rel = link_target.strip_prefix(TARBALL_ABS_PREFIX).map_err(|_| {
+                    anyhow::anyhow!(
+                        "Tarball {} contains symlink with absolute target outside {}: {} -> {}",
+                        tarball_path.display(),
+                        TARBALL_ABS_PREFIX,
+                        raw_path.display(),
+                        link_target.display()
+                    )
+                })?;
+                dest_path.join(rel)
+            } else {
+                link_target
+            };
+
+            if let Some(parent) = dest_entry.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            match fs::remove_file(&dest_entry) {
+                Ok(()) | Err(_) => {}
+            }
+            unix_fs::symlink(&final_target, &dest_entry).with_context(|| {
                 format!(
-                    "Invalid symlink target {:?} found in artifact {:?}",
-                    link_target, src_path
+                    "Failed to create symlink {} -> {}",
+                    dest_entry.display(),
+                    final_target.display()
                 )
             })?;
-            
-            // Remove existing symlink if present
-            if dest_path.exists() || dest_path.is_symlink() {
-                fs::remove_file(&dest_path).ok();
-            }
-            
-            unix_fs::symlink(&link_target, &dest_path)
-                .with_context(|| format!("Failed to create symlink {:?} -> {:?}", dest_path, link_target))?;
         } else {
-            fs::copy(src_path, &dest_path)
-                .with_context(|| format!("Failed to copy {:?} to {:?}", src_path, dest_path))?;
-            
-            // Preserve permissions
-            if let Ok(metadata) = fs::metadata(src_path) {
-                let permissions = metadata.permissions();
-                fs::set_permissions(&dest_path, permissions).ok();
+            if let Some(parent) = dest_entry.parent() {
+                fs::create_dir_all(parent)?;
             }
+            match fs::remove_file(&dest_entry) {
+                Ok(()) | Err(_) => {}
+            }
+            entry
+                .unpack(&dest_entry)
+                .with_context(|| format!("Failed to unpack entry to: {}", dest_entry.display()))?;
         }
     }
-
-    info!("Successfully copied all Kata artifacts");
+    info!(
+        "Finished extracting {} ({} entries)",
+        tarball_path.display(),
+        entry_count
+    );
     Ok(())
 }
 
-/// Copy the shim binary to /usr/bin
+fn copy_artifacts() -> Result<()> {
+    info!("Extracting Kata artifacts from {} into {}", TARBALLS_DIR, KATA_DEST);
+
+    let tarballs_path = Path::new(TARBALLS_DIR);
+    if !tarballs_path.exists() {
+        return Err(anyhow::anyhow!("Tarballs directory {} does not exist", TARBALLS_DIR));
+    }
+
+    // collect all kata-static-*.tar.zst component tarballs
+    let mut tarballs: Vec<PathBuf> = fs::read_dir(tarballs_path)
+        .with_context(|| format!("Failed to read tarballs directory: {}", TARBALLS_DIR))?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| {
+            p.file_name()
+                .and_then(|n| n.to_str())
+                .map(|n| n.starts_with("kata-static-") && n.ends_with(".tar.zst"))
+                .unwrap_or(false)
+        })
+        .collect();
+
+    if tarballs.is_empty() {
+        return Err(anyhow::anyhow!(
+            "No kata-static-*.tar.zst files found in {}",
+            TARBALLS_DIR
+        ));
+    }
+
+    tarballs.sort();
+
+    fs::create_dir_all(KATA_DEST)
+        .with_context(|| format!("Failed to create destination directory: {}", KATA_DEST))?;
+
+    for tarball in &tarballs {
+        info!("Extracting {}", tarball.display());
+        extract_tarball(tarball, KATA_DEST)
+            .with_context(|| format!("Failed to extract {}", tarball.display()))?;
+    }
+
+    info!("Successfully extracted {} tarball(s) into {}", tarballs.len(), KATA_DEST);
+    Ok(())
+}
+
 fn install_shim_binary() -> Result<()> {
     if !Path::new(SHIM_SOURCE).exists() {
         return Err(anyhow::anyhow!(
             "Required Kata shim binary not found at {}; cannot install {}",
-            SHIM_SOURCE,
-            SHIM_DEST
+            SHIM_SOURCE, SHIM_DEST
         ));
     }
-
     // Remove existing file/symlink if present
     if Path::new(SHIM_DEST).exists() || Path::new(SHIM_DEST).is_symlink() {
         fs::remove_file(SHIM_DEST)
             .with_context(|| format!("Failed to remove existing {}", SHIM_DEST))?;
     }
-
     // Copy the binary
     fs::copy(SHIM_SOURCE, SHIM_DEST)
         .with_context(|| format!("Failed to copy {} to {}", SHIM_SOURCE, SHIM_DEST))?;
-    
     // Preserve executable permissions
     if let Ok(metadata) = fs::metadata(SHIM_SOURCE) {
-        let permissions = metadata.permissions();
-        fs::set_permissions(SHIM_DEST, permissions).ok();
+        fs::set_permissions(SHIM_DEST, metadata.permissions()).ok();
     }
-    
-    info!("Successfully copied shim binary: {} -> {}", SHIM_SOURCE, SHIM_DEST);
+    info!("Installed shim: {} -> {}", SHIM_SOURCE, SHIM_DEST);
     Ok(())
 }
 
-/// Copy configuration.toml to /etc/kata-containers
 fn install_config() -> Result<()> {
     if !Path::new(CONFIG_SOURCE).exists() {
-        warn!("Config file not found at {}, skipping copy", CONFIG_SOURCE);
+        warn!("Config file not found at {}, skipping", CONFIG_SOURCE);
         return Ok(());
     }
-
     // Create destination directory if it doesn't exist
     if !Path::new(CONFIG_DEST_DIR).exists() {
         fs::create_dir_all(CONFIG_DEST_DIR)
             .with_context(|| format!("Failed to create directory {}", CONFIG_DEST_DIR))?;
-        info!("Created directory {}", CONFIG_DEST_DIR);
     }
-
     // Remove existing config file if present
     if Path::new(CONFIG_DEST).exists() {
         fs::remove_file(CONFIG_DEST)
             .with_context(|| format!("Failed to remove existing {}", CONFIG_DEST))?;
     }
-
     // Copy the config file
     fs::copy(CONFIG_SOURCE, CONFIG_DEST)
         .with_context(|| format!("Failed to copy {} to {}", CONFIG_SOURCE, CONFIG_DEST))?;
-    
-    info!("Successfully copied config file: {} -> {}", CONFIG_SOURCE, CONFIG_DEST);
+    info!("Installed config: {} -> {}", CONFIG_SOURCE, CONFIG_DEST);
     Ok(())
 }
 
-/// Remove all Kata artifacts
 fn cleanup_artifacts() -> Result<()> {
-    info!("Removing Kata artifacts from {}", KATA_DEST);
-    
     if Path::new(KATA_DEST).exists() {
         fs::remove_dir_all(KATA_DEST)
-            .with_context(|| format!("Failed to remove directory {}", KATA_DEST))?;
-        info!("Successfully removed {}", KATA_DEST);
-    } else {
-        info!("Directory {} does not exist, nothing to clean", KATA_DEST);
+            .with_context(|| format!("Failed to remove {}", KATA_DEST))?;
+        info!("Removed {}", KATA_DEST);
     }
-
     // Remove shim binary
     if Path::new(SHIM_DEST).exists() || Path::new(SHIM_DEST).is_symlink() {
         fs::remove_file(SHIM_DEST)
-            .with_context(|| format!("Failed to remove shim binary {}", SHIM_DEST))?;
-        info!("Successfully removed shim binary {}", SHIM_DEST);
+            .with_context(|| format!("Failed to remove {}", SHIM_DEST))?;
     }
-
     // Remove config file
     if Path::new(CONFIG_DEST).exists() {
         fs::remove_file(CONFIG_DEST)
-            .with_context(|| format!("Failed to remove config file {}", CONFIG_DEST))?;
-        info!("Successfully removed config file {}", CONFIG_DEST);
+            .with_context(|| format!("Failed to remove {}", CONFIG_DEST))?;
     }
-
     // Remove config directory if empty
     if Path::new(CONFIG_DEST_DIR).exists() {
         if let Ok(mut entries) = fs::read_dir(CONFIG_DEST_DIR) {
             if entries.next().is_none() {
-                // Directory is empty, remove it
-                fs::remove_dir(CONFIG_DEST_DIR)
-                    .with_context(|| format!("Failed to remove directory {}", CONFIG_DEST_DIR))?;
-                info!("Successfully removed empty directory {}", CONFIG_DEST_DIR);
-            } else {
-                info!("Directory {} is not empty, skipping removal", CONFIG_DEST_DIR);
+                let _ = fs::remove_dir(CONFIG_DEST_DIR);
             }
         }
     }
-
     Ok(())
 }
 
@@ -222,15 +273,8 @@ fn main() -> Result<()> {
     let debug_enabled = std::env::var("DEBUG")
         .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
         .unwrap_or(false);
-
-    let log_level = if debug_enabled {
-        log::LevelFilter::Debug
-    } else {
-        log::LevelFilter::Info
-    };
-
     env_logger::Builder::from_default_env()
-        .filter_level(log_level)
+        .filter_level(if debug_enabled { log::LevelFilter::Debug } else { log::LevelFilter::Info })
         .init();
 
     info!("Trusted Workload Docker Deploy starting...");
@@ -241,18 +285,12 @@ fn main() -> Result<()> {
     flag::register(SIGINT, Arc::clone(&term))?;
 
     // Install artifacts
-    info!("Starting Kata Containers installation...");
-    
     match copy_artifacts() {
-        Ok(_) => info!("Artifact installation completed successfully"),
+        Ok(_) => info!("Artifacts installed"),
         Err(e) => {
-            error!("Failed to copy artifacts: {}", e);
-            warn!("Installation failed; attempting best-effort cleanup of partial artifacts");
-            if let Err(cleanup_err) = cleanup_artifacts() {
-                error!(
-                    "Failed to clean up partial artifacts after install failure: {}",
-                    cleanup_err
-                );
+            error!("Failed to install artifacts: {}", e);
+            if let Err(ce) = cleanup_artifacts() {
+                error!("Cleanup after failed install also failed: {}", ce);
             }
             std::process::exit(1);
         }
@@ -260,61 +298,28 @@ fn main() -> Result<()> {
 
     // Copy shim binary to /usr/bin
     match install_shim_binary() {
-        Ok(_) => info!("Shim binary installation completed successfully"),
-        Err(e) => {
-            error!("Failed to copy required shim binary: {}", e);
-            std::process::exit(1);
-        }
+        Ok(_) => info!("Shim installed"),
+        Err(e) => { error!("Failed to install shim: {}", e); std::process::exit(1); }
     }
 
     // Copy configuration file to /etc/kata-containers
     if let Err(e) = install_config() {
-        warn!("Failed to copy config file: {}", e);
-        // Don't fail the installation if config copy fails
+        warn!("Failed to install config: {}", e); // non-fatal
     }
 
-    info!("Installation complete. Container will stay running until terminated.");
-    info!("Run 'docker compose down' to trigger automatic cleanup.");
-    
+    info!("Installation complete. Waiting for termination signal...");
+
     // Wait for termination signal
     while !term.load(Ordering::Relaxed) {
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
-    info!("Received termination signal. Running cleanup...");
-    
     // Cleanup on termination
+    info!("Received termination signal. Running cleanup...");
     match cleanup_artifacts() {
-        Ok(_) => {
-            info!("Cleanup completed successfully");
-        }
-        Err(e) => {
-            error!("Cleanup failed: {}", e);
-            std::process::exit(1);
-        }
+        Ok(_) => info!("Cleanup complete"),
+        Err(e) => { error!("Cleanup failed: {}", e); std::process::exit(1); }
     }
-
     info!("Shutdown complete");
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::validate_symlink_target;
-    use std::path::Path;
-
-    #[test]
-    fn validate_symlink_target_rejects_absolute_path() {
-        assert!(validate_symlink_target(Path::new("/etc/passwd")).is_err());
-    }
-
-    #[test]
-    fn validate_symlink_target_rejects_parent_traversal() {
-        assert!(validate_symlink_target(Path::new("../escape")).is_err());
-    }
-
-    #[test]
-    fn validate_symlink_target_allows_relative_path() {
-        assert!(validate_symlink_target(Path::new("./bin/containerd-shim-kata-v2")).is_ok());
-    }
 }

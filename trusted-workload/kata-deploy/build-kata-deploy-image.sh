@@ -38,6 +38,7 @@ KATA_ARTIFACT_DIR="${KATA_ARTIFACT_FILE_NAME%.tar.zst}"
 KATA_ARTIFACT_NEW_NAME="kata-static.tar.zst"
 KATA_BOOT_COMPONENT_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/kata-containers"
 KATA_CONFIG_DIR="${KATA_ARTIFACT_DIR}/opt/kata/share/defaults/kata-containers"
+KATA_DOCKERFILE="${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/Dockerfile"
 KATA_ARTIFACT_KERNEL_NAME="vmlinux.container"
 KATA_ARTIFACT_ROOTFS_NAME="kata-containers.img"
 
@@ -104,10 +105,11 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-# Enable virtio_mem in configuration.toml to fix kernel 6.12 memory hotplug issue
-# NOTE: This workaround is required for kernel 6.12.x due to broken memory probe mechanism
-echo "INFO: Enabling virtio_mem in configuration.toml for kernel 6.12 compatibility"
-KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/configuration.toml"
+# Enable virtio_mem in configuration.toml
+echo "INFO: Enabling virtio_mem in configuration.toml"
+for KATA_CONFIG_FILE in \
+    "${KATA_CONFIG_DIR}/configuration.toml" \
+    "${KATA_CONFIG_DIR}/configuration-qemu.toml"; do
 if [ -f "${KATA_CONFIG_FILE}" ]; then
     sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
     if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
@@ -150,9 +152,10 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
     done
     sed -i "s/^\(enable_annotations = \[.*\)\]/\1${annotations_str}]/" "${KATA_CONFIG_FILE}"
 else
-    echo "ERROR: configuration.toml not found at ${KATA_CONFIG_FILE}"
+    echo "ERROR: ${KATA_CONFIG_FILE} not found"
     exit 1
 fi
+done
 
 #build kata binary and copy to artifacts
 "${BUILD_DIR}/build-kata-binary.sh"
@@ -207,9 +210,32 @@ tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 echo "INFO: Cloning Kata Containers repo"
 git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
 
-#copy the build artifacts to the kata repo
+#patch the kata-deploy Dockerfile to add tc-docker-deploy support
+"${BUILD_DIR}/patch-dockerfile.sh" "${KATA_DOCKERFILE}"
+
+mkdir -p "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
+
+#copy the build artifacts to the kata repo with version suffix
 echo "INFO: Copying build artifacts to Kata Containers repo"
-cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/"
+cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.zst"
+
+#build kata-deploy-static component tarballs required by new Dockerfile
+echo "INFO: Building kata-deploy-static component tarballs"
+pushd "${KATA_CONTAINERS_DIR}"
+bash tools/packaging/kata-deploy/local-build/kata-deploy-build-components-tarballs.sh all
+cp tools/packaging/kata-deploy/local-build/build/kata-deploy-static-*.tar.zst tools/packaging/kata-deploy/kata-artifacts/
+popd
+
+#package tc-docker-deploy as a separate kata-deploy-static tarball (-> /usr/bin/tc-docker-deploy in image)
+echo "INFO: Packaging tc-docker-deploy as kata-deploy-static tarball"
+_TC_PKG_DIR=$(mktemp -d)
+mkdir -p "${_TC_PKG_DIR}/usr/bin"
+cp "${BUILD_DIR}/tc-docker-deploy/target/x86_64-unknown-linux-musl/release/tc-docker-deploy" "${_TC_PKG_DIR}/usr/bin/"
+tar --zstd -cf "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/kata-deploy-static-tc-docker-deploy.tar.zst" -C "${_TC_PKG_DIR}" .
+rm -rf "${_TC_PKG_DIR}"
+
+#patch shim-components.json so kata-deploy finds our monolithic kata-static tarball at runtime
+"${BUILD_DIR}/patch-shim-components.sh" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/shim-components.json" "${KATA_CONTAINERS_TAG}"
 
 #build the kata deploy image
 pushd "${KATA_CONTAINERS_DIR}"
