@@ -5,8 +5,9 @@
 #
 
 # Trusted Compute Installation Script
-# Supports two installation options:
+# Supports three installation options:
 #   --k3s     Install trusted-compute components for K3s
+#   --k8s     Install trusted-compute components for K8s
 #   --docker  Install Trusted-compute components for Docker
 # Must be run as sudo
 
@@ -48,6 +49,11 @@ set_paths() {
     CONTAINERD_ETC_DIR="/var/lib/rancher/k3s/agent/etc/containerd"
     CONTAINERD_CONFIG_SRC="$SCRIPT_DIR/containerd/config-v3.toml.tmpl"
     CONTAINERD_CONFIG_DEST="$CONTAINERD_ETC_DIR/config-v3.toml.tmpl"
+
+    # K8s specific paths
+    K8S_CONTAINERD_DIR="/etc/containerd"
+    K8S_CONTAINERD_CONFIG="$K8S_CONTAINERD_DIR/config.toml"
+    K8S_CONTAINERD_CONFIG_BACKUP="$K8S_CONTAINERD_DIR/config.toml.backup"
 }
 
 # Function to check required directories/files for TC installation for K3s
@@ -157,6 +163,16 @@ check_k3s_service() {
     print_status "K3s service is available."
 }
 
+# Function to check K8s cluster connectivity
+check_k8s_cluster() {
+    command -v kubectl &>/dev/null || { print_error "kubectl is not installed or not in PATH"; exit 1; }
+    command -v helm &>/dev/null || { print_error "helm is not installed or not in PATH. Please install Helm first."; exit 1; }
+    command -v ctr &>/dev/null || { print_error "ctr (containerd CLI) is not installed or not in PATH"; exit 1; }
+    kubectl cluster-info &>/dev/null || { print_error "Cannot connect to Kubernetes cluster. Please check your kubeconfig."; exit 1; }
+    systemctl is-active kubelet &>/dev/null || { print_error "kubelet service is not running"; exit 1; }
+    print_status "Kubernetes cluster is accessible."
+}
+
 # Function to print summary (TC installation for K3s)
 print_tc_k3s_summary() {
     print_status "Installation completed successfully!"
@@ -182,6 +198,23 @@ wait_for_namespace_ready() {
     else
         print_error "Timeout: Some resources in namespace '$ns' are not ready after $timeout seconds."
         print_error "Check with 'kubectl get daemonset -n $ns' and 'kubectl get deployment -n $ns'."
+        exit 1
+    fi
+}
+
+# Function to check requirements for TC installation for K8s
+check_tc_requirements_k8s() {
+    if [[ ! -d "$SCRIPT_DIR/charts" ]]; then
+        print_error "Charts directory not found: $SCRIPT_DIR/charts"
+        exit 1
+    fi
+    if [[ ! -d "$SCRIPT_DIR/images" ]]; then
+        print_error "Images directory not found: $SCRIPT_DIR/images"
+        exit 1
+    fi
+    # Check if containerd config source exists
+    if [[ ! -f "$CONTAINERD_CONFIG_SRC" ]]; then
+        print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
         exit 1
     fi
 }
@@ -270,6 +303,122 @@ check_no_tc_k3s_conflict() {
     fi
 }
 
+# Check if K8s TC installation already exists (blocks other installs)
+check_no_tc_k8s_conflict() {
+    if command -v kubectl &>/dev/null && kubectl get namespace trusted-compute &>/dev/null 2>&1; then
+        # Check if it's not from k3s
+        if [[ ! -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] && [[ ! -d "$K3S_CHARTS_DIR" ]]; then
+            print_error "TC K8s installation is already active."
+            print_error "Please uninstall it first: sudo ./uninstall.sh --k8s  (or run sudo ./uninstall.sh and select K8s)"
+            exit 1
+        fi
+    fi
+}
+
+# Function to import images into containerd for K8s
+import_images_to_containerd() {
+    print_status "Importing container images to containerd..."
+    local imported=0
+    for img_tar in "$SCRIPT_DIR/images"/*.tar; do
+        [[ -f "$img_tar" ]] || continue
+        print_status "Loading image: $(basename "$img_tar")"
+        if ctr -n k8s.io images import "$img_tar"; then
+            print_status "Successfully imported: $(basename "$img_tar")"
+            ((imported++))
+        else
+            print_error "Failed to import: $(basename "$img_tar")"
+            exit 1
+        fi
+    done
+    print_status "Imported $imported container images to containerd"
+}
+
+# Function to install Helm charts for K8s
+install_helm_charts() {
+    print_status "Installing Helm charts..."
+
+    # Create namespaces first
+    kubectl create namespace trusted-compute --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'trusted-compute' ready"
+    kubectl create namespace kata-deploy --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'kata-deploy' ready"
+
+    # Install attestation-verifier chart
+    print_status "Installing attestation-verifier chart..."
+    helm upgrade --install attestation-verifier "$SCRIPT_DIR/charts/attestation-verifier"*.tgz \
+        --namespace trusted-compute \
+        --set attestation-manager.env.pollDuration=5 \
+        --set attestation-manager.env.InformAMServer="false" \
+        --wait --timeout 10m \
+        && print_status "attestation-verifier chart installed" \
+        || { print_error "Failed to install attestation-verifier chart"; exit 1; }
+
+    # Install kata-deploy chart
+    print_status "Installing kata-deploy chart..."
+    helm upgrade --install kata-deploy "$SCRIPT_DIR/charts/kata-deploy"*.tgz \
+        --namespace kata-deploy \
+        --wait --timeout 10m \
+        && print_status "kata-deploy chart installed" \
+        || { print_error "Failed to install kata-deploy chart"; exit 1; }
+
+    # Install trusted-workload chart
+    print_status "Installing trusted-workload chart..."
+    helm upgrade --install trusted-workload "$SCRIPT_DIR/charts/trusted-workload"*.tgz \
+        --namespace kata-deploy \
+        --wait --timeout 10m \
+        && print_status "trusted-workload chart installed" \
+        || { print_error "Failed to install trusted-workload chart"; exit 1; }
+}
+
+# Function to update containerd config for K8s
+update_containerd_config_k8s() {
+    print_status "Updating containerd configuration..."
+
+    # Backup existing config
+    if [[ -f "$K8S_CONTAINERD_CONFIG" ]]; then
+        cp "$K8S_CONTAINERD_CONFIG" "$K8S_CONTAINERD_CONFIG_BACKUP"
+        print_status "Backed up containerd config to $K8S_CONTAINERD_CONFIG_BACKUP"
+    fi
+
+    # Copy the template to containerd directory
+    mkdir -p "$K8S_CONTAINERD_DIR"
+    cp "$CONTAINERD_CONFIG_SRC" "$K8S_CONTAINERD_DIR/config-v3.toml.tmpl"
+    print_status "Copied containerd config template to $K8S_CONTAINERD_DIR"
+
+    # Restart containerd to apply changes
+    print_status "Restarting containerd service..."
+    systemctl restart containerd && print_status "Containerd restarted successfully" || { print_error "Failed to restart containerd"; exit 1; }
+    sleep 5
+}
+
+# Function to print summary (TC installation for K8s)
+print_tc_k8s_summary() {
+    print_status "Installation completed successfully!"
+    print_status "Summary of installed components (TC installation for K8s):"
+    echo "  - Images imported to containerd namespace: k8s.io"
+    echo "  - Helm charts installed: attestation-verifier, kata-deploy, trusted-workload"
+    echo "  - Namespaces created: trusted-compute, kata-deploy"
+    echo "  - Users and groups: bm-agents group, tc-agent user, tc-ima user"
+    echo "  - Containerd config updated: $K8S_CONTAINERD_DIR"
+}
+
+install_tc_k8s() {
+    check_no_tc_docker_conflict
+    check_no_tc_k3s_conflict
+    check_secure_boot
+    check_k8s_cluster
+    print_status "Installation script running from: $SCRIPT_DIR"
+    check_tc_requirements_k8s
+    print_status "Starting TC installation for K8s..."
+    import_images_to_containerd
+    update_containerd_config_k8s
+    create_users_groups
+    install_helm_charts
+    sleep 5 && configure_kata_qemu_config
+    print_tc_k8s_summary
+    print_status "Wait for daemonsets and deployments to become ready..."
+    sleep 60
+    wait_for_namespace_ready "trusted-compute" "$TIMEOUT"
+}
+
 install_tc_k3s() {
     check_no_tc_docker_conflict
     check_secure_boot
@@ -305,9 +454,9 @@ install_tc_docker() {
 # interactive menu
 
 select_deployment_option() {
-    local options=("K3s    - TC installation for K3s" "Docker - TC installation for Docker")
+    local options=("K3s    - TC installation for K3s" "K8s    - TC installation for K8s" "Docker - TC installation for Docker")
     local selected=0 key k2 k3
-    local -a modes=(k3s docker)
+    local -a modes=(k3s k8s docker)
 
     _draw_menu() {
         printf '\nSelect installation option (use arrow keys, press Enter to confirm):\n\n'
@@ -342,11 +491,12 @@ main() {
     # Parse argument
     case "${1:-}" in
         --k3s)    DEPLOYMENT_OPTION="k3s" ;;
+        --k8s)    DEPLOYMENT_OPTION="k8s" ;;
         --docker) DEPLOYMENT_OPTION="docker" ;;
         "")       : ;;  # will prompt below
         *)
             print_error "Unknown argument: $1"
-            echo "Usage: $0 [--k3s | --docker]"
+            echo "Usage: $0 [--k3s | --k8s | --docker]"
             exit 1
             ;;
     esac
@@ -358,6 +508,7 @@ main() {
 
     case "$DEPLOYMENT_OPTION" in
         k3s)    install_tc_k3s ;;
+        k8s)    install_tc_k8s ;;
         docker) install_tc_docker ;;
     esac
 }
