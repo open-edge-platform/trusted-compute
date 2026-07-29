@@ -48,6 +48,7 @@ curl -fsSL "${EDGE_AI_LIBS_RAW}/${EDGE_AI_LIBS_COMMIT}/${SCRIPTS_PATH}/npu_monit
 #      METRICS_MANAGER_HOSTNAME (upstream convention)
 #   5. Make INTERVAL_S configurable via NPU_INTERVAL_MS env var
 echo "INFO: Patching npu_reader.py for TC guest VM environment"
+cd "${BUILD_DIR}"
 python3 - << 'PATCH_EOF'
 import re, sys
 
@@ -109,7 +110,6 @@ PATCH_EOF
 
 # Build a single-file standalone executable
 echo "INFO: Running PyInstaller to produce npu-reader"
-cd "${BUILD_DIR}"
 pyinstaller \
     --onefile \
     --name npu-reader \
