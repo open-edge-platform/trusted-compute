@@ -84,12 +84,6 @@ build:
 	cp -a "$(CURDIR)/../docs/trusted_compute_gpu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
 	cp -a "$(CURDIR)/../docs/trusted_compute_npu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
 
-	# Copy documentation files
-	mkdir -p "$$STAGEDIR/docs"
-	cp -a "$(CURDIR)/../docs/trusted_compute_baremetal.md" "$$STAGEDIR/docs/" 2>/dev/null || true
-	cp -a "$(CURDIR)/../docs/trusted_compute_gpu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
-	cp -a "$(CURDIR)/../docs/trusted_compute_npu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
-
 	# Ensure helm charts are built and available in the helm output
 	@echo "Building helm charts (../helm helm-build)"
 	set -e; $(MAKE) -C "$(CURDIR)/../helm" helm-build \
