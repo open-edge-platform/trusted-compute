@@ -45,6 +45,12 @@ iommu_group_for_gpu() {
     fi
 }
 
+print_vfio_device() {
+    local vfio_group
+    vfio_group=$(iommu_group_for_gpu)
+    echo "VFIO device: /dev/vfio/$vfio_group"
+}
+
 platform_native_driver() {
     local modalias driver
     modalias=$(cat "/sys/bus/pci/devices/$GPU_PCI_FULL/modalias" 2>/dev/null) || { echo "i915"; return; }
@@ -165,6 +171,7 @@ bind_to_vfio() {
         exit 1
     fi
     echo "SUCCESS: GPU bound to vfio-pci"
+    print_vfio_device
     write_cdi_spec
 }
 
@@ -200,6 +207,7 @@ case "${1:-}" in
         detect_gpu
         if [ -e "/sys/bus/pci/drivers/vfio-pci/$GPU_PCI_FULL" ]; then
             echo "GPU already bound to vfio-pci"
+            print_vfio_device
             exit 0
         fi
         bind_to_vfio

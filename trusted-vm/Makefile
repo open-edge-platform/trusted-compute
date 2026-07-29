@@ -5,12 +5,13 @@
 
 # Variables
 BUILD_DIR := $(shell pwd)/build
+export GOTOOLCHAIN := go1.26.0
 MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 $(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
 EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
-EDGE_MICROVISOR_BRANCH?=3.0
-EDGE_MICROVISOR_COMMIT?="26.06-20260526"
+EDGE_MICROVISOR_BRANCH?=26.06
+EDGE_MICROVISOR_COMMIT?="26097ad2ef11057d4722ca92db98be8ca2114da3"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
