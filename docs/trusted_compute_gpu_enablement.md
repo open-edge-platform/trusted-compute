@@ -44,7 +44,7 @@ To enable GPU passthrough, use the `intel-igpu-vfio-bind.sh` script located in t
 sudo ./tools/intel-igpu-vfio-bind.sh bind
 ```
 
-The script auto-detects the Intel iGPU, stops the display manager, unbinds the GPU from its native driver (`i915` or `xe`), binds it to `vfio-pci`, and generates a CDI spec at `/etc/cdi/intel-igpu-tc-cdi.yaml`.
+The script auto-detects the Intel iGPU, stops the display manager, unbinds the GPU from its native driver (`i915` or `xe`), binds it to `vfio-pci`, prints the assigned VFIO device path (`/dev/vfio/<n>`), and generates a CDI spec at `/etc/cdi/intel-igpu-tc-cdi.yaml`.
 
 ### Verify VFIO Binding
 
@@ -168,3 +168,17 @@ lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 # Output should show:
 # Kernel driver in use: i915  (or `xe`, depending on platform/kernel)
 ```
+
+## GPU Telemetry
+
+The Trusted Compute environment supports GPU telemetry collection from workloads running in Kata VMs. To enable telemetry, configure the collection endpoint via Kata kernel parameters in your pod/container annotations:
+
+```yaml
+# In pod annotations (K3s):
+io.katacontainers.config.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
+
+# Example for a Prometheus/InfluxDB compatible collector:
+io.katacontainers.config.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
+```
+
+Metrics are emitted in InfluxDB line protocol format. If no collector is configured, telemetry collection is silently disabled.
