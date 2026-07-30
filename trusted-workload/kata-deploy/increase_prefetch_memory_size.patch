@@ -1,20 +1,20 @@
 diff --git a/src/runtime/virtcontainers/qemu.go b/src/runtime/virtcontainers/qemu.go
-index 4066c85e4..fd888805f 100644
+index b21ef94bb..d268d68f8 100644
 --- a/src/runtime/virtcontainers/qemu.go
 +++ b/src/runtime/virtcontainers/qemu.go
-@@ -2687,6 +2687,8 @@ func genericAppendPCIeRootPort(devices []govmmQemu.Device, number uint32, machin
+@@ -3449,6 +3449,8 @@ func genericAppendPCIeRootPort(devices []govmmQemu.Device, number uint32, machin
+ 				Chassis:       chassis,
  				Slot:          strconv.FormatUint(uint64(i), 10),
  				Multifunction: multiFunction,
- 				Addr:          addr,
 +				MemReserve:    "256m",
 +				Pref64Reserve: "512m",
  			},
  		)
  	}
-@@ -2732,6 +2734,8 @@ func genericAppendPCIeSwitchPort(devices []govmmQemu.Device, number uint32, mach
+@@ -3496,6 +3498,8 @@ func genericAppendPCIeSwitchPort(devices []govmmQemu.Device, number uint32, mach
+ 		Chassis:       "1",
  		Slot:          strconv.FormatUint(uint64(0), 10),
  		Multifunction: false,
- 		Addr:          "0",
 +		MemReserve:    "256m",
 +		Pref64Reserve: "512m",
  	}
