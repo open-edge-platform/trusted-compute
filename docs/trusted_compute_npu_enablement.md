@@ -127,6 +127,14 @@ services:
       - /dev/vfio/<n>:/dev/vfio/<n>  # Replace <n> with your IOMMU group number
     volumes:
       - /dev:/dev
+    deploy: #update as per your requirement
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
 ```
 
 Deploy and verify:

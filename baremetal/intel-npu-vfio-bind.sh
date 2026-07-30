@@ -25,7 +25,7 @@ detect_npu() {
         NPU_PCI_FULL=$(basename "$(readlink -f /sys/class/accel/accel0/device)")
         line=$(lspci -Dnn -s "$NPU_PCI_FULL" | head -1 || true)
     else
-        line=$(lspci -Dnn | grep -iE 'Processing accelerators.*Intel.*NPU|Meteor Lake NPU' | head -1 || true)
+        line=$(lspci -Dnn | grep -iE 'Processing accelerators.*Intel' | head -1 || true)
         if [ -z "$line" ]; then echo "ERROR: No Intel NPU found!"; exit 1; fi
         NPU_PCI_FULL=$(echo "$line" | awk '{print $1}')
     fi
