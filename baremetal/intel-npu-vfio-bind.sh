@@ -223,6 +223,8 @@ bind_to_vfio() {
         fi
         if [ "$(current_driver_spc)" != "vfio-pci" ]; then
             echo "FAILED: SPC driver=$(current_driver_spc)"
+            echo "Attempting to restore NPU/SPC bindings..."
+            unbind_from_vfio || true
             exit 1
         fi
         echo "SUCCESS: SPC bound to vfio-pci"
