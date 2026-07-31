@@ -41,15 +41,18 @@ To enable NPU passthrough, use the `intel-npu-vfio-bind.sh` script located in th
 sudo ./tools/intel-npu-vfio-bind.sh bind
 ```
 
-The script auto-detects the Intel NPU, unbinds it from its native driver (`intel_vpu`), binds it to `vfio-pci`, prints the assigned VFIO device path (`/dev/vfio/<n>`), and generates a CDI spec at `/etc/cdi/intel-npu-tc-cdi.yaml`.
+The script auto-detects the Intel NPU and the companion Signal Processing Controller (`8086:b07d`, required for NPU telemetry inside the VM), unbinds both from their native drivers, binds them to `vfio-pci`, prints the assigned VFIO device paths, and generates a CDI spec at `/etc/cdi/intel-npu-tc-cdi.yaml`.
 
 ### Verify VFIO Binding
 
 ```bash
 $ ls /dev/vfio
-# Expected: vfio  <n>  (control file + one or more IOMMU group numbers)
+# Expected: vfio  <n>  <m>  (control file + IOMMU group for NPU + IOMMU group for SPC)
 
 $ lspci -nnk | grep -A3 -iE 'Processing accelerators.*Intel'
+# Kernel driver in use: vfio-pci
+
+$ lspci -nnk | grep -A3 -iE 'Signal processing controller'
 # Kernel driver in use: vfio-pci
 ```
 
@@ -124,7 +127,8 @@ services:
       io.katacontainers.config.hypervisor.pcie_root_port: "1"
       io.katacontainers.config.hypervisor.hot_plug_vfio: "root-port"
     devices:
-      - /dev/vfio/<n>:/dev/vfio/<n>  # Replace <n> with your IOMMU group number
+      - /dev/vfio/<n>:/dev/vfio/<n>  # NPU IOMMU group number (from 'VFIO device (NPU)' output)
+      - /dev/vfio/<m>:/dev/vfio/<m>  # SPC IOMMU group number (from 'VFIO device (SPC)' output)
     volumes:
       - /dev:/dev
     deploy: #update as per your requirement
@@ -159,7 +163,7 @@ After you are done using NPU passthrough, use the same script to restore the NPU
 sudo ./tools/intel-npu-vfio-bind.sh unbind
 ```
 
-The script unbinds the NPU from `vfio-pci`, rebinds it to the native `intel_vpu` driver, and restores the NPU to its original state for use by the host system.
+The script unbinds both the NPU and the SPC from `vfio-pci`, rebinds them to their native drivers, and restores both devices to their original state for use by the host system.
 
 ```bash
 # Verify the NPU is restored to the native driver:
@@ -174,10 +178,10 @@ The Trusted Compute environment supports NPU telemetry collection from workloads
 
 ```yaml
 # In pod annotations (K3s):
-io.katacontainers.config.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
+io.katacontainers.config.hypervisor.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
 
 # Example for a Prometheus/InfluxDB compatible collector:
-io.katacontainers.config.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
+io.katacontainers.config.hypervisor.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
 ```
 
 Metrics are emitted in InfluxDB line protocol format. If no collector is configured, telemetry collection is silently disabled.
