@@ -183,10 +183,10 @@ The Trusted Compute environment supports GPU telemetry collection from workloads
 
 ```yaml
 # In pod annotations (K3s):
-io.katacontainers.config.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
+io.katacontainers.config.hypervisor.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
 
 # Example for a Prometheus/InfluxDB compatible collector:
-io.katacontainers.config.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
+io.katacontainers.config.hypervisor.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
 ```
 
 Metrics are emitted in InfluxDB line protocol format. If no collector is configured, telemetry collection is silently disabled.
