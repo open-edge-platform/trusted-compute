@@ -46,6 +46,7 @@ build:
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/intel-igpu-vfio-bind.sh" "$$STAGEDIR/tools/"
+	cp -a "$(CURDIR)/intel-npu-vfio-bind.sh" "$$STAGEDIR/tools/"
 	cp -a "$(CURDIR)/k3s.sh" "$$STAGEDIR/k3s/k3s.sh"
 	cp -a "$(CURDIR)/trusted-compute.yaml" "$$STAGEDIR/manifests/trusted-compute.yaml"
 
@@ -76,6 +77,11 @@ build:
 	else
 		printf "See docs/trusted_compute_baremetal.md in repository" > "$$STAGEDIR/readme.md"
 	fi
+
+	# Copy documentation files
+	mkdir -p "$$STAGEDIR/docs"
+	cp -a "$(CURDIR)/../docs/trusted_compute_gpu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
+	cp -a "$(CURDIR)/../docs/trusted_compute_npu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
 
 	# Ensure helm charts are built and available in the helm output
 	@echo "Building helm charts (../helm helm-build)"
