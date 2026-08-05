@@ -53,7 +53,6 @@ set_paths() {
     # K8s specific paths
     K8S_CONTAINERD_DIR="/etc/containerd"
     K8S_CONTAINERD_CONFIG="$K8S_CONTAINERD_DIR/config.toml"
-    K8S_CONTAINERD_CONFIG_BACKUP="$K8S_CONTAINERD_DIR/config.toml.backup"
 }
 
 # Function to check required directories/files for TC installation for K3s
@@ -156,6 +155,13 @@ restart_k3s() {
     systemctl restart k3s && print_status "Successfully restarted K3s service" || { print_error "Failed to restart K3s service"; exit 1; }
 }
 
+# Function to restart containerd
+restart_containerd() {
+    print_status "Restarting containerd service..."
+    systemctl restart containerd && print_status "Containerd restarted successfully" || { print_error "Failed to restart containerd"; exit 1; }
+    sleep 5
+}
+
 # Function to check K3s service is installed and enabled
 check_k3s_service() {
     command -v k3s &>/dev/null || { print_error "k3s is not installed or not in PATH"; exit 1; }
@@ -168,9 +174,10 @@ check_k8s_cluster() {
     command -v kubectl &>/dev/null || { print_error "kubectl is not installed or not in PATH"; exit 1; }
     command -v helm &>/dev/null || { print_error "helm is not installed or not in PATH. Please install Helm first."; exit 1; }
     command -v ctr &>/dev/null || { print_error "ctr (containerd CLI) is not installed or not in PATH"; exit 1; }
-    kubectl cluster-info &>/dev/null || { print_error "Cannot connect to Kubernetes cluster. Please check your kubeconfig."; exit 1; }
-    systemctl is-active kubelet &>/dev/null || { print_error "kubelet service is not running"; exit 1; }
-    print_status "Kubernetes cluster is accessible."
+    systemctl is-active kubelet &>/dev/null || { print_error "kubelet service is not active on node"; exit 1; }
+    systemctl is-active containerd &>/dev/null || { print_error "containerd service is not active on node"; exit 1; }
+    kubectl get nodes --request-timeout=5s &>/dev/null || { print_error "Cannot connect to K8s cluster."; exit 1; }
+    print_status "K8s cluster is accessible."
 }
 
 # Function to print summary (TC installation for K3s)
@@ -212,7 +219,6 @@ check_tc_requirements_k8s() {
         print_error "Images directory not found: $SCRIPT_DIR/images"
         exit 1
     fi
-    # Check if containerd config source exists
     if [[ ! -f "$CONTAINERD_CONFIG_SRC" ]]; then
         print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
         exit 1
@@ -334,28 +340,18 @@ import_images_to_containerd() {
 }
 
 # Function to install Helm charts for K8s
-install_helm_charts() {
+install_helm_charts_k8s() {
     print_status "Installing Helm charts..."
 
     # Create namespaces first
     kubectl create namespace trusted-compute --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'trusted-compute' ready"
     kubectl create namespace kata-deploy --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'kata-deploy' ready"
 
-    # Install attestation-verifier chart
-    print_status "Installing attestation-verifier chart..."
-    helm upgrade --install attestation-verifier "$SCRIPT_DIR/charts/attestation-verifier"*.tgz \
-        --namespace trusted-compute \
-        --set attestation-manager.env.pollDuration=5 \
-        --set attestation-manager.env.InformAMServer="false" \
-        --wait --timeout 10m \
-        && print_status "attestation-verifier chart installed" \
-        || { print_error "Failed to install attestation-verifier chart"; exit 1; }
-
     # Install kata-deploy chart
     print_status "Installing kata-deploy chart..."
     helm upgrade --install kata-deploy "$SCRIPT_DIR/charts/kata-deploy"*.tgz \
         --namespace kata-deploy \
-        --wait --timeout 10m \
+        --wait --timeout 3m \
         && print_status "kata-deploy chart installed" \
         || { print_error "Failed to install kata-deploy chart"; exit 1; }
 
@@ -363,30 +359,57 @@ install_helm_charts() {
     print_status "Installing trusted-workload chart..."
     helm upgrade --install trusted-workload "$SCRIPT_DIR/charts/trusted-workload"*.tgz \
         --namespace kata-deploy \
-        --wait --timeout 10m \
+        --wait --timeout 3m \
         && print_status "trusted-workload chart installed" \
         || { print_error "Failed to install trusted-workload chart"; exit 1; }
+
+    # Install attestation-verifier chart
+    print_status "Installing attestation-verifier chart..."
+    helm upgrade --install attestation-verifier "$SCRIPT_DIR/charts/attestation-verifier"*.tgz \
+        --namespace trusted-compute \
+        --set attestation-manager.env.pollDuration=5 \
+        --set attestation-manager.env.InformAMServer="false" \
+        --wait --timeout 5m \
+        && print_status "attestation-verifier chart installed" \
+        || print_warning "attestation-verifier chart install did not report ready within timeout; continuing anyway"
 }
 
 # Function to update containerd config for K8s
 update_containerd_config_k8s() {
     print_status "Updating containerd configuration..."
 
-    # Backup existing config
-    if [[ -f "$K8S_CONTAINERD_CONFIG" ]]; then
-        cp "$K8S_CONTAINERD_CONFIG" "$K8S_CONTAINERD_CONFIG_BACKUP"
-        print_status "Backed up containerd config to $K8S_CONTAINERD_CONFIG_BACKUP"
+    # Generate default config.toml if it doesn't exist or is empty
+    if [[ ! -s "$K8S_CONTAINERD_CONFIG" ]]; then
+        mkdir -p "$K8S_CONTAINERD_DIR"
+        containerd config default > "$K8S_CONTAINERD_CONFIG" \
+            && print_status "Generated default containerd config.toml" \
+            || { print_error "Failed to generate default containerd config"; exit 1; }
+    else
+        print_status "Existing containerd config.toml found, keeping it"
     fi
 
-    # Copy the template to containerd directory
-    mkdir -p "$K8S_CONTAINERD_DIR"
-    cp "$CONTAINERD_CONFIG_SRC" "$K8S_CONTAINERD_DIR/config-v3.toml.tmpl"
-    print_status "Copied containerd config template to $K8S_CONTAINERD_DIR"
+    # Ensure imports line is present so conf.d snippets are loaded
+    if grep -q '^imports' "$K8S_CONTAINERD_CONFIG"; then
+        if ! grep -q 'imports.*conf\.d' "$K8S_CONTAINERD_CONFIG"; then
+            sed -i 's#^imports = \[\(.*\)\]#imports = [\1, "/etc/containerd/conf.d/*.toml"]#' "$K8S_CONTAINERD_CONFIG"
+            sed -i 's/\[, /[/' "$K8S_CONTAINERD_CONFIG"
+            print_status "Updated existing imports line to include conf.d"
+        fi
+    else
+        sed -i '/^version/a imports = ["/etc/containerd/conf.d/*.toml"]' "$K8S_CONTAINERD_CONFIG"
+        print_status "Added conf.d imports to config.toml"
+    fi
+
+    # Install kata runtime as a conf.d drop-in
+    mkdir -p "$K8S_CONTAINERD_DIR/conf.d"
+    grep -v '{{ template' "$CONTAINERD_CONFIG_SRC" \
+        | grep -v '/var/lib/rancher/k3s' \
+        > "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
+        && print_status "Installed kata-qemu drop-in to $K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
+        || { print_error "Failed to install kata-qemu drop-in"; exit 1; }
 
     # Restart containerd to apply changes
-    print_status "Restarting containerd service..."
-    systemctl restart containerd && print_status "Containerd restarted successfully" || { print_error "Failed to restart containerd"; exit 1; }
-    sleep 5
+    restart_containerd
 }
 
 # Function to print summary (TC installation for K8s)
@@ -411,8 +434,7 @@ install_tc_k8s() {
     import_images_to_containerd
     update_containerd_config_k8s
     create_users_groups
-    install_helm_charts
-    sleep 5 && configure_kata_qemu_config
+    install_helm_charts_k8s
     print_tc_k8s_summary
     print_status "Wait for daemonsets and deployments to become ready..."
     sleep 60
@@ -421,6 +443,7 @@ install_tc_k8s() {
 
 install_tc_k3s() {
     check_no_tc_docker_conflict
+    check_no_tc_k8s_conflict
     check_secure_boot
     check_k3s_service
     print_status "Installation script running from: $SCRIPT_DIR"
@@ -442,6 +465,7 @@ install_tc_k3s() {
 
 install_tc_docker() {
     check_no_tc_k3s_conflict
+    check_no_tc_k8s_conflict
     check_secure_boot
     print_status "Installation script running from: $SCRIPT_DIR"
     check_tc_requirements_docker

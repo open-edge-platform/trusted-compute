@@ -5,7 +5,7 @@
 #
 
 # Trusted Compute Uninstallation Script
-# This script uninstalls trusted-compute components from K3s/Docker
+# This script uninstalls trusted-compute components from k8s/K3s/Docker
 # Must be run as sudo
 
 set -e  # Exit on any error
@@ -268,7 +268,7 @@ uninstall_helm_releases() {
     # Uninstall attestation-verifier
     if helm list -n trusted-compute 2>/dev/null | grep -q attestation-verifier; then
         print_status "Uninstalling attestation-verifier..."
-        helm uninstall attestation-verifier -n trusted-compute --wait --timeout 5m \
+        helm uninstall attestation-verifier -n trusted-compute --wait --timeout 10m \
             && print_status "attestation-verifier uninstalled" \
             || print_warning "Failed to uninstall attestation-verifier"
     else
@@ -325,18 +325,13 @@ remove_k8s_containerd_images() {
 restore_containerd_config_k8s() {
     print_status "Restoring containerd configuration..."
 
-    # Remove the template we added
-    if [[ -f "$K8S_CONTAINERD_DIR/config-v3.toml.tmpl" ]]; then
-        rm -f "$K8S_CONTAINERD_DIR/config-v3.toml.tmpl" \
-            && print_status "Removed config-v3.toml.tmpl" \
-            || print_warning "Failed to remove config-v3.toml.tmpl"
-    fi
-
-    # Restore backup if it exists
-    if [[ -f "$K8S_CONTAINERD_CONFIG_BACKUP" ]]; then
-        cp "$K8S_CONTAINERD_CONFIG_BACKUP" "$K8S_CONTAINERD_CONFIG" \
-            && print_status "Restored containerd config from backup" \
-            || print_warning "Failed to restore containerd config from backup"
+    # Remove the kata-qemu drop-in we added
+    if [[ -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" ]]; then
+        rm -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
+            && print_status "Removed kata-qemu.toml drop-in" \
+            || print_warning "Failed to remove kata-qemu.toml drop-in"
+    else
+        print_warning "kata-qemu.toml drop-in not found, skipping"
     fi
 
     # Restart containerd
@@ -354,7 +349,7 @@ print_tc_k8s_uninstall_summary() {
     echo "  - Helm releases:         attestation-verifier, kata-deploy, trusted-workload"
     echo "  - Namespaces deleted:    trusted-compute, kata-deploy"
     echo "  - Images removed from:   containerd (k8s.io namespace)"
-    echo "  - Containerd config:     Restored"
+    echo "  - Containerd config:     kata-qemu.toml drop-in removed"
     echo "  - Users/groups removed:  tc-agent, tc-ima, bm-agents"
 }
 
