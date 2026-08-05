@@ -42,6 +42,8 @@ The installation script supports three deployment options:
 	- During installation, ensure Secure Boot is enabled in the BIOS/UEFI settings for enhanced security.
 	- For detailed instructions, see: [Enabling UEFI Secure Boot](https://docs.openedgeplatform.intel.com/2026.1/OEP-articles/application-security/enable_uefi.html).
 
+> **Note:** Trusted Compute versions 1.5.0, 1.5.1, and 1.5.2 are not compatible with Docker version 29.5 or later — Docker version 29.4.x is required (tested with 29.4.3). Trusted Compute 1.5.3 and later have no Docker version restriction.
+
 > **Note:** K3s, K8s, and Docker installations are mutually exclusive. If one is already installed, the script will prompt you to uninstall it first before proceeding with another.
 
 ---
@@ -52,9 +54,9 @@ The installation script supports three deployment options:
 
 	**Option 1: Download a Specific Version**
 	
-	If you want to download a specific version (e.g., 1.5.0):
+	If you want to download a specific version (e.g., 1.5.3):
 	```bash
-	VERSION=1.5.0
+	VERSION=1.5.3
 	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:$VERSION
 	```
 	
@@ -236,7 +238,6 @@ The K8s option installs Trusted Compute onto an **existing** Kubernetes setup al
 	Follow the official guide for Ubuntu:
 	[https://docs.docker.com/engine/install/ubuntu/](https://docs.docker.com/engine/install/ubuntu/)
 
-	> **Note:** Trusted Compute 1.5.0 is not compatible with Docker version 29.5 or later. Docker version 29.4.x is required (tested with 29.4.3).
 
 2. **Install Docker Compose v2 plugin** (if not already installed):
 

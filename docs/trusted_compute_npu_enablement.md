@@ -11,7 +11,7 @@ This document provides a step-by-step guide to enable NPU (Neural Processing Uni
   - [Bind NPU to vfio-pci](#bind-npu-to-vfio-pci)
   - [Verify VFIO Binding](#verify-vfio-binding)
 - [Deploy Sample Application](#deploy-sample-application)
-  - [Deploy with K3s](#deploy-with-k3s)
+  - [Deploy with Kubernetes (K3s/K8s)](#deploy-with-kubernetes-k3sk8s)
   - [Deploy with Docker Compose](#deploy-with-docker-compose)
 - [Revert NPU Binding](#revert-npu-binding)
 
@@ -23,13 +23,13 @@ NPU passthrough allows a virtual machine to directly access a physical Intel NPU
 
 - Intel CPU with VT-x/VT-d support and an integrated NPU
 - IOMMU enabled in BIOS/UEFI and Linux kernel with VFIO and `intel_vpu` driver support
-- Kubernetes, K3s, or Docker with Trusted Compute version 1.5.3 or newer
+- K3s, K8s, or Docker with Trusted Compute version 1.5.3 or newer
 
 ## Install Trusted Compute Package
 
 Follow the [Trusted Compute Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
 
-> **Note:** During the Trusted Compute installation, you will set up either K3s or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation.
+> **Note:** During the Trusted Compute installation, you will set up K3s, K8s, or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation. The K3s and K8s options both use `kubectl` and share the same deployment steps.
 
 ## NPU Driver Management
 
@@ -62,9 +62,11 @@ NPU passthrough can be verified by deploying an open-source [OpenVINO™ Toolkit
 
 The check below runs OpenVINO's device query, which lists all detected inference devices. When passthrough is successful, `NPU` appears in the list of available devices.
 
-> **Note:** Follow either the K3s or Docker Compose deployment section below based on your installation.
+> **Note:** Follow either the Kubernetes (K3s/K8s) or Docker Compose deployment section below based on your installation.
 
-### Deploy with K3s
+### Deploy with Kubernetes (K3s/K8s)
+
+The following steps apply whether Trusted Compute was installed with the K3s or K8s option — both use `kubectl` and the same `kata-qemu` runtime class.
 
 Create a pod specification with proper NPU device annotations:
 
