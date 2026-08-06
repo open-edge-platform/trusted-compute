@@ -412,14 +412,14 @@ install_helm_charts_k8s() {
     mkdir -p "$k8s_dir"
     # Extract yq's own exit status separately from sed's so a yq failure isn't masked by the pipeline
     local kata_deploy_values
-    kata_deploy_values=$(yq 'select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent' \
+    kata_deploy_values=$(yq -r 'select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent' \
         "$SCRIPT_DIR/manifests/trusted-compute.yaml") \
         || { print_error "yq failed to extract kata-deploy values from manifest"; exit 1; }
     if [[ -z "$kata_deploy_values" ]] || [[ "$kata_deploy_values" == "null" ]]; then
         print_error "yq returned empty/null valuesContent for kata-deploy HelmChart in manifest"
         exit 1
     fi
-    echo "$kata_deploy_values" \
+    printf '%s\n' "$kata_deploy_values" \
         | sed 's/k8sDistribution: "k3s"/k8sDistribution: "k8s"/' \
         > "$k8s_dir/values-kata-deploy.yaml"
 
