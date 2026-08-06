@@ -337,6 +337,10 @@ import_images_to_containerd() {
             exit 1
         fi
     done
+    if [[ $imported -eq 0 ]]; then
+        print_error "No container image tarballs (*.tar) found in $SCRIPT_DIR/images"
+        exit 1
+    fi
     print_status "Imported $imported container images to containerd"
 }
 
