@@ -471,14 +471,14 @@ update_containerd_config_k8s() {
     fi
 
     # Ensure imports line is present so conf.d snippets are loaded
-    if grep -q '^imports' "$K8S_CONTAINERD_CONFIG"; then
-        if ! grep -q 'imports.*conf\.d' "$K8S_CONTAINERD_CONFIG"; then
-            sed -i 's#^imports = \[\(.*\)\]#imports = [\1, "/etc/containerd/conf.d/*.toml"]#' "$K8S_CONTAINERD_CONFIG"
+    if grep -Eq '^[[:space:]]*imports[[:space:]]*=' "$K8S_CONTAINERD_CONFIG"; then
+        if ! grep -Eq '^[[:space:]]*imports[[:space:]]*=.*conf\.d/\*\.toml' "$K8S_CONTAINERD_CONFIG"; then
+            sed -i -E 's#^[[:space:]]*imports[[:space:]]*=[[:space:]]*\[(.*)\]#imports = [\1, "/etc/containerd/conf.d/*.toml"]#' "$K8S_CONTAINERD_CONFIG"
             sed -i 's/\[, /[/' "$K8S_CONTAINERD_CONFIG"
             print_status "Updated existing imports line to include conf.d"
         fi
     else
-        sed -i '/^version/a imports = ["/etc/containerd/conf.d/*.toml"]' "$K8S_CONTAINERD_CONFIG"
+        sed -i '/^[[:space:]]*version[[:space:]]*=/a imports = ["/etc/containerd/conf.d/*.toml"]' "$K8S_CONTAINERD_CONFIG"
         print_status "Added conf.d imports to config.toml"
     fi
 
