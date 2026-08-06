@@ -44,6 +44,10 @@ build:
 
 	# Copy existing files from repo
 	cp -a "$(CURDIR)/install.sh" "$$STAGEDIR/"
+	sed -i \
+		-e 's/^ATTESTATION_MANAGER_VERSION=.*/ATTESTATION_MANAGER_VERSION="$(ATTESTATION_MANAGER_VERSION)"/' \
+		-e 's/^KATA_DEPLOY_VERSION=.*/KATA_DEPLOY_VERSION="$(KATA_DEPLOY_VERSION)"/' \
+		"$$STAGEDIR/install.sh"
 	cp -a "$(CURDIR)/uninstall.sh" "$$STAGEDIR/"
 	cp -a "$(CURDIR)/intel-igpu-vfio-bind.sh" "$$STAGEDIR/tools/"
 	cp -a "$(CURDIR)/intel-npu-vfio-bind.sh" "$$STAGEDIR/tools/"

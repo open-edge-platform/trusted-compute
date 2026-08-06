@@ -13,6 +13,10 @@
 
 set -e  # Exit on any error
 
+# Injected at package build time by Makefile
+ATTESTATION_MANAGER_VERSION="1.5.3"
+KATA_DEPLOY_VERSION="1.5.3"
+
 # Color codes for output
 RED='\e[0;31m'
 GREEN='\e[0;32m'
@@ -162,6 +166,21 @@ restart_containerd() {
     sleep 5
 }
 
+# Function to setup kubeconfig for sudo user
+setup_kubeconfig() {
+    local admin_kubeconfig="/etc/kubernetes/admin.conf"
+    local root_home=$(getent passwd root | cut -d: -f6)
+    local root_kubeconfig="${root_home}/.kube/config"
+
+    if [[ -f "$admin_kubeconfig" ]]; then
+        mkdir -p "${root_home}/.kube"
+        cp "$admin_kubeconfig" "$root_kubeconfig"
+        chmod 600 "$root_kubeconfig"
+    else
+        print_warning "Kubeconfig not found at $admin_kubeconfig"
+    fi
+}
+
 # Function to check K3s service is installed and enabled
 check_k3s_service() {
     command -v k3s &>/dev/null || { print_error "k3s is not installed or not in PATH"; exit 1; }
@@ -179,6 +198,21 @@ check_k8s_cluster() {
     systemctl is-active containerd &>/dev/null || { print_error "containerd service is not active on node"; exit 1; }
     kubectl get nodes --request-timeout=5s &>/dev/null || { print_error "Cannot connect to K8s cluster."; exit 1; }
     print_status "K8s cluster is accessible."
+}
+
+# Function to check for a control-plane taint that blocks pod scheduling on single-node clusters
+check_node_taints() {
+    print_status "Checking nodes for scheduling-blocking taints..."
+    local tainted_nodes
+    tainted_nodes=$(kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"|"}{range .spec.taints[*]}{.key}={.effect}{","}{end}{"\n"}{end}' \
+        | grep 'node-role.kubernetes.io/control-plane=NoSchedule' | cut -d'|' -f1 || true)
+    if [[ -n "$tainted_nodes" ]]; then
+        print_warning "The following node have the 'node-role.kubernetes.io/control-plane:NoSchedule' taint, which prevents pods from being scheduled on this single-node cluster:"
+        echo "$tainted_nodes"
+        print_warning "Remove the taint and re-run the script, for example:"
+        print_warning "  kubectl taint nodes --all node-role.kubernetes.io/control-plane-"
+        exit 1
+    fi
 }
 
 # Function to print summary (TC installation for K3s)
@@ -300,10 +334,7 @@ check_no_tc_docker_conflict() {
 
 # Check if K3s TC installation already exists (blocks Docker install)
 check_no_tc_k3s_conflict() {
-    local found=false
-    [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] && found=true
-    command -v kubectl &>/dev/null && kubectl get namespace trusted-compute &>/dev/null 2>&1 && found=true
-    if [[ "$found" == true ]]; then
+    if [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] || [[ -d "$K3S_CHARTS_DIR" ]]; then
         print_error "TC K3s installation is already active."
         print_error "Please uninstall it first: sudo ./uninstall.sh --k3s  (or run sudo ./uninstall.sh and select K3s)"
         exit 1
@@ -331,7 +362,7 @@ import_images_to_containerd() {
         print_status "Loading image: $(basename "$img_tar")"
         if ctr -n k8s.io images import "$img_tar"; then
             print_status "Successfully imported: $(basename "$img_tar")"
-            ((imported++))
+            imported=$((imported + 1))
         else
             print_error "Failed to import: $(basename "$img_tar")"
             exit 1
@@ -347,17 +378,24 @@ import_images_to_containerd() {
 # Function to install Helm charts for K8s
 install_helm_charts_k8s() {
     print_status "Installing Helm charts..."
-
+    local tc_registry="registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute"
     # Create namespaces first
     kubectl create namespace trusted-compute --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'trusted-compute' ready"
     kubectl create namespace kata-deploy --dry-run=client -o yaml | kubectl apply -f - && print_status "Namespace 'kata-deploy' ready"
 
     # Install kata-deploy chart
     print_status "Installing kata-deploy chart..."
+    # Derive values from the k3s manifest, patch for k8s
+    local k8s_dir="$SCRIPT_DIR/k8s"
+    mkdir -p "$k8s_dir"
+    yq 'select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent' \
+        "$SCRIPT_DIR/manifests/trusted-compute.yaml" \
+        | sed 's/k8sDistribution: "k3s"/k8sDistribution: "k8s"/' \
+        > "$k8s_dir/values-kata-deploy.yaml"
     helm upgrade --install kata-deploy "$SCRIPT_DIR/charts/kata-deploy"*.tgz \
-        --namespace kata-deploy \
-        --wait --timeout 3m \
-        && print_status "kata-deploy chart installed" \
+        --namespace kata-deploy -f "$k8s_dir/values-kata-deploy.yaml" \
+        --set imagePullPolicy=IfNotPresent \
+        --wait --timeout 3m && print_status "kata-deploy chart installed" \
         || { print_error "Failed to install kata-deploy chart"; exit 1; }
 
     # Install trusted-workload chart
@@ -374,6 +412,8 @@ install_helm_charts_k8s() {
         --namespace trusted-compute \
         --set attestation-manager.env.pollDuration=5 \
         --set attestation-manager.env.InformAMServer="false" \
+        --set attestation-manager.image.repository="${tc_registry}/attestation-manager" \
+        --set attestation-manager.image.tag="$ATTESTATION_MANAGER_VERSION" \
         --wait --timeout 5m \
         && print_status "attestation-verifier chart installed" \
         || print_warning "attestation-verifier chart install did not report ready within timeout; continuing anyway"
@@ -429,10 +469,12 @@ print_tc_k8s_summary() {
 }
 
 install_tc_k8s() {
+    setup_kubeconfig
     check_no_tc_docker_conflict
     check_no_tc_k3s_conflict
     check_secure_boot
     check_k8s_cluster
+    check_node_taints
     print_status "Installation script running from: $SCRIPT_DIR"
     check_tc_requirements_k8s
     print_status "Starting TC installation for K8s..."

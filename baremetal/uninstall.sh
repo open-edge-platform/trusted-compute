@@ -361,6 +361,7 @@ uninstall_tc_k8s() {
     remove_k8s_containerd_images
     restore_containerd_config_k8s
     remove_tc_users_groups
+    rm -rf "$SCRIPT_DIR/k8s"
     print_tc_k8s_uninstall_summary
 }
 
