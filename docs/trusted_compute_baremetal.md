@@ -158,7 +158,7 @@ The K8s option installs Trusted Compute onto an **existing** Kubernetes setup al
 1. **A running single-node Kubernetes setup using containerd as the CRI:**
 	- `kubelet` and `containerd` services are active on the node.
 	- `kubectl get nodes` succeeds from the node.
-2. **Required CLI tools installed and in `PATH`:** `kubectl`, `helm`, `ctr` (containerd CLI).
+2. **Required CLI tools installed and in `PATH`:** `kubectl`, `helm`, `ctr` (containerd CLI), `yq` (YAML processor).
 3. **No existing K3s or Docker Trusted Compute installation** on the node (see mutual exclusivity note above).
 
 ---

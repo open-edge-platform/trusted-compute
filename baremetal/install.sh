@@ -174,6 +174,11 @@ setup_kubeconfig() {
 
     if [[ -f "$admin_kubeconfig" ]]; then
         mkdir -p "${root_home}/.kube"
+        if [[ -f "$root_kubeconfig" ]] && ! cmp -s "$admin_kubeconfig" "$root_kubeconfig"; then
+            local backup_kubeconfig="${root_kubeconfig}.bak.$(date +%Y%m%d%H%M%S)"
+            cp "$root_kubeconfig" "$backup_kubeconfig"
+            print_warning "Existing kubeconfig differs from $admin_kubeconfig; backed up to $backup_kubeconfig"
+        fi
         cp "$admin_kubeconfig" "$root_kubeconfig"
         chmod 600 "$root_kubeconfig"
     else
@@ -186,6 +191,14 @@ check_k3s_service() {
     command -v k3s &>/dev/null || { print_error "k3s is not installed or not in PATH"; exit 1; }
     systemctl is-enabled k3s &>/dev/null || { print_error "k3s service is not enabled. Please install K3s first."; exit 1; }
     print_status "K3s service is available."
+}
+
+# Function to check yq is available
+check_yq_command() {
+    command -v yq &>/dev/null || {
+        print_error "yq is not installed or not in PATH. Please install yq."
+        exit 1
+    }
 }
 
 # Function to check K8s cluster connectivity
@@ -207,7 +220,7 @@ check_node_taints() {
     tainted_nodes=$(kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"|"}{range .spec.taints[*]}{.key}={.effect}{","}{end}{"\n"}{end}' \
         | grep 'node-role.kubernetes.io/control-plane=NoSchedule' | cut -d'|' -f1 || true)
     if [[ -n "$tainted_nodes" ]]; then
-        print_warning "The following node have the 'node-role.kubernetes.io/control-plane:NoSchedule' taint, which prevents pods from being scheduled on this single-node cluster:"
+        print_warning "The following nodes have the 'node-role.kubernetes.io/control-plane:NoSchedule' taint, which prevents pods from being scheduled on this single-node cluster:"
         echo "$tainted_nodes"
         print_warning "Remove the taint and re-run the script, for example:"
         print_warning "  kubectl taint nodes --all node-role.kubernetes.io/control-plane-"
@@ -254,10 +267,19 @@ check_tc_requirements_k8s() {
         print_error "Images directory not found: $SCRIPT_DIR/images"
         exit 1
     fi
+    if [[ ! -d "$SCRIPT_DIR/manifests" ]]; then
+        print_error "Manifests directory not found: $SCRIPT_DIR/manifests"
+        exit 1
+    fi
+    if [[ ! -f "$SCRIPT_DIR/manifests/trusted-compute.yaml" ]]; then
+        print_error "trusted-compute.yaml not found in manifests directory"
+        exit 1
+    fi
     if [[ ! -f "$CONTAINERD_CONFIG_SRC" ]]; then
         print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
         exit 1
     fi
+    check_yq_command
 }
 
 # Function to check requirements for TC installation for Docker
@@ -388,10 +410,19 @@ install_helm_charts_k8s() {
     # Derive values from the k3s manifest, patch for k8s
     local k8s_dir="$SCRIPT_DIR/k8s"
     mkdir -p "$k8s_dir"
-    yq 'select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent' \
-        "$SCRIPT_DIR/manifests/trusted-compute.yaml" \
+    # Extract yq's own exit status separately from sed's so a yq failure isn't masked by the pipeline
+    local kata_deploy_values
+    kata_deploy_values=$(yq 'select(.kind == "HelmChart" and .metadata.name == "kata-deploy").spec.valuesContent' \
+        "$SCRIPT_DIR/manifests/trusted-compute.yaml") \
+        || { print_error "yq failed to extract kata-deploy values from manifest"; exit 1; }
+    if [[ -z "$kata_deploy_values" ]] || [[ "$kata_deploy_values" == "null" ]]; then
+        print_error "yq returned empty/null valuesContent for kata-deploy HelmChart in manifest"
+        exit 1
+    fi
+    echo "$kata_deploy_values" \
         | sed 's/k8sDistribution: "k3s"/k8sDistribution: "k8s"/' \
         > "$k8s_dir/values-kata-deploy.yaml"
+
     helm upgrade --install kata-deploy "$SCRIPT_DIR/charts/kata-deploy"*.tgz \
         --namespace kata-deploy -f "$k8s_dir/values-kata-deploy.yaml" \
         --set imagePullPolicy=IfNotPresent \
@@ -423,14 +454,20 @@ install_helm_charts_k8s() {
 update_containerd_config_k8s() {
     print_status "Updating containerd configuration..."
 
+    # Record pre-modification state so uninstall.sh can fully restore it later
+    local config_backup="${K8S_CONTAINERD_CONFIG}.tc-orig"
+    local config_generated_marker="${K8S_CONTAINERD_DIR}/.tc-config-generated"
+
     # Generate default config.toml if it doesn't exist or is empty
     if [[ ! -s "$K8S_CONTAINERD_CONFIG" ]]; then
         mkdir -p "$K8S_CONTAINERD_DIR"
         containerd config default > "$K8S_CONTAINERD_CONFIG" \
             && print_status "Generated default containerd config.toml" \
             || { print_error "Failed to generate default containerd config"; exit 1; }
+        touch "$config_generated_marker"
     else
         print_status "Existing containerd config.toml found, keeping it"
+        [[ -f "$config_backup" ]] || cp "$K8S_CONTAINERD_CONFIG" "$config_backup"
     fi
 
     # Ensure imports line is present so conf.d snippets are loaded
