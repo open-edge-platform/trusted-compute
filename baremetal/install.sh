@@ -14,8 +14,8 @@
 set -e  # Exit on any error
 
 # Injected at package build time by Makefile
-ATTESTATION_MANAGER_VERSION="1.5.3"
-KATA_DEPLOY_VERSION="1.5.3"
+ATTESTATION_MANAGER_VERSION=""
+KATA_DEPLOY_VERSION=""
 
 # Color codes for output
 RED='\e[0;31m'
@@ -556,7 +556,7 @@ select_deployment_option() {
 main() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     set_paths
-    TIMEOUT=$((20*60))
+    TIMEOUT=$((10*60))
     DEPLOYMENT_OPTION=""
 
     # Parse argument
