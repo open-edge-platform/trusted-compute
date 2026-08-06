@@ -173,6 +173,7 @@ check_k3s_service() {
 check_k8s_cluster() {
     command -v kubectl &>/dev/null || { print_error "kubectl is not installed or not in PATH"; exit 1; }
     command -v helm &>/dev/null || { print_error "helm is not installed or not in PATH. Please install Helm first."; exit 1; }
+    command -v containerd &>/dev/null || { print_error "containerd is not installed or not in PATH"; exit 1; }
     command -v ctr &>/dev/null || { print_error "ctr (containerd CLI) is not installed or not in PATH"; exit 1; }
     systemctl is-active kubelet &>/dev/null || { print_error "kubelet service is not active on node"; exit 1; }
     systemctl is-active containerd &>/dev/null || { print_error "containerd service is not active on node"; exit 1; }
