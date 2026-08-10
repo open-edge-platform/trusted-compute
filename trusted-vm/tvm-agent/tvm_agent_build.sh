@@ -52,6 +52,18 @@ if ! git clone --single-branch --branch "${KATA_CONTAINER_GIT_BRANCH}" "${KATA_C
     exit 1
 fi
 
+# Apply upstream fix for ORAS cache stdout pollution causing curl fallback
+# timeouts (exit 28): https://github.com/kata-containers/kata-containers/pull/13563
+ORAS_CACHE_PATCH="${TVM_AGENT_BUILD_DIR}/patches/0001-ci-keep-oras-installer-stdout-from-polluting-tarball-paths.patch"
+if [ -f "${ORAS_CACHE_PATCH}" ]; then
+    echo "INFO: Applying ORAS cache stdout pollution fix patch"
+    if ! git -C "${KATA_CONTAINER_DIR}" apply --check "${ORAS_CACHE_PATCH}" 2>/dev/null; then
+        echo "INFO: Patch already applied or not applicable, skipping"
+    else
+        git -C "${KATA_CONTAINER_DIR}" apply "${ORAS_CACHE_PATCH}"
+    fi
+fi
+
 # Run the build inside a Docker container
 docker run --rm \
     -v "${TVM_AGENT_BUILD_DIR}:/tvm_agent" \
