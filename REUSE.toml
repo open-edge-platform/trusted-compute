@@ -73,6 +73,7 @@ path = [
     "venv/**",
     ".gitattributes",
     "**/kata_keeplist.txt",
+    "**/requirements*.txt",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
