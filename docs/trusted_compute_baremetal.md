@@ -1,10 +1,11 @@
 ## Trusted Compute Installation on Standalone Ubuntu Edge Node
 
-The installation script supports two deployment options:
+The installation script supports three deployment options:
 
 | Option | Description |
 |------|-------------|
 | **K3s** | Deploys Trusted Compute components as Helm-managed workloads inside a K3s cluster |
+| **K8s** | Deploys Trusted Compute components as Helm-managed workloads on an existing standalone Kubernetes setup |
 | **Docker** | Deploys Trusted Compute Components directly via Docker Compose |
 
 ---
@@ -19,10 +20,15 @@ The installation script supports two deployment options:
 |   | &nbsp;&nbsp;3.1 [Installation](#31-installation) |
 |   | &nbsp;&nbsp;3.2 [Sample Trusted Workload Deployment](#32-sample-trusted-workload-deployment) |
 |   | &nbsp;&nbsp;3.3 [Uninstallation](#33-uninstallation) |
-| 4 | [Docker Option](#4-docker-option) |
-|   | &nbsp;&nbsp;4.1 [Installation](#41-installation) |
-|   | &nbsp;&nbsp;4.2 [Sample Trusted Workload Deployment](#42-sample-trusted-workload-deployment) |
-|   | &nbsp;&nbsp;4.3 [Uninstallation](#43-uninstallation) |
+| 4 | [K8s Option](#4-k8s-option) |
+|   | &nbsp;&nbsp;4.1 [Prerequisites](#41-prerequisites) |
+|   | &nbsp;&nbsp;4.2 [Installation](#42-installation) |
+|   | &nbsp;&nbsp;4.3 [Sample Trusted Workload Deployment](#43-sample-trusted-workload-deployment) |
+|   | &nbsp;&nbsp;4.4 [Uninstallation](#44-uninstallation) |
+| 5 | [Docker Option](#5-docker-option) |
+|   | &nbsp;&nbsp;5.1 [Installation](#51-installation) |
+|   | &nbsp;&nbsp;5.2 [Sample Trusted Workload Deployment](#52-sample-trusted-workload-deployment) |
+|   | &nbsp;&nbsp;5.3 [Uninstallation](#53-uninstallation) |
 
 ---
 
@@ -36,9 +42,9 @@ The installation script supports two deployment options:
 	- During installation, ensure Secure Boot is enabled in the BIOS/UEFI settings for enhanced security.
 	- For detailed instructions, see: [Enabling UEFI Secure Boot](https://docs.openedgeplatform.intel.com/2026.1/OEP-articles/application-security/enable_uefi.html).
 
-> **Note:** Both K3s and Docker installations are mutually exclusive. If one is already installed, the script will prompt you to uninstall it first before proceeding with the other.
+> **Note:** Trusted Compute versions 1.5.0, 1.5.1, and 1.5.2 are not compatible with Docker version 29.5 or later — Docker version 29.4.x is required (tested with 29.4.3). Trusted Compute 1.5.3 and later have no Docker version restriction.
 
-> **Note:** Trusted Compute 1.5.0 is not compatible with Docker version 29.5 or later. Docker version 29.4.x is required (tested with 29.4.3).
+> **Note:** K3s, K8s, and Docker installations are mutually exclusive. If one is already installed, the script will prompt you to uninstall it first before proceeding with another.
 
 ---
 
@@ -48,9 +54,9 @@ The installation script supports two deployment options:
 
 	**Option 1: Download a Specific Version**
 	
-	If you want to download a specific version (e.g., 1.5.0):
+	If you want to download a specific version (e.g., 1.5.3):
 	```bash
-	VERSION=1.5.0
+	VERSION=1.5.3
 	oras pull registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/baremetal/trusted-compute-installation-package:$VERSION
 	```
 	
@@ -143,16 +149,95 @@ The installation script supports two deployment options:
 
 ---
 
-### 4. Docker Option
+### 4. K8s Option
 
-#### 4.1 Installation
+#### 4.1 Prerequisites
+
+The K8s option installs Trusted Compute onto an **existing** Kubernetes setup already running on this standalone edge node, rather than provisioning one for you. Before running the installer, ensure the node satisfies the following:
+
+1. **A running single-node Kubernetes setup using containerd as the CRI:**
+	- `kubelet` and `containerd` services are active on the node.
+	- `kubectl get nodes` succeeds from the node.
+2. **Required CLI tools installed and in `PATH`:** `kubectl`, `helm`, `ctr` (containerd CLI), `yq` (YAML processor).
+3. **No existing K3s or Docker Trusted Compute installation** on the node (see mutual exclusivity note above).
+
+---
+
+#### 4.2 Installation
+
+1. **Run the installation script:**
+	```bash
+	sudo ./install.sh --k8s
+	```
+	Or run without arguments and select **K8s** in the interactive option selector:
+	```bash
+	sudo ./install.sh
+	```
+
+2. **What the script does:**
+	- Imports Trusted Compute container images into the `k8s.io` containerd namespace.
+	- Updates `/etc/containerd/config.toml` to load `conf.d` drop-ins and installs the `kata-qemu` runtime as a drop-in, then restarts `containerd`.
+	- Creates the `trusted-compute` and `kata-deploy` namespaces.
+	- Installs the `kata-deploy`, `trusted-workload`, and `attestation-verifier` Helm charts.
+
+---
+
+#### 4.3 Sample Trusted Workload Deployment
+
+1. **Create the namespace:**
+	```bash
+	sudo kubectl create namespace nginx-test
+	```
+
+2. **Deploy a sample nginx pod** (uses `runtimeClassName: kata-qemu`):
+	```bash
+	sudo kubectl -n nginx-test apply -f - <<'EOF'
+	apiVersion: v1
+	kind: Pod
+	metadata:
+	  name: nginx-default
+	  namespace: nginx-test
+	spec:
+	  runtimeClassName: kata-qemu
+	  containers:
+	  - name: nginx
+	    image: nginx:latest
+	EOF
+	```
+
+3. **Verify the deployment status:**
+	```bash
+	sudo kubectl get pods -n nginx-test
+	sudo kubectl describe pod nginx-default -n nginx-test
+	sudo kubectl logs nginx-default -n nginx-test
+	```
+
+4. **Delete the pod and namespace after verification:**
+	```bash
+	sudo kubectl delete namespace nginx-test
+	```
+
+---
+
+#### 4.4 Uninstallation
+
+1. **Run the uninstallation script:**
+	```bash
+	sudo ./uninstall.sh --k8s
+	```
+	Or run without arguments and select **K8s** in the interactive option selector.
+
+---
+
+### 5. Docker Option
+
+#### 5.1 Installation
 
 1. **Install Docker Engine** (if not already installed):
 
 	Follow the official guide for Ubuntu:
 	[https://docs.docker.com/engine/install/ubuntu/](https://docs.docker.com/engine/install/ubuntu/)
 
-	> **Note:** Trusted Compute 1.5.0 is not compatible with Docker version 29.5 or later. Docker version 29.4.x is required (tested with 29.4.3).
 
 2. **Install Docker Compose v2 plugin** (if not already installed):
 
@@ -169,7 +254,7 @@ The installation script supports two deployment options:
 
 ---
 
-#### 4.2 Sample Trusted Workload Deployment
+#### 5.2 Sample Trusted Workload Deployment
 
 Once Trusted Compute is installed, run workload by defining kata-runtime for hardware-isolated Trusted Compute execution.
 
@@ -232,7 +317,7 @@ Once Trusted Compute is installed, run workload by defining kata-runtime for har
 
 ---
 
-#### 4.3 Uninstallation
+#### 5.3 Uninstallation
 
 1. **Run the uninstallation script:**
 	```bash

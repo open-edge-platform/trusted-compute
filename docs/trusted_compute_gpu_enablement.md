@@ -12,7 +12,7 @@ This document provides a step-by-step guide to enable GPU passthrough in a Trust
   - [Verify VFIO Binding](#verify-vfio-binding)
 - [Deploy Sample Application](#deploy-sample-application)
   - [Build and Push the Image](#build-and-push-the-image)
-  - [Deploy with K3s](#deploy-with-k3s)
+  - [Deploy with Kubernetes (K3s/K8s)](#deploy-with-kubernetes-k3sk8s)
   - [Deploy with Docker Compose](#deploy-with-docker-compose)
 - [Revert GPU Binding](#revert-gpu-binding)
 
@@ -24,13 +24,13 @@ GPU passthrough allows a virtual machine to directly access a physical GPU, bypa
 
 - Intel CPU with VT-x/VT-d support and integrated GPU
 - IOMMU enabled in BIOS/UEFI and Linux kernel with VFIO, DRM/i915 or xe driver support
-- Kubernetes, K3s, or Docker with Trusted Compute version 1.5.2 or newer
+- K3s, K8s, or Docker with Trusted Compute version 1.5.2 or newer
 
 ## Install Trusted Compute Package
 
 Follow the [Trusted Compute Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
 
-> **Note:** During the Trusted Compute installation, you will set up either K3s or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation.
+> **Note:** During the Trusted Compute installation, you will set up K3s, K8s, or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation. The K3s and K8s options both use `kubectl` and share the same deployment steps.
 
 ## GPU Driver Management
 
@@ -60,7 +60,7 @@ $ lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 
 GPU passthrough can be verified by deploying [an OpenCL image](https://github.com/intel/intel-device-plugins-for-kubernetes/tree/v0.36.0/demo/intel-opencl-icd) which runs **clinfo**, outputting the GPU capabilities detected by the driver installed in the image.
 
-> **Note:** Follow either the K3s or Docker Compose deployment section below based on your installation.
+> **Note:** Follow either the Kubernetes (K3s/K8s) or Docker Compose deployment section below based on your installation.
 
 ### Build and Push the Image
 
@@ -76,7 +76,9 @@ $ docker tag intel/intel-opencl-icd:0.36.0 <repository>/intel-opencl-icd:0.36.0
 $ docker push <repository>/intel-opencl-icd:0.36.0
 ```
 
-### Deploy with K3s
+### Deploy with Kubernetes (K3s/K8s)
+
+The following steps apply whether Trusted Compute was installed with the K3s or K8s option — both use `kubectl` and the same `kata-qemu` runtime class.
 
 Create a pod specification with proper GPU device annotations:
 
