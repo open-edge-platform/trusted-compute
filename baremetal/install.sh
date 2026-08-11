@@ -60,7 +60,9 @@ set_paths() {
 }
 
 # Function to check required directories/files for TC installation.
+# Accepts "k3s" or "k8s" as mode; yq is only required for k8s installs.
 check_tc_requirements() {
+    local mode="$1"
     if [[ ! -d "$SCRIPT_DIR/charts" ]]; then
         print_error "Charts directory not found: $SCRIPT_DIR/charts"
         exit 1
@@ -81,7 +83,7 @@ check_tc_requirements() {
         print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
         exit 1
     fi
-    check_yq_command
+    [[ "$mode" == "k8s" ]] && check_yq_command
 }
 
 # Function to create target directories
@@ -493,7 +495,7 @@ install_tc_k8s() {
     check_k8s_cluster
     check_node_taints
     print_status "Installation script running from: $SCRIPT_DIR"
-    check_tc_requirements
+    check_tc_requirements k8s
     print_status "Starting TC installation for K8s..."
     import_images_to_containerd
     update_containerd_config_k8s
@@ -511,7 +513,7 @@ install_tc_k3s() {
     check_secure_boot
     check_k3s_service
     print_status "Installation script running from: $SCRIPT_DIR"
-    check_tc_requirements
+    check_tc_requirements k3s
     print_status "Starting TC installation for K3s..."
     create_target_dirs
     copy_charts
