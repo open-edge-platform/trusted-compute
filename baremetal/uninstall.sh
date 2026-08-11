@@ -5,7 +5,7 @@
 #
 
 # Trusted Compute Uninstallation Script
-# This script uninstalls trusted-compute components from K3s/Docker
+# This script uninstalls trusted-compute components from k8s/K3s/Docker
 # Must be run as sudo
 
 set -e  # Exit on any error
@@ -219,6 +219,169 @@ check_tc_docker_installed() {
     print_status "kata-deploy container detected."
 }
 
+# Pre-flight check for K8s installation
+check_tc_k8s_installed() {
+    print_status "Checking if TC is installed for K8s..."
+    if ! command -v kubectl &>/dev/null; then
+        print_error "kubectl is not installed or not in PATH"
+        exit 1
+    fi
+    if ! command -v helm &>/dev/null; then
+        print_error "helm is not installed or not in PATH"
+        exit 1
+    fi
+    local found=false
+    kubectl get namespace trusted-compute &>/dev/null 2>&1 && found=true
+    helm list -n trusted-compute 2>/dev/null | grep -q attestation-verifier && found=true
+    helm list -n kata-deploy 2>/dev/null | grep -q kata-deploy && found=true
+    if [[ "$found" == false ]]; then
+        print_error "TC K8s installation not detected (namespaces and helm releases not found). Nothing to uninstall."
+        exit 1
+    fi
+    print_status "TC K8s installation detected."
+}
+
+# Function to uninstall Helm releases for K8s
+uninstall_helm_releases() {
+    print_status "Uninstalling Helm releases..."
+
+    # Uninstall trusted-workload
+    if helm list -n kata-deploy 2>/dev/null | grep -q trusted-workload; then
+        print_status "Uninstalling trusted-workload..."
+        helm uninstall trusted-workload -n kata-deploy --wait --timeout 5m \
+            && print_status "trusted-workload uninstalled" \
+            || print_warning "Failed to uninstall trusted-workload"
+    else
+        print_warning "Helm release 'trusted-workload' not found, skipping"
+    fi
+
+    # Uninstall kata-deploy
+    if helm list -n kata-deploy 2>/dev/null | grep -q kata-deploy; then
+        print_status "Uninstalling kata-deploy..."
+        helm uninstall kata-deploy -n kata-deploy --wait --timeout 5m \
+            && print_status "kata-deploy uninstalled" \
+            || print_warning "Failed to uninstall kata-deploy"
+    else
+        print_warning "Helm release 'kata-deploy' not found, skipping"
+    fi
+
+    # Uninstall attestation-verifier
+    if helm list -n trusted-compute 2>/dev/null | grep -q attestation-verifier; then
+        print_status "Uninstalling attestation-verifier..."
+        helm uninstall attestation-verifier -n trusted-compute --wait --timeout 10m \
+            && print_status "attestation-verifier uninstalled" \
+            || print_warning "Failed to uninstall attestation-verifier"
+    else
+        print_warning "Helm release 'attestation-verifier' not found, skipping"
+    fi
+}
+
+# Function to delete namespaces for K8s
+delete_k8s_namespaces() {
+    print_status "Deleting namespaces..."
+
+    for ns in trusted-compute kata-deploy; do
+        if kubectl get namespace "$ns" &>/dev/null; then
+            print_status "Deleting namespace: $ns"
+            kubectl delete namespace "$ns" --timeout=120s \
+                && print_status "Deleted namespace: $ns" \
+                || print_warning "Failed to delete namespace: $ns"
+            wait_for_resource_deleted "namespace" "$ns" "" 120 5
+        else
+            print_warning "Namespace '$ns' not found, skipping"
+        fi
+    done
+}
+
+# Function to remove images from containerd (K8s)
+remove_k8s_containerd_images() {
+    print_status "Removing container images from containerd..."
+
+    if ! command -v ctr &>/dev/null; then
+        print_warning "ctr command not found, skipping image removal"
+        return
+    fi
+
+    # List of image patterns to remove
+    local patterns=("attestation-manager" "attestation-verifier" "kata-deploy")
+    local tc_registry="registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute"
+
+    for pattern in "${patterns[@]}"; do
+        local images
+        images=$(ctr -n k8s.io images list | awk '{print $1}' \
+            | grep -E "^${tc_registry}/${pattern}(:|@|$)" || true)
+        if [[ -n "$images" ]]; then
+            echo "$images" | while read -r img; do
+                print_status "Removing image: $img"
+                ctr -n k8s.io images remove "$img" \
+                    && print_status "Removed: $img" \
+                    || print_warning "Failed to remove: $img"
+            done
+        else
+            print_warning "No images found matching pattern: $pattern"
+        fi
+    done
+}
+
+# Function to restore containerd config for K8s
+restore_containerd_config_k8s() {
+    print_status "Restoring containerd configuration..."
+
+    # Remove the kata-qemu drop-in we added
+    if [[ -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" ]]; then
+        rm -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
+            && print_status "Removed kata-qemu.toml drop-in" \
+            || print_warning "Failed to remove kata-qemu.toml drop-in"
+    else
+        print_warning "kata-qemu.toml drop-in not found, skipping"
+    fi
+
+    # Undo the conf.d imports edit made to config.toml during install
+    local config_backup="${K8S_CONTAINERD_CONFIG}.tc-orig"
+    local config_generated_marker="${K8S_CONTAINERD_DIR}/.tc-config-generated"
+    if [[ -f "$config_generated_marker" ]]; then
+        rm -f "$K8S_CONTAINERD_DIR/config.toml" "$config_generated_marker" \
+            && print_status "Removed containerd config.toml generated by installer" \
+            || print_warning "Failed to remove generated config.toml"
+    elif [[ -f "$config_backup" ]]; then
+        mv "$config_backup" "$K8S_CONTAINERD_CONFIG" \
+            && print_status "Restored original containerd config.toml (removed conf.d imports)" \
+            || print_warning "Failed to restore original config.toml from backup"
+    else
+        print_warning "No containerd config.toml backup found; conf.d imports line may still be present in $K8S_CONTAINERD_CONFIG"
+    fi
+
+    # Restart containerd
+    print_status "Restarting containerd service..."
+    systemctl restart containerd \
+        && print_status "Containerd restarted successfully" \
+        || print_warning "Failed to restart containerd"
+    sleep 5
+}
+
+# Function to print uninstall summary (K8s)
+print_tc_k8s_uninstall_summary() {
+    print_status "Uninstallation completed."
+    print_status "Summary of removed components (TC uninstallation for K8s):"
+    echo "  - Helm releases:         attestation-verifier, kata-deploy, trusted-workload"
+    echo "  - Namespaces deleted:    trusted-compute, kata-deploy"
+    echo "  - Images removed from:   containerd (k8s.io namespace)"
+    echo "  - Containerd config:     kata-qemu.toml drop-in removed"
+    echo "  - Users/groups removed:  tc-agent, tc-ima, bm-agents"
+}
+
+uninstall_tc_k8s() {
+    check_tc_k8s_installed
+    print_status "Starting TC uninstallation for K8s..."
+    uninstall_helm_releases
+    delete_k8s_namespaces
+    remove_k8s_containerd_images
+    restore_containerd_config_k8s
+    remove_tc_users_groups
+    rm -rf "$SCRIPT_DIR/k8s"
+    print_tc_k8s_uninstall_summary
+}
+
 uninstall_tc_k3s() {
     check_tc_k3s_installed
     print_status "Starting TC uninstallation for K3s..."
@@ -241,9 +404,9 @@ uninstall_tc_docker() {
 
 # Interactive option selector for uninstall
 select_uninstall_option() {
-    local options=("K3s    - TC uninstallation for K3s" "Docker - TC uninstallation for Docker")
+    local options=("K3s    - TC uninstallation for K3s" "K8s    - TC uninstallation for K8s" "Docker - TC uninstallation for Docker")
     local selected=0 key k2 k3
-    local -a modes=(k3s docker)
+    local -a modes=(k3s k8s docker)
 
     _draw_menu() {
         printf '\nSelect uninstallation option (use arrow keys, press Enter to confirm):\n\n'
@@ -276,11 +439,12 @@ main() {
     # Parse argument (reuse same flags as install.sh)
     case "${1:-}" in
         --k3s)    DEPLOYMENT_OPTION="k3s" ;;
+        --k8s)    DEPLOYMENT_OPTION="k8s" ;;
         --docker) DEPLOYMENT_OPTION="docker" ;;
         "")       : ;;
         *)
             print_error "Unknown argument: $1"
-            echo "Usage: $0 [--k3s | --docker]"
+            echo "Usage: $0 [--k3s | --k8s | --docker]"
             exit 1
             ;;
     esac
@@ -290,6 +454,7 @@ main() {
 
     case "$DEPLOYMENT_OPTION" in
         k3s)    uninstall_tc_k3s ;;
+        k8s)    uninstall_tc_k8s ;;
         docker) uninstall_tc_docker ;;
     esac
 }
