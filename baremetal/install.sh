@@ -59,8 +59,8 @@ set_paths() {
     K8S_CONTAINERD_CONFIG="$K8S_CONTAINERD_DIR/config.toml"
 }
 
-# Function to check required directories/files for TC installation for K3s
-check_tc_requirements_k3s() {
+# Function to check required directories/files for TC installation.
+check_tc_requirements() {
     if [[ ! -d "$SCRIPT_DIR/charts" ]]; then
         print_error "Charts directory not found: $SCRIPT_DIR/charts"
         exit 1
@@ -77,6 +77,11 @@ check_tc_requirements_k3s() {
         print_error "trusted-compute.yaml not found in manifests directory"
         exit 1
     fi
+    if [[ ! -f "$CONTAINERD_CONFIG_SRC" ]]; then
+        print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
+        exit 1
+    fi
+    check_yq_command
 }
 
 # Function to create target directories
@@ -255,31 +260,6 @@ wait_for_namespace_ready() {
         print_error "Check with 'kubectl get daemonset -n $ns' and 'kubectl get deployment -n $ns'."
         exit 1
     fi
-}
-
-# Function to check requirements for TC installation for K8s
-check_tc_requirements_k8s() {
-    if [[ ! -d "$SCRIPT_DIR/charts" ]]; then
-        print_error "Charts directory not found: $SCRIPT_DIR/charts"
-        exit 1
-    fi
-    if [[ ! -d "$SCRIPT_DIR/images" ]]; then
-        print_error "Images directory not found: $SCRIPT_DIR/images"
-        exit 1
-    fi
-    if [[ ! -d "$SCRIPT_DIR/manifests" ]]; then
-        print_error "Manifests directory not found: $SCRIPT_DIR/manifests"
-        exit 1
-    fi
-    if [[ ! -f "$SCRIPT_DIR/manifests/trusted-compute.yaml" ]]; then
-        print_error "trusted-compute.yaml not found in manifests directory"
-        exit 1
-    fi
-    if [[ ! -f "$CONTAINERD_CONFIG_SRC" ]]; then
-        print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
-        exit 1
-    fi
-    check_yq_command
 }
 
 # Function to check requirements for TC installation for Docker
@@ -513,7 +493,7 @@ install_tc_k8s() {
     check_k8s_cluster
     check_node_taints
     print_status "Installation script running from: $SCRIPT_DIR"
-    check_tc_requirements_k8s
+    check_tc_requirements
     print_status "Starting TC installation for K8s..."
     import_images_to_containerd
     update_containerd_config_k8s
@@ -531,7 +511,7 @@ install_tc_k3s() {
     check_secure_boot
     check_k3s_service
     print_status "Installation script running from: $SCRIPT_DIR"
-    check_tc_requirements_k3s
+    check_tc_requirements
     print_status "Starting TC installation for K3s..."
     create_target_dirs
     copy_charts
