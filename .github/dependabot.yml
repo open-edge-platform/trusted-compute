@@ -228,6 +228,31 @@ updates:
       - "shahmitu"
       - "hemanthsm"
 
+  # Python - pip
+  - package-ecosystem: "pip"
+    directory: "/trusted-vm/npu-telemetry"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-patch-days: 2
+    groups:
+      all-pip-deps:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    reviewers:
+      - "srinivasmusti"
+      - "pchand20"
+      - "vtcao297"
+      - "shahmitu"
+      - "hemanthsm"
+      - "kumara1-intel"
+
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
