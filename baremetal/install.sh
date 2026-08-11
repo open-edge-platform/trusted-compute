@@ -83,7 +83,9 @@ check_tc_requirements() {
         print_error "containerd config template not found: $CONTAINERD_CONFIG_SRC"
         exit 1
     fi
-    [[ "$mode" == "k8s" ]] && check_yq_command
+    if [[ "$mode" == "k8s" ]]; then
+        check_yq_command
+    fi
 }
 
 # Function to create target directories
