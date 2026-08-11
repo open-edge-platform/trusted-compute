@@ -44,7 +44,7 @@ jobs:
         env:
           changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
-          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs"]'
+          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs", "security-config-agent"]'
           no_docker_candidates='["baremetal", "helm"]'
           filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           other_changed_projects=$(echo "$changed_projects" | jq -cr --argjson filtered_projects "$filtered_projects" 'map(select(. as $item | $filtered_projects | index($item) | not))')
@@ -59,7 +59,7 @@ jobs:
     permissions:
       contents: read
     needs: pre-checks
-    if: ${{ contains(needs.pre-checks.outputs.other_changed_projects, '.github') || contains(needs.pre-checks.outputs.other_changed_projects, 'LICENSES') || contains(needs.pre-checks.outputs.other_changed_projects, '""')}}
+    if: ${{ contains(needs.pre-checks.outputs.other_changed_projects, '.github') || contains(needs.pre-checks.outputs.other_changed_projects, 'LICENSES') || contains(needs.pre-checks.outputs.other_changed_projects, 'security-config-agent') || contains(needs.pre-checks.outputs.other_changed_projects, '""')}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
