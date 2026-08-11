@@ -340,7 +340,7 @@ check_no_tc_docker_conflict() {
 
 # Check if K3s TC installation already exists (blocks Docker install)
 check_no_tc_k3s_conflict() {
-    if [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] || [[ -d "$K3S_CHARTS_DIR" ]]; then
+    if [[ -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]]; then
         print_error "TC K3s installation is already active."
         print_error "Please uninstall it first: sudo ./uninstall.sh --k3s  (or run sudo ./uninstall.sh and select K3s)"
         exit 1
@@ -351,7 +351,7 @@ check_no_tc_k3s_conflict() {
 check_no_tc_k8s_conflict() {
     if command -v kubectl &>/dev/null && kubectl get namespace trusted-compute &>/dev/null 2>&1; then
         # Check if it's not from k3s
-        if [[ ! -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]] && [[ ! -d "$K3S_CHARTS_DIR" ]]; then
+        if [[ ! -f "$K3S_MANIFESTS_DIR/trusted-compute.yaml" ]]; then
             print_error "TC K8s installation is already active."
             print_error "Please uninstall it first: sudo ./uninstall.sh --k8s  (or run sudo ./uninstall.sh and select K8s)"
             exit 1
