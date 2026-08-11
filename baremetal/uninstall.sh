@@ -304,10 +304,12 @@ remove_k8s_containerd_images() {
 
     # List of image patterns to remove
     local patterns=("attestation-manager" "attestation-verifier" "kata-deploy")
+    local tc_registry="registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute"
 
     for pattern in "${patterns[@]}"; do
         local images
-        images=$(ctr -n k8s.io images list | grep -i "$pattern" | awk '{print $1}' || true)
+        images=$(ctr -n k8s.io images list | awk '{print $1}' \
+            | grep -E "^${tc_registry}/${pattern}(:|@|$)" || true)
         if [[ -n "$images" ]]; then
             echo "$images" | while read -r img; do
                 print_status "Removing image: $img"
