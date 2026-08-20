@@ -545,7 +545,7 @@ TC-GS-07 Verify Sample Trusted Workload Deployment
     [Documentation]    Deploy a sample nginx trusted workload pod and verify it reaches Running state.
     [Tags]    golden-suite    validate    trusted-workload    sample
     Deploy Sample Trusted Workload On DUT
-    Wait Until Keyword Succeeds    5 min    10 sec    Verify Sample Trusted Workload Pod Is Running On DUT
+    Wait Until Keyword Succeeds    10 min    10 sec    Verify Sample Trusted Workload Pod Is Running On DUT
     Verify QEMU Process Is Running On DUT
     [Teardown]    Run Keywords    Delete Sample Trusted Workload Namespace On DUT    AND    Verify No QEMU Process Is Running On DUT
 

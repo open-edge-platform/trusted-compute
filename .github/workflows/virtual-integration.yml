@@ -126,26 +126,13 @@ jobs:
               await new Promise(resolve => setTimeout(resolve, intervalMs));
             }
 
-  run-golden-suite:
-    if: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
+  prepare-installation-package:
+    if: ${{ always() && (contains(needs.pre-checks.outputs.changed_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.changed_projects, 'baremetal') || contains(needs.pre-checks.outputs.changed_projects, 'helm') || contains(needs.pre-checks.outputs.changed_projects, 'tests') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload')) && (github.event_name != 'pull_request' || needs.wait-for-pre-merge.result == 'success') }}
     permissions:
       actions: read
       contents: read
     needs: [pre-checks, wait-for-pre-merge]
-    name: Run Golden Suite Trusted Compute Tests for baremetal package (${{ matrix.deployment }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - deployment: k3s
-            robot_test_file: tests/golden_suite_install_tests.robot
-            vm_logs_artifact: vm-boot-logs-k3s
-            robot_results_artifact: robot-results-k3s
-          - deployment: docker
-            robot_test_file: tests/golden_suite_install_tests_docker.robot
-            vm_logs_artifact: vm-boot-logs-docker
-            robot_results_artifact: robot-results-docker
-    runs-on: ubuntu-24.04-16core-64GB
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
@@ -315,6 +302,270 @@ jobs:
           tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
           ls -lh "$PKG_TGZ"
 
+      - name: Initialize swtpm local CA files for package patching
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update -qq
+          sudo apt-get install -y swtpm swtpm-tools
+
+          TPM_STATE_DIR="$(mktemp -d)"
+          cleanup() {
+            sudo rm -rf "$TPM_STATE_DIR"
+          }
+          trap cleanup EXIT
+
+          sudo chown root:root "$TPM_STATE_DIR"
+          sudo chmod 700 "$TPM_STATE_DIR"
+
+          sudo swtpm_setup \
+            --tpm2 \
+            --tpm-state "$TPM_STATE_DIR" \
+            --create-ek-cert \
+            --create-platform-cert \
+            --lock-nvram \
+            --overwrite
+
+          sudo test -f /var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem
+          sudo test -f /var/lib/swtpm-localca/01.pem
+          sudo test -f /var/lib/swtpm-localca/signkey.pem
+          sudo test -f /var/lib/swtpm-localca/issuercert.pem
+          sudo test -f /var/lib/swtpm-localca/certserial
+          sudo test -f /var/lib/swtpm-localca/swtpm-localca-rootca-privkey.pem
+          sudo find /var/lib/swtpm-localca -maxdepth 1 -type f -printf '%f\n' | sort
+
+          sudo tar -C /var/lib -czf "$GITHUB_WORKSPACE/baremetal/swtpm-localca.tar.gz" swtpm-localca
+          sudo chown "$USER":"$USER" baremetal/swtpm-localca.tar.gz
+
+      - name: Patch HVS and kata-deploy in installation package
+        run: |
+          set -euxo pipefail
+
+          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
+          SRC_01_PEM="/var/lib/swtpm-localca/01.pem"
+
+          if [[ ! -f "$PKG_TGZ" ]]; then
+            echo "Package not found: $PKG_TGZ"
+            exit 1
+          fi
+
+          if ! sudo test -f "$SRC_ROOT_CA" || ! sudo test -f "$SRC_01_PEM"; then
+            echo "Missing required swtpm CA files:"
+            echo "  $SRC_ROOT_CA"
+            echo "  $SRC_01_PEM"
+            echo "Ensure the swtpm local CA initialization step completed successfully."
+            exit 1
+          fi
+
+          WORKDIR="$(mktemp -d)"
+          trap 'rm -rf "$WORKDIR"' EXIT
+
+          # Read source CA files with root privileges and stage them for image copy.
+          STAGED_ROOT_CA="$WORKDIR/swtpm-localca-rootca-cert.pem"
+          STAGED_01_PEM_RAW="$WORKDIR/01.raw.pem"
+          STAGED_01_PEM="$WORKDIR/01.pem"
+          sudo cp "$SRC_ROOT_CA" "$STAGED_ROOT_CA"
+          sudo cp "$SRC_01_PEM" "$STAGED_01_PEM_RAW"
+          sudo chown "$USER":"$USER" "$STAGED_ROOT_CA" "$STAGED_01_PEM_RAW"
+
+          # swtpm 01.pem may contain text output around the PEM. Normalize to clean PEM with openssl.
+          if ! openssl x509 -in "$STAGED_01_PEM_RAW" -outform PEM -out "$STAGED_01_PEM" >/dev/null 2>&1; then
+            echo "Failed to extract/normalize a valid PEM certificate from $SRC_01_PEM"
+            exit 1
+          fi
+
+          tar -xzf "$PKG_TGZ" -C "$WORKDIR"
+
+          PKG_DIR="$WORKDIR/trusted-compute-installation-package"
+          HVS_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*attestation-verifier-hvs-*.tar' | head -n1)"
+
+          if [[ -z "$HVS_TAR" ]]; then
+            echo "Unable to locate HVS image tar in package images/"
+            exit 1
+          fi
+
+          echo "Patching image tar: $HVS_TAR"
+
+          load_out="$(sudo docker load -i "$HVS_TAR")"
+          image_ref="$(printf '%s\n' "$load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
+          if [[ -z "$image_ref" ]]; then
+            echo "Failed to parse loaded image reference"
+            echo "$load_out"
+            exit 1
+          fi
+
+          orig_entrypoint="$(sudo docker image inspect --format '{{json .Config.Entrypoint}}' "$image_ref")"
+          orig_cmd="$(sudo docker image inspect --format '{{json .Config.Cmd}}' "$image_ref")"
+
+          cid="$(sudo docker run -d --entrypoint /bin/sh "$image_ref" -c 'sleep 600')"
+          sudo docker cp "$STAGED_ROOT_CA" "$cid":/tmp/.swtpm-localca-rootca-cert.pem
+          sudo docker cp "$STAGED_01_PEM" "$cid":/tmp/.swtpm-01.pem
+          sudo docker exec -u 0 "$cid" /bin/sh -c '
+            set -e
+            if [ ! -f /tmp/external-eca.pem ]; then
+              echo "Missing target file in image: /tmp/external-eca.pem"
+              exit 1
+            fi
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-localca-rootca-cert.pem >> /tmp/external-eca.pem
+            printf "\n" >> /tmp/external-eca.pem
+            cat /tmp/.swtpm-01.pem >> /tmp/external-eca.pem
+            rm -f /tmp/.swtpm-localca-rootca-cert.pem /tmp/.swtpm-01.pem
+          '
+
+          patched_ref="$image_ref"
+
+          commit_args=()
+          if [[ "$orig_entrypoint" != "null" ]]; then
+            commit_args+=(--change "ENTRYPOINT $orig_entrypoint")
+          fi
+          if [[ "$orig_cmd" != "null" ]]; then
+            commit_args+=(--change "CMD $orig_cmd")
+          fi
+
+          sudo docker commit "${commit_args[@]}" "$cid" "$patched_ref" >/dev/null
+          sudo docker rm -f "$cid" >/dev/null
+
+          sudo docker save -o "$HVS_TAR" "$patched_ref"
+          sudo chown "$USER":"$USER" "$HVS_TAR"
+
+          # Patch kata-deploy image configuration for nested VM execution.
+          KATA_DEPLOY_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*kata-deploy*.tar' | head -n1)"
+
+          if [[ -z "$KATA_DEPLOY_TAR" ]]; then
+            echo "Unable to locate kata-deploy image tar in package images/"
+            exit 1
+          fi
+
+          echo "Patching image tar: $KATA_DEPLOY_TAR"
+
+          kd_load_out="$(sudo docker load -i "$KATA_DEPLOY_TAR")"
+          kd_image_ref="$(printf '%s\n' "$kd_load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
+          if [[ -z "$kd_image_ref" ]]; then
+            echo "Failed to parse loaded kata-deploy image reference"
+            echo "$kd_load_out"
+            exit 1
+          fi
+
+          kd_cid="$(sudo docker create "$kd_image_ref")"
+
+          #In 3.32 config files live inside the compressed kata-static tarball.
+          # Copy it out, patch the configs, repack, and copy it back.
+          KD_TARBALLS_WORKDIR="$WORKDIR/kata-tarballs"
+          KD_EXTRACT_DIR="$WORKDIR/kata-extract"
+
+          sudo docker cp "$kd_cid:/opt/kata-artifacts/tarballs" "$KD_TARBALLS_WORKDIR"
+
+          KD_TARBALL_HOST="$(ls "$KD_TARBALLS_WORKDIR"/kata-static-*.tar.zst | head -1)"
+          KD_TARBALL_BASENAME="$(basename "$KD_TARBALL_HOST")"
+
+          mkdir -p "$KD_EXTRACT_DIR"
+          sudo tar --zstd -xf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR"
+
+          for KD_CFG_REL in \
+            "opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
+            "opt/kata/share/defaults/kata-containers/configuration.toml"; do
+            KD_CFG_HOST="$KD_EXTRACT_DIR/$KD_CFG_REL"
+            sudo test -f "$KD_CFG_HOST" || continue
+
+            # Avoid verbose guest boot logging, which can exceed the CRI sandbox deadline in nested VMs.
+            sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)true/\1false/' "$KD_CFG_HOST"
+            sudo grep -Eq '^\s*enable_debug\s*=\s*false' "$KD_CFG_HOST"
+
+            # Increase dial and container creation timeouts for nested VMs on small runners.
+            sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
+            sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
+
+            # Increase kata vCPU count from the default value.
+            sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
+            sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
+          done
+
+          sudo tar --zstd -cf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR" .
+          sudo docker cp "$KD_TARBALL_HOST" "$kd_cid:/opt/kata-artifacts/tarballs/$KD_TARBALL_BASENAME"
+          sudo rm -rf "$KD_TARBALLS_WORKDIR" "$KD_EXTRACT_DIR"
+
+          sudo docker commit "$kd_cid" "$kd_image_ref" >/dev/null
+          sudo docker rm -f "$kd_cid" >/dev/null
+
+          sudo docker save -o "$KATA_DEPLOY_TAR" "$kd_image_ref"
+          sudo chown "$USER":"$USER" "$KATA_DEPLOY_TAR"
+
+          # Patch containerd template in package for debug mode.
+          CONTAINERD_CFG_TPL="$PKG_DIR/containerd/config-v3.toml.tmpl"
+          if [[ ! -f "$CONTAINERD_CFG_TPL" ]]; then
+            echo "Unable to locate containerd config template in package: $CONTAINERD_CFG_TPL"
+            exit 1
+          fi
+
+          if grep -qE '^\[debug\]' "$CONTAINERD_CFG_TPL"; then
+            sudo sed -i -E '/^\[debug\]/,$ s/^\s*level\s*=.*/  level = "debug"/' "$CONTAINERD_CFG_TPL"
+          else
+            printf '\n[debug]\n  level = "debug"\n' | sudo tee -a "$CONTAINERD_CFG_TPL" >/dev/null
+          fi
+
+          grep -nE '^\[debug\]|^\s*level\s*=\s*"debug"' "$CONTAINERD_CFG_TPL"
+
+          tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
+
+          echo "Patched package generated:"
+          ls -lh "$PKG_TGZ"
+
+      - name: Upload installation package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: trusted-compute-installation-package
+          path: |
+            baremetal/trusted-compute-installation-package.tgz
+            baremetal/swtpm-localca.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  run-golden-suite:
+    if: ${{ always() && needs.prepare-installation-package.result == 'success' }}
+    permissions:
+      actions: read
+      contents: read
+    needs: [prepare-installation-package]
+    name: Run Golden Suite Trusted Compute Tests for baremetal package (${{ matrix.deployment }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deployment: k3s
+            runner: ubuntu-24.04-8core-32GB
+            robot_test_file: tests/golden_suite_install_tests.robot
+            vm_logs_artifact: vm-boot-logs-k3s
+            robot_results_artifact: robot-results-k3s
+          - deployment: docker
+            runner: ubuntu-latest
+            robot_test_file: tests/golden_suite_install_tests_docker.robot
+            vm_logs_artifact: vm-boot-logs-docker
+            robot_results_artifact: robot-results-docker
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download installation package artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: trusted-compute-installation-package
+          path: baremetal
+
+      - name: Verify downloaded installation package
+        run: |
+          test -f baremetal/trusted-compute-installation-package.tgz
+          ls -lh baremetal/trusted-compute-installation-package.tgz
+
+      - name: Show system resources
+        run: |
+          echo "CPU cores: $(nproc)"
+          echo "RAM size: $(free -m | awk '/^Mem:/ {print $2 " MB"}')"
+          free -h
+
       - name: Setup VM prerequisites
         run: |
           echo "Installing VM and TPM prerequisites..."
@@ -333,6 +584,16 @@ jobs:
             wget
           
           echo "Prerequisites installation completed"
+
+      - name: Restore swtpm local CA used to patch HVS
+        run: |
+          set -euo pipefail
+
+          test -f baremetal/swtpm-localca.tar.gz
+          sudo rm -rf /var/lib/swtpm-localca
+          sudo tar -C /var/lib -xzf baremetal/swtpm-localca.tar.gz
+          sudo chown -R swtpm:root /var/lib/swtpm-localca
+          sudo chmod 0750 /var/lib/swtpm-localca
 
       - name: Start libvirt service
         run: |
@@ -511,181 +772,6 @@ jobs:
             expect eof
           EOF
 
-      - name: Patch HVS and kata-deploy in installation package
-        run: |
-          set -euxo pipefail
-
-          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
-          SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
-          SRC_01_PEM="/var/lib/swtpm-localca/01.pem"
-
-          if [[ ! -f "$PKG_TGZ" ]]; then
-            echo "Package not found: $PKG_TGZ"
-            exit 1
-          fi
-
-          if ! sudo test -f "$SRC_ROOT_CA" || ! sudo test -f "$SRC_01_PEM"; then
-            echo "Missing required swtpm CA files:"
-            echo "  $SRC_ROOT_CA"
-            echo "  $SRC_01_PEM"
-            echo "Ensure VM creation/setup generated swtpm-localca assets before this step."
-            exit 1
-          fi
-
-          WORKDIR="$(mktemp -d)"
-          trap 'rm -rf "$WORKDIR"' EXIT
-
-          # Read source CA files with root privileges and stage them for image copy.
-          STAGED_ROOT_CA="$WORKDIR/swtpm-localca-rootca-cert.pem"
-          STAGED_01_PEM_RAW="$WORKDIR/01.raw.pem"
-          STAGED_01_PEM="$WORKDIR/01.pem"
-          sudo cp "$SRC_ROOT_CA" "$STAGED_ROOT_CA"
-          sudo cp "$SRC_01_PEM" "$STAGED_01_PEM_RAW"
-          sudo chown "$USER":"$USER" "$STAGED_ROOT_CA" "$STAGED_01_PEM_RAW"
-
-          # swtpm 01.pem may contain text output around the PEM. Normalize to clean PEM with openssl.
-          if ! openssl x509 -in "$STAGED_01_PEM_RAW" -outform PEM -out "$STAGED_01_PEM" >/dev/null 2>&1; then
-            echo "Failed to extract/normalize a valid PEM certificate from $SRC_01_PEM"
-            exit 1
-          fi
-
-          tar -xzf "$PKG_TGZ" -C "$WORKDIR"
-
-          PKG_DIR="$WORKDIR/trusted-compute-installation-package"
-          HVS_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*attestation-verifier-hvs-*.tar' | head -n1)"
-
-          if [[ -z "$HVS_TAR" ]]; then
-            echo "Unable to locate HVS image tar in package images/"
-            exit 1
-          fi
-
-          echo "Patching image tar: $HVS_TAR"
-
-          load_out="$(sudo docker load -i "$HVS_TAR")"
-          image_ref="$(printf '%s\n' "$load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
-          if [[ -z "$image_ref" ]]; then
-            echo "Failed to parse loaded image reference"
-            echo "$load_out"
-            exit 1
-          fi
-
-          orig_entrypoint="$(sudo docker image inspect --format '{{json .Config.Entrypoint}}' "$image_ref")"
-          orig_cmd="$(sudo docker image inspect --format '{{json .Config.Cmd}}' "$image_ref")"
-
-          cid="$(sudo docker run -d --entrypoint /bin/sh "$image_ref" -c 'sleep 600')"
-          sudo docker cp "$STAGED_ROOT_CA" "$cid":/tmp/.swtpm-localca-rootca-cert.pem
-          sudo docker cp "$STAGED_01_PEM" "$cid":/tmp/.swtpm-01.pem
-          sudo docker exec -u 0 "$cid" /bin/sh -c '
-            set -e
-            if [ ! -f /tmp/external-eca.pem ]; then
-              echo "Missing target file in image: /tmp/external-eca.pem"
-              exit 1
-            fi
-            printf "\n" >> /tmp/external-eca.pem
-            cat /tmp/.swtpm-localca-rootca-cert.pem >> /tmp/external-eca.pem
-            printf "\n" >> /tmp/external-eca.pem
-            cat /tmp/.swtpm-01.pem >> /tmp/external-eca.pem
-            rm -f /tmp/.swtpm-localca-rootca-cert.pem /tmp/.swtpm-01.pem
-          '
-
-          patched_ref="$image_ref"
-
-          commit_args=()
-          if [[ "$orig_entrypoint" != "null" ]]; then
-            commit_args+=(--change "ENTRYPOINT $orig_entrypoint")
-          fi
-          if [[ "$orig_cmd" != "null" ]]; then
-            commit_args+=(--change "CMD $orig_cmd")
-          fi
-
-          sudo docker commit "${commit_args[@]}" "$cid" "$patched_ref" >/dev/null
-          sudo docker rm -f "$cid" >/dev/null
-
-          sudo docker save -o "$HVS_TAR" "$patched_ref"
-          sudo chown "$USER":"$USER" "$HVS_TAR"
-
-          # Patch kata-deploy image: enable_debug = true in configuration-qemu.toml
-          KATA_DEPLOY_TAR="$(find "$PKG_DIR/images" -maxdepth 1 -type f -name '*kata-deploy*.tar' | head -n1)"
-
-          if [[ -z "$KATA_DEPLOY_TAR" ]]; then
-            echo "Unable to locate kata-deploy image tar in package images/"
-            exit 1
-          fi
-
-          echo "Patching image tar: $KATA_DEPLOY_TAR"
-
-          kd_load_out="$(sudo docker load -i "$KATA_DEPLOY_TAR")"
-          kd_image_ref="$(printf '%s\n' "$kd_load_out" | awk -F'Loaded image: ' 'NF>1{print $2; exit}')"
-          if [[ -z "$kd_image_ref" ]]; then
-            echo "Failed to parse loaded kata-deploy image reference"
-            echo "$kd_load_out"
-            exit 1
-          fi
-
-          kd_cid="$(sudo docker create "$kd_image_ref")"
-
-          #In 3.32 config files live inside the compressed kata-static tarball.
-          # Copy it out, patch the configs, repack, and copy it back.
-          KD_TARBALLS_WORKDIR="$WORKDIR/kata-tarballs"
-          KD_EXTRACT_DIR="$WORKDIR/kata-extract"
-
-          sudo docker cp "$kd_cid:/opt/kata-artifacts/tarballs" "$KD_TARBALLS_WORKDIR"
-
-          KD_TARBALL_HOST="$(ls "$KD_TARBALLS_WORKDIR"/kata-static-*.tar.zst | head -1)"
-          KD_TARBALL_BASENAME="$(basename "$KD_TARBALL_HOST")"
-
-          mkdir -p "$KD_EXTRACT_DIR"
-          sudo tar --zstd -xf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR"
-
-          for KD_CFG_REL in \
-            "opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
-            "opt/kata/share/defaults/kata-containers/configuration.toml"; do
-            KD_CFG_HOST="$KD_EXTRACT_DIR/$KD_CFG_REL"
-            sudo test -f "$KD_CFG_HOST" || continue
-
-            # Enable debug mode.
-            sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)false/\1true/' "$KD_CFG_HOST"
-            sudo grep -Eq '^\s*enable_debug\s*=\s*true' "$KD_CFG_HOST"
-
-            # Increase dial and container creation timeouts for debug boots.
-            sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
-            sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1300/' "$KD_CFG_HOST"
-
-            # Increase kata vCPU count from the default value.
-            sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
-            sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
-          done
-
-          sudo tar --zstd -cf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR" .
-          sudo docker cp "$KD_TARBALL_HOST" "$kd_cid:/opt/kata-artifacts/tarballs/$KD_TARBALL_BASENAME"
-          sudo rm -rf "$KD_TARBALLS_WORKDIR" "$KD_EXTRACT_DIR"
-
-          sudo docker commit "$kd_cid" "$kd_image_ref" >/dev/null
-          sudo docker rm -f "$kd_cid" >/dev/null
-
-          sudo docker save -o "$KATA_DEPLOY_TAR" "$kd_image_ref"
-          sudo chown "$USER":"$USER" "$KATA_DEPLOY_TAR"
-
-          # Patch containerd template in package for debug mode.
-          CONTAINERD_CFG_TPL="$PKG_DIR/containerd/config-v3.toml.tmpl"
-          if [[ ! -f "$CONTAINERD_CFG_TPL" ]]; then
-            echo "Unable to locate containerd config template in package: $CONTAINERD_CFG_TPL"
-            exit 1
-          fi
-
-          if grep -qE '^\[debug\]' "$CONTAINERD_CFG_TPL"; then
-            sudo sed -i -E '/^\[debug\]/,$ s/^\s*level\s*=.*/  level = "debug"/' "$CONTAINERD_CFG_TPL"
-          else
-            printf '\n[debug]\n  level = "debug"\n' | sudo tee -a "$CONTAINERD_CFG_TPL" >/dev/null
-          fi
-
-          grep -nE '^\[debug\]|^\s*level\s*=\s*"debug"' "$CONTAINERD_CFG_TPL"
-
-          tar -C "$WORKDIR" -czf "$PKG_TGZ" trusted-compute-installation-package
-
-          echo "Patched package generated:"
-          ls -lh "$PKG_TGZ"
-
       - name: Install Robot Framework and SSHLibrary
         run: |
           sudo apt-get update -qq
@@ -744,6 +830,7 @@ jobs:
           echo "Collecting qemu and libvirt service logs..."
           sudo ls -la /var/log/libvirt/qemu > vm-logs/qemu-log-dir.txt 2>&1 || true
           sudo cp /var/log/libvirt/qemu/test-vm.log vm-logs/test-vm.log 2>/dev/null || true
+          sudo cp -a /var/log/swtpm vm-logs/swtpm 2>/dev/null || true
           sudo journalctl -u libvirtd --no-pager --since "-30 min" > vm-logs/libvirtd-journal.txt 2>&1 || true
           sudo journalctl -u virtlogd --no-pager --since "-30 min" > vm-logs/virtlogd-journal.txt 2>&1 || true
 
