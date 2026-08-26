@@ -35,7 +35,7 @@ jobs:
           persist-credentials: false
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@d7a788c498eec803d1821a02da2152df37268c54  # 2026.1.4
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@e3b491bff957021b31ce083b0f3e81fb75d4c974  # 2026.1.4
 
   wait-for-pre-merge:
     if: ${{ github.event_name == 'pull_request' }}
