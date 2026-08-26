@@ -48,7 +48,8 @@ Check https://download.01.org/intel-linux-overlay/ubuntu/dists/ for updates."
 setup_base_update() {
     log "Updating base system..."
     apt-get update -qq
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq
+    # --allow-downgrades: a pin file from a prior run may already prefer lower overlay versions
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq --allow-downgrades
     log "Base system updated."
 }
 
