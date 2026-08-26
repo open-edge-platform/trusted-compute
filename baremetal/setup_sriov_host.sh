@@ -111,7 +111,8 @@ install_kernel() {
     fi
 
     log "Installing Intel kernel overlay (branch: ${KERNEL_BRANCH}-intel)..."
-    DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg_headers" "$pkg_image" \
+    # --allow-downgrades: the overlay repo's pinned version may be lower than an already-installed package
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$pkg_headers" "$pkg_image" \
         || die "Kernel installation failed."
     log "Kernel installed."
 }
