@@ -576,19 +576,18 @@ emit_config() {
 
 configure_openclaw() {
     local config
-    local patch_mode="--merge"
+    local -a patch_args=()
     config=$(make_temp_file)
     emit_config >"$config"
 
     if [[ $REDEPLOY_ONLY -eq 1 ]]; then
-        patch_mode="--replace-path models.providers.ovms.models"
+        patch_args=(--replace-path models.providers.ovms.models)
     fi
 
-    echo "Applying the OpenClaw config (OVMS ${OVMS_MODEL} on port ${OVMS_PORT}) with mode ${patch_mode}..."
+    echo "Applying the OpenClaw config (OVMS ${OVMS_MODEL} on port ${OVMS_PORT})..."
     # In a redeploy-only path we intentionally replace the OVMS model array at the
     # provider path so the prior model entry is removed and the new model takes its place.
-    # In the full install path we keep merge semantics so older config entries remain intact.
-    openclaw config patch $patch_mode --file "$config"
+    openclaw config patch "${patch_args[@]}" --file "$config"
 
     if openclaw gateway status >/dev/null 2>&1; then
         echo "Restarting the OpenClaw gateway..."
