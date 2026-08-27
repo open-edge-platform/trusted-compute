@@ -188,10 +188,11 @@ load_model_config() {
         exit 1
     fi
 
-    local model="" parser="" cache_size="" context="" extra=""
+    local model="" parser="" cache_size="" context="" extra="" line=""
     local matched=0
-    while IFS='|' read -r model parser cache_size context extra || [[ -n "$model" ]]; do
-        [[ -z "$model" || "$model" == \#* ]] && continue
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        IFS='|' read -r model parser cache_size context extra <<<"$line"
         [[ "$model" == "$OVMS_MODEL" ]] || continue
 
         OVMS_TOOL_PARSER="$parser"
