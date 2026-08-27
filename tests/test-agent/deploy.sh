@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
+#
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
 
 set -euo pipefail
 
 # Deployment files and generated secrets stay local to this sample by default.
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 LANGFUSE_DIR="${LANGFUSE_DIR:-${SCRIPT_DIR}/langfuse}"
-LANGFUSE_COMPOSE_URL="${LANGFUSE_COMPOSE_URL:-https://raw.githubusercontent.com/langfuse/langfuse/main/docker-compose.yml}"
+LANGFUSE_COMPOSE_REF="${LANGFUSE_COMPOSE_REF:-b8248a752a8fb309f6a4da3497c72206f6e5927f}"
+LANGFUSE_COMPOSE_URL="${LANGFUSE_COMPOSE_URL:-https://raw.githubusercontent.com/langfuse/langfuse/${LANGFUSE_COMPOSE_REF}/docker-compose.yml}"
 LANGFUSE_COMPOSE_FILE="${LANGFUSE_DIR}/docker-compose.yml"
 LANGFUSE_ENV_FILE="${LANGFUSE_ENV_FILE:-${LANGFUSE_DIR}/.env}"
 LANGFUSE_BASE_URL="${LANGFUSE_BASE_URL:-http://localhost:3000}"

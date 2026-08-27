@@ -111,22 +111,6 @@ def build_task(*, agent: str, model: str | None, run_name: str):
     return task
 
 
-def print_item_results(result: Any) -> None:
-    """Print each dataset input, OpenClaw response, and Langfuse score."""
-    print("\nPer-item results:")
-    for index, item_result in enumerate(result.item_results, start=1):
-        item = item_result.item
-        input_value = item.get("input") if isinstance(item, dict) else item.input
-        # print(f"\nItem {index}")
-        # print(f"Input: {input_value}")
-        # print(f"Response: {item_result.output}")
-        # if item_result.evaluations:
-        #     for evaluation in item_result.evaluations:
-        #         print(f"Score ({evaluation.name}): {evaluation.value}")
-        # else:
-        #     print("Score: no evaluation recorded")
-
-
 def get_persisted_scores(result: Any, langfuse: Langfuse) -> list[dict[str, Any]]:
     """Read evaluator scores persisted on each experiment trace in Langfuse."""
     persisted_scores = []
@@ -163,7 +147,11 @@ def print_persisted_scores(persisted_scores: list[dict[str, Any]]) -> None:
 
 def plot_scores(result: Any, output_dir: Path, persisted_scores: list[dict[str, Any]]) -> None:
     """Create one score graph per numeric evaluator across all dataset items."""
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError:
+        print("Score graphs not created: matplotlib is not installed.")
+        return
 
     scores: dict[str, list[float | None]] = {}
     evaluator_names = {
@@ -243,7 +231,6 @@ def main() -> None:
         metadata={"agent": args.agent, "model": args.model or "default"},
     )
 
-    print_item_results(result)
     persisted_scores = get_persisted_scores(result, langfuse)
     print_persisted_scores(persisted_scores)
     plot_scores(result, args.plot_dir, persisted_scores)
