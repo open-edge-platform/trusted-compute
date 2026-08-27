@@ -6,10 +6,9 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-# M = total VFs to create; N = VFs to bind to vfio-pci (N <= M)
-# Defaults: create all hardware-supported VFs, bind all of them
-TOTAL_VFS="${TOTAL_VFS:-}"   # M — empty means use sriov_totalvfs
-BIND_VFS="${BIND_VFS:-}"     # N — empty means same as TOTAL_VFS
+# NUM_VFS — number of VFs to create and bind to vfio-pci
+# Empty means use the hardware maximum (sriov_totalvfs)
+NUM_VFS="${NUM_VFS:-}"
 CDI_DIR="${CDI_DIR:-/etc/cdi}"
 
 GTT_SPARE_PF=$((500 * 1024 * 1024))
@@ -39,7 +38,7 @@ check_gpu_ready() {
     if [ -z "$drm_driver" ]; then
         echo "No kernel driver loaded yet"; return 1
     fi
-    if [[ "$drm_driver" != "i915" && "$drm_driver" != "xe" ]]; then
+    if [ "$drm_driver" != "i915" ] && [ "$drm_driver" != "xe" ]; then
         echo "Unexpected driver: $drm_driver (expected i915 or xe)"; return 1
     fi
 
@@ -56,7 +55,7 @@ check_gpu_ready() {
         echo "Cannot read sriov_totalvfs"; return 1
     fi
 
-    if [[ "$drm_driver" == "xe" && ! -d "/sys/kernel/debug/dri/0" ]]; then
+    if [ "$drm_driver" = "xe" ] && [ ! -d "/sys/kernel/debug/dri/0" ]; then
         echo "XE driver debugfs not ready"; return 1
     fi
 
@@ -68,7 +67,7 @@ check_gpu_ready() {
 get_vf_bdf() {
     local idx="$1"   # 0-based index
     local link="/sys/bus/pci/devices/$PF_ADDR/virtfn${idx}"
-    [ -L "$link" ] || die "virtfn${idx} not found — VF $((idx+1)) may not have been created"
+    if [ ! -L "$link" ]; then die "virtfn${idx} not found — VF $((idx+1)) may not have been created"; fi
     basename "$(readlink -f "$link")"
 }
 
@@ -94,7 +93,7 @@ bind_vf_to_vfio() {
 
     local actual_drv
     actual_drv=$(basename "$(readlink "/sys/bus/pci/devices/$bdf/driver" 2>/dev/null)" 2>/dev/null || echo "unbound")
-    [ "$actual_drv" == "vfio-pci" ] || die "Failed to bind $bdf to vfio-pci (driver: $actual_drv)"
+    if [ "$actual_drv" != "vfio-pci" ]; then die "Failed to bind $bdf to vfio-pci (driver: $actual_drv)"; fi
     log "VF $bdf bound to vfio-pci"
 }
 
@@ -105,11 +104,11 @@ write_vf_cdi() {
     local cdi_file="${CDI_DIR}/intel-igpu-tc${vf_idx}.yaml"
 
     local iommu_link="/sys/bus/pci/devices/$bdf/iommu_group"
-    [ -L "$iommu_link" ] || die "No IOMMU group for $bdf — is intel_iommu=on active?"
+    if [ ! -L "$iommu_link" ]; then die "No IOMMU group for $bdf — is intel_iommu=on active?"; fi
     local group
     group=$(basename "$(readlink -f "$iommu_link")")
     local vfio_dev="/dev/vfio/$group"
-    [ -e "$vfio_dev" ] || die "VFIO device $vfio_dev not found"
+    if [ ! -e "$vfio_dev" ]; then die "VFIO device $vfio_dev not found"; fi
 
     mkdir -p "$CDI_DIR"
 
@@ -120,6 +119,12 @@ write_vf_cdi() {
 
     read -r hmaj hmin < <(stat -c "%t %T" "$vfio_dev")
     local grp_maj=$(( 16#$hmaj )) grp_min=$(( 16#$hmin ))
+
+    read -r hmaj hmin < <(stat -c "%t %T" /dev/dri/card0)
+    local card0_maj=$(( 16#$hmaj )) card0_min=$(( 16#$hmin ))
+
+    read -r hmaj hmin < <(stat -c "%t %T" /dev/dri/renderD128)
+    local render_maj=$(( 16#$hmaj )) render_min=$(( 16#$hmin ))
 
     cat > "$cdi_file" <<EOF
 cdiVersion: "0.7.0"
@@ -140,10 +145,20 @@ devices:
           minor: ${grp_min}
           fileMode: 432
           permissions: rw
+        - path: /dev/dri/card0
+          type: c
+          major: ${card0_maj}
+          minor: ${card0_min}
+          fileMode: 432
+          permissions: rw
+        - path: /dev/dri/renderD128
+          type: c
+          major: ${render_maj}
+          minor: ${render_min}
+          fileMode: 432
+          permissions: rw
 EOF
 
-    log "CDI spec: $cdi_file"
-    log "  device: $vfio_dev  (IOMMU group $group, major:minor ${grp_maj}:${grp_min})"
 }
 
 # ── Remove all VFs ────────────────────────────────────────────────────────────
@@ -161,18 +176,10 @@ setup_sriov_vf() {
     local hw_max
     hw_max=$(cat /sys/class/drm/card0/device/sriov_totalvfs)
 
-    # Resolve M (total to create)
-    local total_vfs="${TOTAL_VFS:-$hw_max}"
-    [[ "$total_vfs" =~ ^[0-9]+$ ]] || die "TOTAL_VFS must be a positive integer"
-    [ "$total_vfs" -le "$hw_max" ] || die "TOTAL_VFS=$total_vfs exceeds hardware max ($hw_max)"
-
-    # Resolve N (to bind)
-    local bind_vfs="${BIND_VFS:-$total_vfs}"
-    [[ "$bind_vfs" =~ ^[0-9]+$ ]] || die "BIND_VFS must be a positive integer"
-    [ "$bind_vfs" -gt 0 ] || die "BIND_VFS must be greater than 0"
-    [ "$bind_vfs" -le "$total_vfs" ] || die "BIND_VFS=$bind_vfs cannot exceed TOTAL_VFS=$total_vfs"
-
-    log "Creating $total_vfs VFs, binding $bind_vfs to vfio-pci"
+    local num_vfs="${NUM_VFS:-$hw_max}"
+    case "$num_vfs" in ''|*[!0-9]*) die "NUM_VFS must be a positive integer" ;; esac
+    if [ "$num_vfs" -le 0 ]; then die "NUM_VFS must be greater than 0"; fi
+    if [ "$num_vfs" -gt "$hw_max" ]; then die "NUM_VFS=$num_vfs exceeds hardware max ($hw_max)"; fi
 
     local current_vfs
     current_vfs=$(cat /sys/class/drm/card0/device/sriov_numvfs)
@@ -199,22 +206,21 @@ setup_sriov_vf() {
     echo '1' | tee /sys/devices/pci0000:00/$PF_ADDR/drm/card0/prelim_iov/pf/auto_provisioning \
         > /dev/null 2>&1 || true
 
-    # Create M VFs
     echo '0' | tee /sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe > /dev/null
-    echo "$total_vfs" | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
+    echo "$num_vfs" | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
     echo '1' | tee /sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe > /dev/null
 
     # Set per-VF scheduling for all created VFs
     local iov_path=""
     if [ "$drm_drv" == "i915" ]; then
         iov_path="/sys/class/drm/card0/iov"
-        [ -d "/sys/class/drm/card0/prelim_iov" ] && iov_path="/sys/class/drm/card0/prelim_iov"
+        if [ -d "/sys/class/drm/card0/prelim_iov" ]; then iov_path="/sys/class/drm/card0/prelim_iov"; fi
     elif [ "$drm_drv" == "xe" ]; then
         iov_path="/sys/kernel/debug/dri/$PF_ADDR/gt0"
     fi
 
     if [ -n "$iov_path" ]; then
-        for (( i = 1; i <= total_vfs; i++ )); do
+        for (( i = 1; i <= num_vfs; i++ )); do
             for gt in gt gt0 gt1; do
                 if [ -d "${iov_path}/vf$i/$gt" ]; then
                     echo "$VFSCHED_EXECQ"    | tee "${iov_path}/vf$i/$gt/exec_quantum_ms"   > /dev/null
@@ -224,11 +230,9 @@ setup_sriov_vf() {
         done
     fi
 
-    # Bind first N VFs to vfio-pci individually and generate CDI specs
-    log "Binding $bind_vfs VF(s) to vfio-pci and generating CDI specs..."
-    echo ""
+    # Bind all VFs to vfio-pci and generate CDI specs
     local vfio_devs=()
-    for (( i = 0; i < bind_vfs; i++ )); do
+    for (( i = 0; i < num_vfs; i++ )); do
         local vf_bdf
         vf_bdf=$(get_vf_bdf "$i")
         bind_vf_to_vfio "$vf_bdf"
@@ -238,27 +242,14 @@ setup_sriov_vf() {
         vfio_devs+=("/dev/vfio/$grp")
     done
 
-    echo ""
-    log "=== Summary ==="
-    log "VFs created  : $total_vfs (of $hw_max supported)"
-    log "VFs to vfio  : $bind_vfs"
-    log "CDI specs    : ${CDI_DIR}/intel-igpu-tc{1..${bind_vfs}}.yaml"
-    echo ""
     log "VFIO devices:"
-    for dev in "${vfio_devs[@]}"; do
-        echo "  $dev"
-    done
-    echo ""
+    for dev in "${vfio_devs[@]}"; do log "  VFIO $dev"; done
     log "CDI device references:"
-    for (( i = 1; i <= bind_vfs; i++ )); do
-        echo "  gpu.intel.com/igpu=tc${i}"
-    done
-    echo ""
-    log "Setup complete."
+    for (( i = 1; i <= num_vfs; i++ )); do log "  CDI  gpu.intel.com/igpu=tc${i}"; done
 }
 
 # ── Entry point ───────────────────────────────────────────────────────────────
-[ "$EUID" -eq 0 ] || die "Run as root: sudo $0"
+if [ "$EUID" -ne 0 ]; then die "Run as root: sudo $0"; fi
 
 check_gpu_ready || die "GPU not ready"
 
@@ -269,7 +260,7 @@ case "${1:-setup}" in
     setup)   setup_sriov_vf ;;
     remove)  remove_sriov_vf ;;
     *)       echo "Usage: sudo $0 [setup|remove]"
-             echo "  TOTAL_VFS=M BIND_VFS=N sudo $0 setup"
+             echo "  NUM_VFS=N sudo $0 setup"
              exit 1 ;;
 esac
 
