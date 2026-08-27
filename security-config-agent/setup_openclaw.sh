@@ -12,8 +12,10 @@
 set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODEL_CONFIG_FILE="$SRC_DIR/model-configs.conf"
 
 SKIP_OPENCLAW_INSTALL=0
+REDEPLOY_ONLY=0
 OPENCLAW_VERSION="2026.7.1-2"
 OPENCLAW_INSTALL_TAG="v2026.7.1-2"
 OPENCLAW_INSTALL_SHA256="957e20de009d6e41fcf8fe005705bc114172e185cd640f4811220ec645014324"
@@ -28,17 +30,13 @@ BREW_INSTALL_SHA256="12479a24be3f5307eecac7cde670fad7118640f031229e964f544b1367b
 BREW_INSTALL_URL="https://raw.githubusercontent.com/Homebrew/install/${BREW_INSTALL_SNAPSHOT}/install.sh"
 BREW_INSTALL_MIRROR_URL="https://cdn.jsdelivr.net/gh/Homebrew/install@${BREW_INSTALL_SNAPSHOT}/install.sh"
 
-OVMS_IMAGE="openvino/model_server:2026.3-gpu"
+OVMS_IMAGE="openvino/model_server:weekly"
 OVMS_CONTAINER="ovms"
 OVMS_PORT="8000"
-OVMS_MODEL="OpenVINO/Qwen3-Coder-30B-A3B-Instruct-int4-ov"
-# Must match the model family, otherwise OVMS emits tool calls as plain text.
-# Supported: llama3, hermes3, phi4, mistral, gptoss, qwen3coder, devstral, lfm2, gemma4, minicpm5
-OVMS_TOOL_PARSER="qwen3coder"
+OVMS_MODEL="OpenVINO/Qwen3.5-9B-int8-ov"
+OVMS_TOOL_PARSER=""
 OVMS_TARGET_DEVICE="GPU"
-# KV cache in GB. Qwen3-Coder-30B-A3B costs ~96 KB/token (48 layers, 4 KV heads,
-# 128 head dim, fp16), so MODEL_CONTEXT_TOKENS tokens need ~6 GB.
-OVMS_CACHE_SIZE=8
+OVMS_CACHE_SIZE=""
 MODELS_DIR="$HOME/models"
 OVMS_READY_TIMEOUT=1800
 
@@ -51,14 +49,17 @@ AGENT_ID="main"
 AGENT_WORKSPACE="$HOME/.openclaw/workspace"
 GATEWAY_PORT=18789
 
-MODEL_TIMEOUT_SECONDS=300
-# Well under the model's 262144 native context: this runs on an iGPU sharing
-# system RAM, and prefill cost grows with the window.
-MODEL_CONTEXT_TOKENS=65536
-MODEL_MAX_TOKENS=16384
-# Sampling values recommended by the Qwen3-Coder-30B-A3B-Instruct model card.
-MODEL_TEMPERATURE=0.7
-MODEL_TOP_P=0.8
+MODEL_TIMEOUT_SECONDS=600
+MODEL_CONTEXT_TOKENS=""
+MODEL_MAX_TOKENS=32768
+MODEL_TEMPERATURE=0
+
+# Channels allowed to run elevated (host) exec. The skills read platform
+# security state through sudo (rdmsr, dmsetup, cryptsetup), which the agent
+# cannot do unless its channel is on this allowlist. The gateway binds to
+# loopback with token auth; `tools_section` grants each listed channel
+# elevated access for any authenticated principal ("*").
+ELEVATED_ALLOW_CHANNELS=(webchat)
 
 # Node commands the local gateway must refuse.
 GATEWAY_DENY_COMMANDS=(
@@ -97,14 +98,14 @@ usage() {
 Usage: $(basename "$0") [options]
 
 Options:
-  --openclaw-version <v>  OpenClaw version to install (default: ${OPENCLAW_VERSION})
-  --ovms-image <image>    OVMS container image (default: ${OVMS_IMAGE})
-  --ovms-port <port>      Host port for the OVMS REST endpoint (default: ${OVMS_PORT})
-  --ovms-model <id>       Model served by OVMS (default: ${OVMS_MODEL})
-  --tool-parser <name>    OVMS tool parser matching the model (default: ${OVMS_TOOL_PARSER})
-  --models-dir <path>     Host model repository (default: ${MODELS_DIR})
-  --skip-openclaw-install Use the already installed OpenClaw CLI
-  -h, --help              Show this help
+  --openclaw-version <v>     OpenClaw version to install (default: ${OPENCLAW_VERSION})
+  --ovms-image <image>       OVMS container image (default: ${OVMS_IMAGE})
+  --ovms-port <port>         Host port for the OVMS REST endpoint (default: ${OVMS_PORT})
+  --ovms-model <id>          Model served by OVMS (default: ${OVMS_MODEL})
+  --models-dir <path>        Host model repository (default: ${MODELS_DIR})
+  --skip-openclaw-install    Use the already installed OpenClaw CLI
+  --redeploy-only            Redeploy OVMS plus the OpenClaw config/gateway only; skip dependency and skill installation
+  -h, --help                 Show this help
 EOF
 }
 
@@ -139,11 +140,6 @@ parse_args() {
                 OVMS_MODEL="$2"
                 shift 2
                 ;;
-            --tool-parser)
-                require_value "$@"
-                OVMS_TOOL_PARSER="$2"
-                shift 2
-                ;;
             --models-dir)
                 require_value "$@"
                 MODELS_DIR="$2"
@@ -151,6 +147,10 @@ parse_args() {
                 ;;
             --skip-openclaw-install)
                 SKIP_OPENCLAW_INSTALL=1
+                shift
+                ;;
+            --redeploy-only)
+                REDEPLOY_ONLY=1
                 shift
                 ;;
             -h|--help)
@@ -182,6 +182,39 @@ parse_args() {
     fi
 }
 
+load_model_config() {
+    if [[ ! -r "$MODEL_CONFIG_FILE" ]]; then
+        echo "ERROR: model config file not found or unreadable: $MODEL_CONFIG_FILE" >&2
+        exit 1
+    fi
+
+    local model="" parser="" cache_size="" context="" extra="" line=""
+    local matched=0
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        IFS='|' read -r model parser cache_size context extra <<<"$line"
+        [[ "$model" == "$OVMS_MODEL" ]] || continue
+
+        OVMS_TOOL_PARSER="$parser"
+        OVMS_CACHE_SIZE="$cache_size"
+        MODEL_CONTEXT_TOKENS="$context"
+        matched=1
+        break
+    done <"$MODEL_CONFIG_FILE"
+
+    if [[ $matched -eq 0 ]]; then
+        echo "ERROR: no profile for '$OVMS_MODEL' in $MODEL_CONFIG_FILE" >&2
+        exit 1
+    fi
+
+    if [[ -z "$OVMS_TOOL_PARSER" || ! "$OVMS_CACHE_SIZE" =~ ^[0-9]+$ ||
+        ! "$MODEL_CONTEXT_TOKENS" =~ ^[0-9]+$ || -n "$extra" ]] ||
+        (( MODEL_CONTEXT_TOKENS < MODEL_MAX_TOKENS )); then
+        echo "ERROR: invalid profile for '$OVMS_MODEL' in $MODEL_CONFIG_FILE" >&2
+        exit 1
+    fi
+}
+
 sudo_cmd() {
     if [[ $EUID -eq 0 ]]; then
         "$@"
@@ -194,6 +227,9 @@ print_summary() {
     echo "OpenClaw version: $OPENCLAW_VERSION"
     echo "OVMS image:       $OVMS_IMAGE"
     echo "OVMS model:       $OVMS_MODEL ($OVMS_TARGET_DEVICE)"
+    echo "Tool parser:      $OVMS_TOOL_PARSER"
+    echo "Model context:    $MODEL_CONTEXT_TOKENS tokens"
+    echo "Model max output: $MODEL_MAX_TOKENS tokens"
     echo "OVMS endpoint:    http://127.0.0.1:${OVMS_PORT}/v3"
     echo "Models dir:       $MODELS_DIR"
     echo
@@ -292,6 +328,7 @@ start_ovms() {
     echo "Starting OVMS (first run downloads the model, this takes a while)..."
     docker run -d \
         --name "$OVMS_CONTAINER" \
+        --restart unless-stopped \
         --user "$(id -u):$(id -g)" \
         "${device_args[@]}" \
         -p "${OVMS_PORT}:8000" \
@@ -307,14 +344,18 @@ start_ovms() {
 }
 
 wait_for_ovms() {
-    local url="http://localhost:${OVMS_PORT}/v3/models"
+    local url="http://127.0.0.1:${OVMS_PORT}/v3/models"
     local deadline=$((SECONDS + OVMS_READY_TIMEOUT))
+    local response
 
-    echo "Waiting for OVMS at ${url}..."
+    echo "Waiting for OVMS model '${OVMS_MODEL}' at ${url}..."
     while (( SECONDS < deadline )); do
-        if curl -fsS --max-time 5 "$url" >/dev/null 2>&1; then
+        if response=$(curl -fsS --max-time 5 "$url" 2>/dev/null) &&
+            jq -e --arg model "$OVMS_MODEL" \
+                '.data | any(.id == $model)' \
+                >/dev/null <<<"$response"; then
             echo "OVMS is serving:"
-            curl -fsS "$url"
+            printf '%s\n' "$response"
             echo
             return
         fi
@@ -438,14 +479,17 @@ agents_section() {
         --arg ref "$MODEL_REF" \
         --arg alias "$MODEL_NAME" \
         --argjson temperature "$MODEL_TEMPERATURE" \
-        --argjson topP "$MODEL_TOP_P" \
         '{
             agents: {
                 defaults: {
                     workspace: $workspace,
                     model: { primary: $ref },
-                    models: { ($ref): { alias: $alias } },
-                    params: { temperature: $temperature, topP: $topP }
+                    models: {
+                        ($ref): {
+                            alias: $alias,
+                            params: { temperature: $temperature }
+                        }
+                    }
                 },
                 list: [{ id: $id, workspace: $workspace }]
             }
@@ -466,6 +510,19 @@ gateway_section() {
             }
         }' \
         --args "${GATEWAY_DENY_COMMANDS[@]}"
+}
+
+tools_section() {
+    jq -n \
+        '{
+            tools: {
+                elevated: {
+                    enabled: ($ARGS.positional | length > 0),
+                    allowFrom: (reduce $ARGS.positional[] as $c ({}; .[$c] = ["*"]))
+                }
+            }
+        }' \
+        --args "${ELEVATED_ALLOW_CHANNELS[@]}"
 }
 
 models_section() {
@@ -512,20 +569,34 @@ emit_config() {
     {
         agents_section
         gateway_section
+        tools_section
         models_section
     } | jq -s 'add'
 }
 
 configure_openclaw() {
     local config
+    local patch_mode="--merge"
     config=$(make_temp_file)
     emit_config >"$config"
 
-    echo "Applying the OpenClaw config (OVMS ${OVMS_MODEL} on port ${OVMS_PORT})..."
-    openclaw config patch --file "$config"
+    if [[ $REDEPLOY_ONLY -eq 1 ]]; then
+        patch_mode="--replace-path models.providers.ovms.models"
+    fi
 
-    echo "Installing the OpenClaw gateway..."
-    openclaw gateway install
+    echo "Applying the OpenClaw config (OVMS ${OVMS_MODEL} on port ${OVMS_PORT}) with mode ${patch_mode}..."
+    # In a redeploy-only path we intentionally replace the OVMS model array at the
+    # provider path so the prior model entry is removed and the new model takes its place.
+    # In the full install path we keep merge semantics so older config entries remain intact.
+    openclaw config patch $patch_mode --file "$config"
+
+    if openclaw gateway status >/dev/null 2>&1; then
+        echo "Restarting the OpenClaw gateway..."
+        openclaw gateway restart || openclaw gateway install
+    else
+        echo "Installing the OpenClaw gateway..."
+        openclaw gateway install
+    fi
 }
 
 install_skills() {
@@ -549,8 +620,29 @@ print_next_steps() {
 
 main() {
     parse_args "$@"
+    load_model_config
     print_summary
     check_docker
+
+    if [[ $REDEPLOY_ONLY -eq 1 ]]; then
+
+        if ! command -v openclaw >/dev/null 2>&1; then
+            echo "ERROR: 'openclaw' CLI not found - install it first or omit --redeploy-only." >&2
+            exit 1
+        fi
+        if ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+            echo "ERROR: 'curl' and 'jq' are required for --redeploy-only; install them or run without --redeploy-only." >&2
+            exit 1
+        fi
+        start_ovms
+        wait_for_ovms
+        configure_openclaw
+        echo
+        echo "Redeploy complete. OpenClaw config refreshed and gateway restarted."
+        echo "  - Check gateway: openclaw gateway status"
+        return 0
+    fi
+
     install_dependencies
     start_ovms
     wait_for_ovms
