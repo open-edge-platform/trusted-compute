@@ -57,7 +57,8 @@ MODEL_TEMPERATURE=0
 # Channels allowed to run elevated (host) exec. The skills read platform
 # security state through sudo (rdmsr, dmsetup, cryptsetup), which the agent
 # cannot do unless its channel is on this allowlist. The gateway binds to
-# loopback with token auth, so "*" here means the local operator only.
+# loopback with token auth; `tools_section` grants each listed channel
+# elevated access for any authenticated principal ("*").
 ELEVATED_ALLOW_CHANNELS=(webchat)
 
 # Node commands the local gateway must refuse.
@@ -515,8 +516,8 @@ tools_section() {
         '{
             tools: {
                 elevated: {
-                    enabled: true,
-                    allowFrom: ($ARGS.positional | map({ (.): ["*"] }) | add)
+                    enabled: ($ARGS.positional | length > 0),
+                    allowFrom: (reduce $ARGS.positional[] as $c ({}; .[$c] = ["*"]))
                 }
             }
         }' \
