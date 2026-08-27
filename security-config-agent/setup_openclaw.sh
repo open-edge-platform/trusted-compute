@@ -331,7 +331,7 @@ start_ovms() {
         --restart unless-stopped \
         --user "$(id -u):$(id -g)" \
         "${device_args[@]}" \
-        -p "${OVMS_PORT}:8000" \
+        -p "127.0.0.1:${OVMS_PORT}:8000" \
         -v "${MODELS_DIR}:/models" \
         "$OVMS_IMAGE" \
         --source_model "$OVMS_MODEL" \
