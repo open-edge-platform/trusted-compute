@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Sets up OpenClaw on top of a local OpenVINO Model Server (OVMS):
-# installs the base packages and Homebrew, starts OVMS with a GPU-backed
-# text-generation model, installs the OpenClaw CLI, applies the config
-# below so the agent talks to the local OVMS endpoint and installs the
-# security configuration skills.
+# installs the base packages and Homebrew, starts a hardened OVMS container
+# with a GPU-backed text-generation model, installs the OpenClaw CLI, applies
+# the config below so the agent talks to the local OVMS endpoint and installs
+# the security configuration skills.
 
 set -euo pipefail
 
