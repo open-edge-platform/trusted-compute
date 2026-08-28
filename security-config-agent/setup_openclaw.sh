@@ -330,6 +330,10 @@ start_ovms() {
         --name "$OVMS_CONTAINER" \
         --restart unless-stopped \
         --user "$(id -u):$(id -g)" \
+        --read-only \
+        --tmpfs /tmp:rw,nosuid,nodev \
+        --cap-drop ALL \
+        --security-opt no-new-privileges=true \
         "${device_args[@]}" \
         -p "127.0.0.1:${OVMS_PORT}:8000" \
         -v "${MODELS_DIR}:/models" \
