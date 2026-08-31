@@ -121,13 +121,17 @@ def get_persisted_scores(result: Any, langfuse: Langfuse) -> list[dict[str, Any]
     for index, item_result in enumerate(result.item_results, start=1):
         item = item_result.item
         input_value = item.get("input") if isinstance(item, dict) else item.input
-        trace_scores = langfuse.api.scores.get_many(trace_id=item_result.trace_id, limit=100)
+        trace_scores = langfuse.api.score_v_2.get(trace_id=item_result.trace_id, limit=100)
         persisted_scores.append(
             {
                 "input": input_value,
                 "output": item_result.output,
                 "scores": {
-                    score.name: score.value if score.string_value is None else score.string_value
+                    score.name: (
+                        score.value
+                        if getattr(score, "string_value", None) is None
+                        else score.string_value
+                    )
                     for score in trace_scores.data
                 },
             }
@@ -147,6 +151,35 @@ def print_persisted_scores(persisted_scores: list[dict[str, Any]]) -> None:
                 print(f"Score ({name}): {value}")
         else:
             print("Score: no persisted evaluation found")
+
+
+def wait_for_persisted_scores(
+    result: Any,
+    langfuse: Langfuse,
+    *,
+    wait_seconds: float,
+    poll_seconds: float,
+) -> list[dict[str, Any]]:
+    """Poll Langfuse until evaluator scores are persisted for every item."""
+    wait_seconds = max(wait_seconds, 0.0)
+    poll_seconds = max(poll_seconds, 0.1)
+    deadline = time.monotonic() + wait_seconds
+    persisted_scores = get_persisted_scores(result, langfuse)
+    missing_count = sum(1 for item_result in persisted_scores if not item_result["scores"])
+
+    while missing_count and time.monotonic() < deadline:
+        remaining_seconds = deadline - time.monotonic()
+        time.sleep(min(poll_seconds, remaining_seconds))
+        persisted_scores = get_persisted_scores(result, langfuse)
+        missing_count = sum(1 for item_result in persisted_scores if not item_result["scores"])
+
+    if missing_count:
+        print(
+            "Timed out waiting for persisted evaluator scores "
+            f"({missing_count} item(s) still missing)."
+        )
+
+    return persisted_scores
 
 
 def plot_scores(
@@ -247,6 +280,24 @@ def main() -> None:
         help="Directory for the generated evaluator score graphs",
     )
     parser.add_argument("--max-concurrency", type=int, default=1)
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Only run the first N items of the dataset (default: run all items)",
+    )
+    parser.add_argument(
+        "--score-wait-seconds",
+        type=float,
+        default=180.0,
+        help="Seconds to wait for asynchronous Langfuse evaluator scores before plotting",
+    )
+    parser.add_argument(
+        "--score-poll-seconds",
+        type=float,
+        default=2.0,
+        help="Seconds between evaluator score polling attempts",
+    )
     args = parser.parse_args()
 
     langfuse_config = load_langfuse_config(args.config_path)
@@ -259,6 +310,8 @@ def main() -> None:
 
     # The original dataset remains unchanged; outputs are stored in a dataset run.
     dataset = langfuse.get_dataset(args.dataset_name)
+    if args.limit is not None:
+        dataset.items = dataset.items[: args.limit]
     task = build_task(agent=args.agent, model=args.model, run_name=args.run_name)
 
     # Langfuse calls task once per item and associates its return value with that item.
@@ -270,7 +323,12 @@ def main() -> None:
         metadata={"agent": args.agent, "model": args.model or "default"},
     )
 
-    persisted_scores = get_persisted_scores(result, langfuse)
+    persisted_scores = wait_for_persisted_scores(
+        result,
+        langfuse,
+        wait_seconds=args.score_wait_seconds,
+        poll_seconds=args.score_poll_seconds,
+    )
     print_persisted_scores(persisted_scores)
     plot_scores(result, args.plot_dir, persisted_scores, args.model or "default")
     # print(result.format(include_item_results=True))
