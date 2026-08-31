@@ -55,7 +55,7 @@ check_gpu_ready() {
         echo "Cannot read sriov_totalvfs"; return 1
     fi
 
-    if [ "$drm_driver" = "xe" ] && [ ! -d "/sys/kernel/debug/dri/0" ]; then
+    if [ "$drm_driver" = "xe" ] && [ ! -d "/sys/kernel/debug/dri/$PF_ADDR" ]; then
         echo "XE driver debugfs not ready"; return 1
     fi
 
@@ -194,9 +194,9 @@ setup_sriov_vf() {
     # xe: configure spare resources
     if [ "$drm_drv" == "xe" ]; then
         log "Configuring xe spare resources..."
-        echo "$GTT_SPARE_PF"     | tee /sys/kernel/debug/dri/0/gt0/pf/ggtt_spare     > /dev/null
-        echo "$CONTEXT_SPARE_PF" | tee /sys/kernel/debug/dri/0/gt0/pf/contexts_spare > /dev/null
-        echo "$DOORBELL_SPARE_PF"| tee /sys/kernel/debug/dri/0/gt0/pf/doorbells_spare> /dev/null
+        echo "$GTT_SPARE_PF"     | tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/ggtt_spare     > /dev/null
+        echo "$CONTEXT_SPARE_PF" | tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/contexts_spare > /dev/null
+        echo "$DOORBELL_SPARE_PF"| tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/doorbells_spare> /dev/null
     fi
 
     modprobe i2c-algo-bit 2>/dev/null || warn "Could not load i2c-algo-bit"
@@ -210,21 +210,30 @@ setup_sriov_vf() {
     echo "$num_vfs" | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
     echo '1' | tee /sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe > /dev/null
 
-    # Set per-VF scheduling for all created VFs
+    # Set per-VF scheduling for all created VFs.
+    # i915 nests gt under vf (vf<i>/gt<N>); xe nests vf under gt (gt<N>/vf<i>).
     local iov_path=""
+    local xe_gt_first=0
     if [ "$drm_drv" == "i915" ]; then
         iov_path="/sys/class/drm/card0/iov"
         if [ -d "/sys/class/drm/card0/prelim_iov" ]; then iov_path="/sys/class/drm/card0/prelim_iov"; fi
     elif [ "$drm_drv" == "xe" ]; then
-        iov_path="/sys/kernel/debug/dri/$PF_ADDR/gt0"
+        iov_path="/sys/kernel/debug/dri/$PF_ADDR"
+        xe_gt_first=1
     fi
 
     if [ -n "$iov_path" ]; then
         for (( i = 1; i <= num_vfs; i++ )); do
-            for gt in gt gt0 gt1; do
-                if [ -d "${iov_path}/vf$i/$gt" ]; then
-                    echo "$VFSCHED_EXECQ"    | tee "${iov_path}/vf$i/$gt/exec_quantum_ms"   > /dev/null
-                    echo "$VFSCHED_TIMEOUT"  | tee "${iov_path}/vf$i/$gt/preempt_timeout_us"> /dev/null
+            for gt in gt0 gt1; do
+                local vf_gt_path
+                if [ "$xe_gt_first" -eq 1 ]; then
+                    vf_gt_path="${iov_path}/$gt/vf$i"
+                else
+                    vf_gt_path="${iov_path}/vf$i/$gt"
+                fi
+                if [ -d "$vf_gt_path" ]; then
+                    echo "$VFSCHED_EXECQ"    | tee "${vf_gt_path}/exec_quantum_ms"   > /dev/null
+                    echo "$VFSCHED_TIMEOUT"  | tee "${vf_gt_path}/preempt_timeout_us"> /dev/null
                 fi
             done
         done
