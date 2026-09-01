@@ -85,7 +85,7 @@ sudo ./setup_sriov_vfs.sh setup
 **Create and bind a specific number of VFs to vfio-pci:**
 
 ```bash
-NUM_VFS=2 sudo ./setup_sriov_vfs.sh setup
+sudo NUM_VFS=2 ./setup_sriov_vfs.sh setup
 ```
 
 The bound VFs are exposed as CDI devices:
