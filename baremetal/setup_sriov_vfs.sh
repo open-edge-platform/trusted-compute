@@ -109,8 +109,8 @@ check_gpu_ready() {
     fi
 
     local drm_driver
-    drm_driver=$(lspci -D -k -s "${PF_ADDR#*:}" 2>/dev/null \
-        | grep "Kernel driver in use" | awk -F ':' '{print $2}' | xargs)
+    drm_driver=$(lspci -D -k -s "$PF_ADDR" 2>/dev/null \
+        | awk -F': *' '/Kernel driver in use/ {print $2; exit}' || true)
     if [ -z "$drm_driver" ]; then
         echo "No kernel driver loaded yet"; return 1
     fi
@@ -265,7 +265,7 @@ setup_sriov_vf() {
     fi
 
     local drm_drv
-    drm_drv=$(lspci -D -k -s "${PF_ADDR#*:}" 2>/dev/null | awk -F ':' '/Kernel driver in use/ {print $2; exit}' | xargs || true)
+    drm_drv=$(lspci -D -k -s "$PF_ADDR" 2>/dev/null | awk -F': *' '/Kernel driver in use/ {print $2; exit}' || true)
 
     # xe: configure spare resources
     if [ "$drm_drv" == "xe" ]; then
