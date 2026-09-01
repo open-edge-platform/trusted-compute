@@ -1,0 +1,140 @@
+name: security-config-agent
+
+services:
+  ovms:
+    image: ${OVMS_IMAGE}
+    restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${RENDER_GID}"
+    ports:
+      - "127.0.0.1:${OVMS_PORT}:8000"
+    volumes:
+      - "${MODELS_DIR}:/models"
+    command:
+      - --source_model
+      - ${OVMS_MODEL}
+      - --model_repository_path
+      - /models
+      - --task
+      - text_generation
+      - --tool_parser
+      - ${OVMS_TOOL_PARSER}
+      - --rest_port
+      - "8000"
+      - --target_device
+      - ${OVMS_TARGET_DEVICE}
+      - --cache_size
+      - ${OVMS_CACHE_SIZE}
+
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE}
+    restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
+    init: true
+    environment: &openclaw-environment
+      HOME: /home/node
+      OPENCLAW_HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      OPENCLAW_CONFIG_DIR: /home/node/.openclaw
+      OPENCLAW_WORKSPACE_DIR: /home/node/.openclaw/workspace
+      OPENCLAW_GATEWAY_PORT: "18789"
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+    volumes: &gateway-volumes
+      - "${GATEWAY_CONFIG_DIR}:/home/node/.openclaw"
+      - "${GATEWAY_WORKSPACE_DIR}:/home/node/.openclaw/workspace"
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT}:18789"
+    command:
+      - node
+      - dist/index.js
+      - gateway
+      - --bind
+      - lan
+      - --port
+      - "18789"
+    healthcheck:
+      test: ["CMD", "node", "dist/docker-healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      - ovms
+
+  openclaw-cli:
+    image: ${OPENCLAW_IMAGE}
+    profiles: ["cli"]
+    network_mode: service:openclaw-gateway
+    init: true
+    environment: *openclaw-environment
+    volumes: *gateway-volumes
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    entrypoint: ["node", "dist/index.js"]
+    depends_on:
+      - openclaw-gateway
+
+  security-node:
+    image: ${SECURITY_NODE_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile.security-node
+      args:
+        OPENCLAW_IMAGE: ${OPENCLAW_IMAGE}
+    restart: unless-stopped
+    privileged: true
+    user: "0:0"
+    pid: host
+    init: true
+    read_only: true
+    environment:
+      HOME: /root
+      OPENCLAW_HOME: /root
+      OPENCLAW_STATE_DIR: /root/.openclaw
+      OPENCLAW_CONFIG_PATH: /root/.openclaw/openclaw.json
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+    volumes:
+      - "${SECURITY_NODE_STATE_DIR}:/root/.openclaw"
+      - "./skills:/root/.openclaw/skills:ro"
+      - "/:/host:rw,rslave"
+      - "/dev:/dev"
+      - "/sys:/sys:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    tmpfs:
+      - /tmp:rw,nosuid,nodev
+      - /run:rw,nosuid,nodev
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - node
+      - dist/index.js
+      - node
+      - run
+      - --host
+      - openclaw-gateway
+      - --port
+      - "18789"
+      - --display-name
+      - security-node
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy
