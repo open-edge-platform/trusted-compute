@@ -187,8 +187,6 @@ EOF
 remove_sriov_vf() {
     log "Removing all VFs..."
     echo '0' | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
-    echo "$VENDOR $DEVICE" | tee /sys/bus/pci/drivers/vfio-pci/remove_id > /dev/null 2>&1 || true
-    rmmod vfio-pci 2>/dev/null || true
     rm -f "${CDI_DIR}"/intel-igpu-tc*.yaml
     log "VFs removed and CDI specs deleted."
 }
