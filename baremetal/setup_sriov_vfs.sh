@@ -211,7 +211,7 @@ setup_sriov_vf() {
     fi
 
     local drm_drv
-    drm_drv=$(lspci -D -k -s "${PF_ADDR#*:}" | grep "Kernel driver in use" | awk -F ':' '{print $2}' | xargs)
+    drm_drv=$(lspci -D -k -s "${PF_ADDR#*:}" 2>/dev/null | awk -F ':' '/Kernel driver in use/ {print $2; exit}' | xargs || true)
 
     # xe: configure spare resources
     if [ "$drm_drv" == "xe" ]; then
