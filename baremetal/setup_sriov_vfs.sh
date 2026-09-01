@@ -17,14 +17,68 @@ DOORBELL_SPARE_PF=32
 VFSCHED_EXECQ=25
 VFSCHED_TIMEOUT=500000
 
-PF_ADDR="0000:00:02.0"
-VENDOR=""
-DEVICE=""
+# PF_ADDR — PCI address (BDF) of the iGPU physical function.
+# Override via environment; empty means auto-detect.
+PF_ADDR="${PF_ADDR:-}"
+
+# DRM card sysfs path and render node resolved from PF_ADDR
+CARD_PATH=""
+CARD_NAME=""
+CARD_DEV=""
+RENDER_DEV=""
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 log()  { echo "[INFO]  $*"; }
 warn() { echo "[WARN]  $*"; }
 die()  { echo "[ERROR] $*" >&2; exit 1; }
+
+require_cmd() {
+    local cmd
+    for cmd in "$@"; do
+        command -v "$cmd" > /dev/null 2>&1 \
+            || die "'$cmd' not found. Install pciutils (e.g., 'apt install pciutils' or 'dnf install pciutils')."
+    done
+}
+
+# ── PF discovery ──────────────────────────────────────────────────────────────
+# Picks the first Intel display/VGA controller exposing sriov_totalvfs.
+detect_pf_addr() {
+    local dev bdf vendor class
+    for dev in /sys/bus/pci/devices/*/; do
+        [ -f "${dev}sriov_totalvfs" ] || continue
+        vendor=$(cat "${dev}vendor" 2>/dev/null || echo "")
+        [ "$vendor" = "0x8086" ] || continue
+        class=$(cat "${dev}class" 2>/dev/null || echo "")
+        case "$class" in 0x0300*|0x0380*) ;; *) continue ;; esac
+        [ -d "${dev}drm" ] || continue
+        bdf=$(basename "$dev")
+        echo "$bdf"
+        return 0
+    done
+    return 1
+}
+
+# ── DRM card resolution ───────────────────────────────────────────────────────
+# Matches /sys/class/drm/card*/device against PF_ADDR so multi-GPU hosts and
+# non-default enumeration order are handled correctly.
+resolve_drm_card() {
+    local card node
+    for card in /sys/class/drm/card*; do
+        [ -e "$card/device" ] || continue
+        [ "$(basename "$(readlink -f "$card/device")")" = "$PF_ADDR" ] || continue
+        CARD_PATH="$card"
+        CARD_NAME=$(basename "$card")
+        CARD_DEV="/dev/dri/$CARD_NAME"
+        RENDER_DEV=""
+        for node in "$card"/device/drm/renderD*; do
+            [ -e "$node" ] || continue
+            RENDER_DEV="/dev/dri/$(basename "$node")"
+            break
+        done
+        return 0
+    done
+    return 1
+}
 
 # ── xe debugfs directory resolution ───────────────────────────────────────────
 # DRM debugfs entries under /sys/kernel/debug/dri are numbered by DRM minor
@@ -64,15 +118,15 @@ check_gpu_ready() {
         echo "Unexpected driver: $drm_driver (expected i915 or xe)"; return 1
     fi
 
-    if [ ! -d "/sys/class/drm/card0" ]; then
-        echo "DRM card0 not found"; return 1
+    if ! resolve_drm_card; then
+        echo "No DRM card found for $PF_ADDR"; return 1
     fi
-    if [ ! -f "/sys/class/drm/card0/device/sriov_totalvfs" ]; then
+    if [ ! -f "$CARD_PATH/device/sriov_totalvfs" ]; then
         echo "SR-IOV totalvfs file not found"; return 1
     fi
 
     local total_vfs
-    total_vfs=$(cat /sys/class/drm/card0/device/sriov_totalvfs 2>/dev/null)
+    total_vfs=$(cat "$CARD_PATH/device/sriov_totalvfs" 2>/dev/null)
     if [ -z "$total_vfs" ]; then
         echo "Cannot read sriov_totalvfs"; return 1
     fi
@@ -81,7 +135,7 @@ check_gpu_ready() {
         echo "XE driver debugfs not ready"; return 1
     fi
 
-    log "GPU ready (driver: $drm_driver, sriov_totalvfs: $total_vfs)"
+    log "GPU ready (PF: $PF_ADDR, card: $CARD_NAME, driver: $drm_driver, sriov_totalvfs: $total_vfs)"
     return 0
 }
 
@@ -142,10 +196,12 @@ write_vf_cdi() {
     read -r hmaj hmin < <(stat -c "%t %T" "$vfio_dev")
     local grp_maj=$(( 16#$hmaj )) grp_min=$(( 16#$hmin ))
 
-    read -r hmaj hmin < <(stat -c "%t %T" /dev/dri/card0)
-    local card0_maj=$(( 16#$hmaj )) card0_min=$(( 16#$hmin ))
+    [ -e "$CARD_DEV" ] || die "DRM device node $CARD_DEV not found"
+    read -r hmaj hmin < <(stat -c "%t %T" "$CARD_DEV")
+    local card_maj=$(( 16#$hmaj )) card_min=$(( 16#$hmin ))
 
-    read -r hmaj hmin < <(stat -c "%t %T" /dev/dri/renderD128)
+    [ -n "$RENDER_DEV" ] && [ -e "$RENDER_DEV" ] || die "Render node for $PF_ADDR not found"
+    read -r hmaj hmin < <(stat -c "%t %T" "$RENDER_DEV")
     local render_maj=$(( 16#$hmaj )) render_min=$(( 16#$hmin ))
 
     cat > "$cdi_file" <<EOF
@@ -167,13 +223,13 @@ devices:
           minor: ${grp_min}
           fileMode: 432
           permissions: rw
-        - path: /dev/dri/card0
+        - path: ${CARD_DEV}
           type: c
-          major: ${card0_maj}
-          minor: ${card0_min}
+          major: ${card_maj}
+          minor: ${card_min}
           fileMode: 432
           permissions: rw
-        - path: /dev/dri/renderD128
+        - path: ${RENDER_DEV}
           type: c
           major: ${render_maj}
           minor: ${render_min}
@@ -186,7 +242,7 @@ EOF
 # ── Remove all VFs ────────────────────────────────────────────────────────────
 remove_sriov_vf() {
     log "Removing all VFs..."
-    echo '0' | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
+    echo '0' | tee "$CARD_PATH/device/sriov_numvfs" > /dev/null
     rm -f "${CDI_DIR}"/intel-igpu-tc*.yaml
     log "VFs removed and CDI specs deleted."
 }
@@ -194,7 +250,7 @@ remove_sriov_vf() {
 # ── Main VF setup ─────────────────────────────────────────────────────────────
 setup_sriov_vf() {
     local hw_max
-    hw_max=$(cat /sys/class/drm/card0/device/sriov_totalvfs)
+    hw_max=$(cat "$CARD_PATH/device/sriov_totalvfs")
 
     local num_vfs="${NUM_VFS:-$hw_max}"
     case "$num_vfs" in ''|*[!0-9]*) die "NUM_VFS must be a positive integer" ;; esac
@@ -202,7 +258,7 @@ setup_sriov_vf() {
     if [ "$num_vfs" -gt "$hw_max" ]; then die "NUM_VFS=$num_vfs exceeds hardware max ($hw_max)"; fi
 
     local current_vfs
-    current_vfs=$(cat /sys/class/drm/card0/device/sriov_numvfs)
+    current_vfs=$(cat "$CARD_PATH/device/sriov_numvfs")
     if [ "$current_vfs" -gt 0 ]; then
         log "VFs already enabled ($current_vfs). Remove first or use 'remove' command."
         exit 0
@@ -224,20 +280,20 @@ setup_sriov_vf() {
     modprobe video        2>/dev/null || warn "Could not load video"
 
     # Enable auto-provisioning (i915 prelim path, no-op if absent)
-    echo '1' | tee /sys/devices/pci0000:00/$PF_ADDR/drm/card0/prelim_iov/pf/auto_provisioning \
+    echo '1' | tee "$CARD_PATH/prelim_iov/pf/auto_provisioning" \
         > /dev/null 2>&1 || true
 
-    echo '0' | tee /sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe > /dev/null
-    echo "$num_vfs" | tee /sys/class/drm/card0/device/sriov_numvfs > /dev/null
-    echo '1' | tee /sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe > /dev/null
+    echo '0' | tee "/sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe" > /dev/null
+    echo "$num_vfs" | tee "$CARD_PATH/device/sriov_numvfs" > /dev/null
+    echo '1' | tee "/sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe" > /dev/null
 
     # Set per-VF scheduling for all created VFs.
     # i915 nests gt under vf (vf<i>/gt<N>); xe nests vf under gt (gt<N>/vf<i>).
     local iov_path=""
     local xe_gt_first=0
     if [ "$drm_drv" == "i915" ]; then
-        iov_path="/sys/class/drm/card0/iov"
-        if [ -d "/sys/class/drm/card0/prelim_iov" ]; then iov_path="/sys/class/drm/card0/prelim_iov"; fi
+        iov_path="$CARD_PATH/iov"
+        if [ -d "$CARD_PATH/prelim_iov" ]; then iov_path="$CARD_PATH/prelim_iov"; fi
     elif [ "$drm_drv" == "xe" ]; then
         resolve_xe_debugfs_dir || die "xe debugfs directory not found for $PF_ADDR"
         iov_path="$XE_DEBUGFS_DIR"
@@ -282,16 +338,22 @@ setup_sriov_vf() {
 # ── Entry point ───────────────────────────────────────────────────────────────
 if [ "$EUID" -ne 0 ]; then die "Run as root: sudo $0"; fi
 
-check_gpu_ready || die "GPU not ready"
+require_cmd lspci
 
-VENDOR=$(cat /sys/bus/pci/devices/$PF_ADDR/vendor)
-DEVICE=$(cat /sys/bus/pci/devices/$PF_ADDR/device)
+if [ -z "$PF_ADDR" ]; then
+    PF_ADDR=$(detect_pf_addr) \
+        || die "Could not auto-detect an SR-IOV capable Intel GPU — set PF_ADDR=<domain:bus:dev.func>"
+    log "Auto-detected GPU PF: $PF_ADDR"
+fi
+
+check_gpu_ready || die "GPU not ready"
 
 case "${1:-setup}" in
     setup)   setup_sriov_vf ;;
     remove)  remove_sriov_vf ;;
     *)       echo "Usage: sudo $0 [setup|remove]"
              echo "  NUM_VFS=N sudo $0 setup"
+             echo "  PF_ADDR=0000:00:02.0 sudo $0 setup   # override GPU PF (default: auto-detect)"
              exit 1 ;;
 esac
 

@@ -238,7 +238,7 @@ After all pods/containers are stopped, remove the VFs and CDI specs:
 sudo baremetal/setup_sriov_vfs.sh remove
 ```
 
-This unbinds all VFs from `vfio-pci`, removes the `vfio-pci` module, and deletes all CDI spec files under `/etc/cdi/intel-igpu-tc*.yaml`. The host GPU (PF) remains available via the `i915`/`xe` driver throughout.
+This removes all VFs (sets `sriov_numvfs=0`) and deletes all CDI spec files under `/etc/cdi/intel-igpu-tc*.yaml`. The `vfio-pci` module is not explicitly unloaded. The host GPU (PF) remains available via the `i915`/`xe` driver throughout.
 
 ---
 
