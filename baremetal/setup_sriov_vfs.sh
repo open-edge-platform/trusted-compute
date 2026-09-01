@@ -39,7 +39,7 @@ resolve_xe_debugfs_dir() {
     local dir
     for dir in /sys/kernel/debug/dri/*/; do
         [ -f "${dir}name" ] || continue
-        if grep -q "$PF_ADDR" "${dir}name" 2>/dev/null; then
+        if grep -Fq "$PF_ADDR" "${dir}name" 2>/dev/null; then
             XE_DEBUGFS_DIR="${dir%/}"
             return 0
         fi
