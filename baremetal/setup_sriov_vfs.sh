@@ -26,6 +26,28 @@ log()  { echo "[INFO]  $*"; }
 warn() { echo "[WARN]  $*"; }
 die()  { echo "[ERROR] $*" >&2; exit 1; }
 
+# ── xe debugfs directory resolution ───────────────────────────────────────────
+# DRM debugfs entries under /sys/kernel/debug/dri are numbered by DRM minor
+# (e.g. "0"), not PCI BDF — the BDF is exposed via each entry's "name" file.
+XE_DEBUGFS_DIR=""
+resolve_xe_debugfs_dir() {
+    [ -n "$XE_DEBUGFS_DIR" ] && return 0
+    if [ ! -d /sys/kernel/debug/dri ]; then
+        warn "/sys/kernel/debug/dri not found — is debugfs mounted? (sudo mount -t debugfs none /sys/kernel/debug)"
+        return 1
+    fi
+    local dir
+    for dir in /sys/kernel/debug/dri/*/; do
+        [ -f "${dir}name" ] || continue
+        if grep -q "$PF_ADDR" "${dir}name" 2>/dev/null; then
+            XE_DEBUGFS_DIR="${dir%/}"
+            return 0
+        fi
+    done
+    warn "Could not find xe debugfs directory for $PF_ADDR under /sys/kernel/debug/dri"
+    return 1
+}
+
 # ── GPU readiness check ───────────────────────────────────────────────────────
 check_gpu_ready() {
     if [ ! -d "/sys/bus/pci/devices/$PF_ADDR" ]; then
@@ -55,7 +77,7 @@ check_gpu_ready() {
         echo "Cannot read sriov_totalvfs"; return 1
     fi
 
-    if [ "$drm_driver" = "xe" ] && [ ! -d "/sys/kernel/debug/dri/$PF_ADDR" ]; then
+    if [ "$drm_driver" = "xe" ] && ! resolve_xe_debugfs_dir; then
         echo "XE driver debugfs not ready"; return 1
     fi
 
@@ -194,9 +216,10 @@ setup_sriov_vf() {
     # xe: configure spare resources
     if [ "$drm_drv" == "xe" ]; then
         log "Configuring xe spare resources..."
-        echo "$GTT_SPARE_PF"     | tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/ggtt_spare     > /dev/null
-        echo "$CONTEXT_SPARE_PF" | tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/contexts_spare > /dev/null
-        echo "$DOORBELL_SPARE_PF"| tee /sys/kernel/debug/dri/$PF_ADDR/gt0/pf/doorbells_spare> /dev/null
+        resolve_xe_debugfs_dir || die "xe debugfs directory not found for $PF_ADDR"
+        echo "$GTT_SPARE_PF"     | tee "$XE_DEBUGFS_DIR/gt0/pf/ggtt_spare"     > /dev/null
+        echo "$CONTEXT_SPARE_PF" | tee "$XE_DEBUGFS_DIR/gt0/pf/contexts_spare" > /dev/null
+        echo "$DOORBELL_SPARE_PF"| tee "$XE_DEBUGFS_DIR/gt0/pf/doorbells_spare"> /dev/null
     fi
 
     modprobe i2c-algo-bit 2>/dev/null || warn "Could not load i2c-algo-bit"
@@ -218,7 +241,8 @@ setup_sriov_vf() {
         iov_path="/sys/class/drm/card0/iov"
         if [ -d "/sys/class/drm/card0/prelim_iov" ]; then iov_path="/sys/class/drm/card0/prelim_iov"; fi
     elif [ "$drm_drv" == "xe" ]; then
-        iov_path="/sys/kernel/debug/dri/$PF_ADDR"
+        resolve_xe_debugfs_dir || die "xe debugfs directory not found for $PF_ADDR"
+        iov_path="$XE_DEBUGFS_DIR"
         xe_gt_first=1
     fi
 

@@ -70,7 +70,11 @@ Expected output includes a non-zero `sriov_totalvfs` and the SR-IOV kernel comma
 
 ## 3. Create SR-IOV Virtual Functions
 
-[`setup_sriov_vfs.sh`](../baremetal/setup_sriov_vfs.sh) creates VFs, binds a subset to vfio-pci, and generates CDI device specs under `/etc/cdi/`.
+[`setup_sriov_vfs.sh`](../baremetal/setup_sriov_vfs.sh) creates VFs, binds all of them to vfio-pci, and generates CDI device specs under `/etc/cdi/`.
+
+```bash
+cd baremetal
+```
 
 **Create all supported VFs and bind all to vfio-pci:**
 
@@ -231,7 +235,7 @@ docker compose down
 After all pods/containers are stopped, remove the VFs and CDI specs:
 
 ```bash
-sudo ./setup_sriov_vfs.sh remove
+sudo baremetal/setup_sriov_vfs.sh remove
 ```
 
 This unbinds all VFs from `vfio-pci`, removes the `vfio-pci` module, and deletes all CDI spec files under `/etc/cdi/intel-igpu-tc*.yaml`. The host GPU (PF) remains available via the `i915`/`xe` driver throughout.
