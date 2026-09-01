@@ -284,7 +284,10 @@ setup_sriov_vf() {
         > /dev/null 2>&1 || true
 
     echo '0' | tee "/sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe" > /dev/null
-    echo "$num_vfs" | tee "$CARD_PATH/device/sriov_numvfs" > /dev/null
+    if ! echo "$num_vfs" > "$CARD_PATH/device/sriov_numvfs" 2>/dev/null; then
+        echo '1' | tee "/sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe" > /dev/null
+        die "Failed to create $num_vfs VFs on $PF_ADDR. The loaded '$drm_drv' driver may not support SR-IOV PF mode (check 'dmesg | grep -i sriov'); an SR-IOV capable i915/xe driver is required."
+    fi
     echo '1' | tee "/sys/bus/pci/devices/$PF_ADDR/sriov_drivers_autoprobe" > /dev/null
 
     # Set per-VF scheduling for all created VFs.
