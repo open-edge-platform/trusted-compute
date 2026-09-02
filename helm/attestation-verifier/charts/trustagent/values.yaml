@@ -53,7 +53,7 @@ config:
     /opt/verifier/hvs/<ATTESTATION_VERIFIER_VERSION>/config/trusted-keys/privacy-ca.key
     /opt/verifier/hvs/<ATTESTATION_VERIFIER_VERSION>/config/trusted-keys/tag-ca.key
     /opt/verifier/hvs/<ATTESTATION_VERIFIER_VERSION>/config/tls.key
-    /opt/kata/bin/containerd-shim-kata-v2
+    /opt/kata/runtime-rs/bin/containerd-shim-kata-v2
     /opt/kata/bin/qemu-system-x86_64
     /opt/kata/libexec/virtiofsd
     /opt/kata/share/defaults/kata-containers/runtime-rs/configuration.toml
