@@ -203,7 +203,7 @@ install_oras() {
         return
     fi
 
-    local arch tmp_dir url checksum_url tarball checksums_file
+    local arch tmp_dir url checksum_url tarball archive_path checksums_file
     case "$(uname -m)" in
         x86_64) arch="amd64" ;;
         aarch64|arm64) arch="arm64" ;;
@@ -214,15 +214,16 @@ install_oras() {
             ;;
     esac
 
+    tmp_dir="$(mktemp -d)"
     tarball="oras_${ORAS_VERSION}_linux_${arch}.tar.gz"
+    archive_path="$tmp_dir/$tarball"
     url="https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/${tarball}"
     checksum_url="https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_checksums.txt"
-    tmp_dir="$(mktemp -d)"
     checksums_file="$tmp_dir/oras_checksums.txt"
     trap 'rm -rf "$tmp_dir"; trap - RETURN' RETURN
 
     echo "Installing oras ${ORAS_VERSION} (${arch})..."
-    if ! curl -fsSL "$url" -o "$tmp_dir/oras.tar.gz"; then
+    if ! curl -fsSL "$url" -o "$archive_path"; then
         echo "WARNING: failed to download oras - install manually:"
         echo "         https://oras.land/docs/installation"
         return
@@ -246,7 +247,7 @@ install_oras() {
         return
     fi
 
-    tar -zxf "$tmp_dir/oras.tar.gz" -C "$tmp_dir" oras
+    tar -zxf "$archive_path" -C "$tmp_dir" oras
     sudo_cmd install -m 0755 "$tmp_dir/oras" /usr/local/bin/oras
 }
 
