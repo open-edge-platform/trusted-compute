@@ -29,7 +29,8 @@ BUILD_DIR="/tmp/npu-reader-build"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends ca-certificates curl binutils && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-pip install --no-cache-dir pyinstaller
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+pip install --no-cache-dir --require-hashes -r "${SCRIPT_DIR}/requirements-build.txt"
 
 mkdir -p "${BUILD_DIR}" "${NPU_OUT_DIR}"
 
