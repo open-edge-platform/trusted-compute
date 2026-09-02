@@ -624,16 +624,13 @@ jobs:
           echo "Starting VM..."
           sudo virsh start test-vm
 
-          echo "Waiting for VM boot (120s for cloud-init first boot)..."
-          sleep 120
-
-          echo "Logging into VM console and collecting /etc/os-release"
+          echo "Waiting for VM console login..."
           expect << 'EOF'
-            set timeout 60
+            set timeout 10
             set logged_in 0
+            set deadline [expr {[clock seconds] + 300}]
             spawn sudo virsh console test-vm
 
-            # Attempt 1
             send -- "\r"
             expect {
               -re {login: ?$} {
@@ -644,41 +641,51 @@ jobs:
                 send -- "$env(VM_PASSWORD)\r"
                 exp_continue
               }
-              -re {Login incorrect} {}
+              -re {Login incorrect} {
+                after 2000
+                send -- "\r"
+                exp_continue
+              }
               -re {[#$] $} {
                 set logged_in 1
               }
-              timeout {}
+              timeout {
+                if {[clock seconds] >= $deadline} {
+                  puts "Timed out after 300 seconds waiting for successful console login"
+                  exit 1
+                }
+                send -- "\r"
+                exp_continue
+              }
               eof { puts "Console closed unexpectedly"; exit 1 }
             }
 
-            # Attempt 2 (final)
             if {$logged_in == 0} {
-              after 8000
-              send -- "\r"
-              expect {
-                -re {login: ?$} {
-                  send -- "$env(VM_USERNAME)\r"
-                  exp_continue
-                }
-                -re {Password: ?$} {
-                  send -- "$env(VM_PASSWORD)\r"
-                  exp_continue
-                }
-                -re {Login incorrect} {}
-                -re {[#$] $} {
-                  set logged_in 1
-                }
-                timeout {}
-                eof { puts "Console closed unexpectedly"; exit 1 }
-              }
-            }
-
-            if {$logged_in == 0} {
-              puts "Timed out waiting for successful console login"
+              puts "Timed out after 300 seconds waiting for successful console login"
               exit 1
             }
 
+            set timeout 300
+            send -- "cloud-init status --wait; printf 'CLOUD_INIT_RC=%s\\n' \"\$?\"\r"
+
+            expect {
+              -re {CLOUD_INIT_RC=([0-9]+)} {
+                if {$expect_out(1,string) != 0} {
+                  puts "cloud-init failed with status $expect_out(1,string)"
+                  exit 1
+                }
+              }
+              timeout { puts "Timed out waiting for cloud-init to complete"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            expect {
+              -re {[#$] $} {}
+              timeout { puts "Timed out waiting for shell prompt after cloud-init"; exit 1 }
+              eof { puts "Console closed unexpectedly"; exit 1 }
+            }
+
+            set timeout 60
             send -- "cat /etc/os-release\r"
 
             expect {
@@ -844,13 +851,5 @@ jobs:
         with:
           name: ${{ matrix.vm_logs_artifact }}
           path: vm-logs
-          if-no-files-found: warn
-
-      - name: Upload Robot Framework results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: ${{ matrix.robot_results_artifact }}
-          path: vm-logs/robot-results
           if-no-files-found: warn
 
