@@ -52,6 +52,16 @@ check_dir_exists() {
     [ -d "$dir" ] || { echo "ERROR: Directory $dir not found"; exit 1; }
 }
 
+ensure_kata_repo() {
+	if [ -d "${KATA_CONTAINERS_DIR}" ]; then
+        echo "INFO: Removing existing Kata Containers repo at ${KATA_CONTAINERS_DIR}"
+        rm -rf "${KATA_CONTAINERS_DIR}"
+	fi
+
+    echo "INFO: Cloning Kata Containers repo (${KATA_CONTAINERS_TAG})"
+    git clone --single-branch --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}" "${KATA_CONTAINERS_DIR}"
+}
+
 #check if edge microvisor source directory exists
 if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
 	echo "WARR: Edge microvisor source directory not found"
@@ -105,11 +115,11 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-# Enable virtio_mem in configuration.toml
-echo "INFO: Enabling virtio_mem in configuration.toml"
-for KATA_CONFIG_FILE in \
-    "${KATA_CONFIG_DIR}/configuration.toml" \
-    "${KATA_CONFIG_DIR}/configuration-qemu.toml"; do
+# Kata 4.1.0 ships amd64 qemu defaults under runtime-rs; patch the real target
+# file directly so the configuration.toml symlink stays intact.
+KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/runtime-rs/configuration-qemu-runtime-rs.toml"
+echo "INFO: Enabling virtio_mem in ${KATA_CONFIG_FILE}"
+
 if [ -f "${KATA_CONFIG_FILE}" ]; then
     sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
     if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
@@ -155,17 +165,16 @@ else
     echo "ERROR: ${KATA_CONFIG_FILE} not found"
     exit 1
 fi
-done
 
 # configuration-qemu.toml is no longer shipped, so point configuration.toml
 # straight at the runtime-rs qemu config patched above.
 ln -sf "runtime-rs/configuration-qemu-runtime-rs.toml" "${KATA_CONFIG_DIR}/configuration.toml"
 
 #build kata binary and copy to artifacts
-"${BUILD_DIR}/build-kata-binary.sh"
-cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
+#"${BUILD_DIR}/build-kata-binary.sh"
+#cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+#cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
+#rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
@@ -207,12 +216,7 @@ echo "INFO: tc-docker-deploy binary installed to ${KATA_ARTIFACT_DIR}/opt/kata/b
 echo "INFO: Retar the artifacts"
 tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 
-#remove kata repo if it exists
-[ -d "${KATA_CONTAINERS_DIR}" ] && rm -rf "${KATA_CONTAINERS_DIR}"
-
-#clone the kata containers repo
-echo "INFO: Cloning Kata Containers repo"
-git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
+ensure_kata_repo
 
 #patch the kata-deploy Dockerfile to add tc-docker-deploy support
 "${BUILD_DIR}/patch-dockerfile.sh" "${KATA_DOCKERFILE}"
