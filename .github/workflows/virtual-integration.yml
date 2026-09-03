@@ -571,19 +571,21 @@ jobs:
     permissions:
       actions: read
       contents: read
-    needs: [prepare-installation-package]
+    needs: [pre-checks, prepare-installation-package]
     name: Run Golden Suite Trusted Compute Tests for baremetal package (${{ matrix.deployment }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - deployment: k3s
-            runner: ubuntu-24.04-8core-32GB
+            runner: ${{ (contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload') || contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm')) && 'ubuntu-24.04-8core-32GB' || 'ubuntu-latest' }}
+            robot_exclude_tag: ${{ (!contains(needs.pre-checks.outputs.changed_projects, 'trusted-workload') && !contains(needs.pre-checks.outputs.changed_projects, 'trusted-vm')) && 'sample' || '' }}
             robot_test_file: tests/golden_suite_install_tests.robot
             vm_logs_artifact: vm-boot-logs-k3s
             robot_results_artifact: robot-results-k3s
           - deployment: docker
             runner: ubuntu-latest
+            robot_exclude_tag: ''
             robot_test_file: tests/golden_suite_install_tests_docker.robot
             vm_logs_artifact: vm-boot-logs-docker
             robot_results_artifact: robot-results-docker
@@ -839,6 +841,8 @@ jobs:
           python3 -m pip install --no-deps --require-hashes -r /tmp/robot-requirements.txt
 
       - name: Run Robot Framework golden suite
+        env:
+          ROBOT_EXCLUDE_TAG: ${{ matrix.robot_exclude_tag }}
         run: |
           set -euo pipefail
 
@@ -857,8 +861,15 @@ jobs:
             exit 1
           fi
 
+          robot_options=()
+          if [[ -n "$ROBOT_EXCLUDE_TAG" ]]; then
+            robot_options+=(--exclude "$ROBOT_EXCLUDE_TAG")
+            echo "Skipping Robot tests tagged: $ROBOT_EXCLUDE_TAG"
+          fi
+
           echo "Running Robot Framework golden suite (${{ matrix.deployment }}) against DUT at $DUT_IP"
           robot \
+            "${robot_options[@]}" \
             --outputdir vm-logs/robot-results \
             --variable DUT_HOST:"$DUT_IP" \
             --variable DUT_USERNAME:user \
