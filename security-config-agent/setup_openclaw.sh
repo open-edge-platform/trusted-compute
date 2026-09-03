@@ -14,7 +14,7 @@ MODEL_CONFIG_FILE="$SRC_DIR/model-configs.conf"
 COMPOSE_FILE="$SRC_DIR/docker-compose.yml"
 ENV_FILE="$SRC_DIR/.env"
 
-OPENCLAW_VERSION="2026.7.1-2"
+OPENCLAW_VERSION="2026.8.2"
 OPENCLAW_IMAGE=""
 SECURITY_NODE_IMAGE="openclaw-security-node:local"
 REDEPLOY_ONLY=0
@@ -279,7 +279,10 @@ gateway_section() {
                 port: $port,
                 bind: "lan",
                 tailscale: { mode: "off", resetOnExit: false },
-                nodes: { denyCommands: $ARGS.positional }
+                nodes: {
+                    allowCommands: ["system.execApprovals.get", "system.execApprovals.set"],
+                    denyCommands: $ARGS.positional
+                }
             }
         }' \
         --args "${GATEWAY_DENY_COMMANDS[@]}"
@@ -407,6 +410,35 @@ approve_security_node() {
     exit 1
 }
 
+approve_security_node_commands() {
+    local deadline=$((SECONDS + 90)) request_id="" nodes=""
+    echo "Checking the security node command approval..."
+    while (( SECONDS < deadline )); do
+        nodes=$(compose exec -T openclaw-gateway \
+            node dist/index.js nodes status --json 2>/dev/null || true)
+        if jq -e --arg name "$SECURITY_NODE_NAME" \
+            '.nodes | any(.displayName == $name and .approvalState == "approved")' \
+            >/dev/null 2>&1 <<<"$nodes"; then
+            echo "Security node commands are already approved."
+            return
+        fi
+        request_id=$(jq -r --arg name "$SECURITY_NODE_NAME" \
+            '.nodes[]? | select(.displayName == $name) | .pendingRequestId // empty' \
+            2>/dev/null <<<"$nodes" || true)
+        if [[ -n "$request_id" ]]; then
+            echo "Approving security node command request ${request_id}..."
+            compose exec -T openclaw-gateway \
+                node dist/index.js nodes approve "$request_id"
+            compose restart security-node
+            return
+        fi
+        sleep 3
+    done
+    echo "ERROR: no command approval request received from '$SECURITY_NODE_NAME'." >&2
+    echo "       Check: docker compose -f $COMPOSE_FILE logs security-node" >&2
+    exit 1
+}
+
 wait_for_security_node() {
     local deadline=$((SECONDS + 90)) nodes=""
     echo "Waiting for the security node to connect..."
@@ -461,9 +493,15 @@ main() {
     prepare_images
     configure_openclaw
 
+    if [[ -n "$(compose ps -q openclaw-gateway)" ]]; then
+        echo "Restarting the gateway to apply configuration updates..."
+        compose restart openclaw-gateway
+    fi
     compose up -d ovms openclaw-gateway security-node
     wait_for_ovms
     approve_security_node
+    wait_for_security_node
+    approve_security_node_commands
     wait_for_security_node
     configure_node_approvals
     compose restart openclaw-gateway security-node
