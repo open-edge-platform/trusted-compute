@@ -50,6 +50,8 @@ services:
       OPENCLAW_WORKSPACE_DIR: /home/node/.openclaw/workspace
       OPENCLAW_GATEWAY_PORT: "18789"
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1},ovms,openclaw-gateway,security-node"
+      no_proxy: "${no_proxy:-localhost,127.0.0.1},ovms,openclaw-gateway,security-node"
     volumes: &gateway-volumes
       - "${GATEWAY_CONFIG_DIR}:/home/node/.openclaw"
       - "${GATEWAY_WORKSPACE_DIR}:/home/node/.openclaw/workspace"
@@ -112,6 +114,7 @@ services:
       OPENCLAW_STATE_DIR: /root/.openclaw
       OPENCLAW_CONFIG_PATH: /root/.openclaw/openclaw.json
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      OPENCLAW_ALLOW_INSECURE_PRIVATE_WS: "1"
     volumes:
       - "${SECURITY_NODE_STATE_DIR}:/root/.openclaw"
       - "./skills:/root/.openclaw/skills:ro"
@@ -122,6 +125,8 @@ services:
     tmpfs:
       - /tmp:rw,nosuid,nodev
       - /run:rw,nosuid,nodev
+    healthcheck:
+      disable: true
     security_opt:
       - no-new-privileges:true
     command:

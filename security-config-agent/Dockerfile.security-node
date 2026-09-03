@@ -1,7 +1,7 @@
 ARG OPENCLAW_IMAGE
-FROM ${OPENCLAW_IMAGE}
+FROM ghcr.io/oras-project/oras:v1.2.0@sha256:0087224dd0decc354b5b0689068fbbc40cd5dc3dbf65fcb3868dfbd363dc790b AS oras-cli
 
-ARG ORAS_VERSION="1.2.0"
+FROM ${OPENCLAW_IMAGE}
 
 USER root
 
@@ -19,22 +19,7 @@ RUN apt-get update && \
       util-linux && \
     rm -rf /var/lib/apt/lists/*
 
-RUN set -eu; \
-    case "$(dpkg --print-architecture)" in \
-      amd64) oras_arch="amd64" ;; \
-      arm64) oras_arch="arm64" ;; \
-      *) echo "Unsupported oras architecture: $(dpkg --print-architecture)" >&2; exit 1 ;; \
-    esac; \
-    tarball="oras_${ORAS_VERSION}_linux_${oras_arch}.tar.gz"; \
-    base_url="https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}"; \
-    curl -fsSL "${base_url}/${tarball}" -o "/tmp/${tarball}"; \
-    curl -fsSL "${base_url}/oras_${ORAS_VERSION}_checksums.txt" -o /tmp/oras-checksums.txt; \
-    grep -F "  ${tarball}" /tmp/oras-checksums.txt >/tmp/oras.sha256; \
-    cd /tmp; \
-    sha256sum -c oras.sha256; \
-    tar -xzf "$tarball" oras; \
-    install -m 0755 oras /usr/local/bin/oras; \
-    rm -f "$tarball" oras oras.sha256 oras-checksums.txt
+COPY --from=oras-cli /bin/oras /usr/local/bin/oras
 
 RUN printf 'root ALL=(ALL:ALL) NOPASSWD: ALL\n' >/etc/sudoers.d/openclaw-security-node && \
     chmod 0440 /etc/sudoers.d/openclaw-security-node
