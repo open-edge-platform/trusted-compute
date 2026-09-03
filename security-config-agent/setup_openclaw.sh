@@ -33,6 +33,8 @@ GATEWAY_PORT=18789
 SECURITY_NODE_NAME="security-node"
 AGENT_ID="main"
 AGENT_WORKSPACE="/home/node/.openclaw/workspace"
+SKILLS_SOURCE_DIR="$SRC_DIR/skills"
+SKILLS_JSON=""
 
 MODEL_TIMEOUT_SECONDS=600
 MODEL_CONTEXT_TOKENS=""
@@ -173,6 +175,28 @@ load_model_config() {
     fi
 }
 
+load_skills() {
+    local file name
+    local -a names=()
+
+    for file in "$SKILLS_SOURCE_DIR"/*/SKILL.md; do
+        [[ -f "$file" ]] || continue
+        name="$(awk '/^name:[[:space:]]*/ { sub(/^name:[[:space:]]*/, ""); print; exit }' "$file")"
+        if [[ ! "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+            echo "ERROR: invalid or missing skill name in $file" >&2
+            exit 1
+        fi
+        names+=("$name")
+    done
+
+    if [[ ${#names[@]} -eq 0 ]]; then
+        echo "ERROR: no skills found under $SKILLS_SOURCE_DIR" >&2
+        exit 1
+    fi
+
+    SKILLS_JSON="$(printf '%s\n' "${names[@]}" | jq -R . | jq -s .)"
+}
+
 require_commands() {
     local command
     for command in docker curl jq openssl; do
@@ -236,6 +260,14 @@ EOF
     chmod 600 "$ENV_FILE"
 }
 
+install_skills() {
+    local destination="$STATE_ROOT/workspace/skills"
+
+    echo "Installing OpenClaw skills into $destination..."
+    mkdir -p "$destination"
+    cp -R "$SKILLS_SOURCE_DIR/." "$destination/"
+}
+
 prepare_images() {
     echo "Pulling the official OpenClaw and OVMS images..."
     compose pull openclaw-gateway openclaw-cli ovms
@@ -251,6 +283,7 @@ agents_section() {
         --arg workspace "$AGENT_WORKSPACE" \
         --arg ref "$MODEL_REF" \
         --arg alias "$MODEL_NAME" \
+        --argjson skills "$SKILLS_JSON" \
         --argjson temperature "$MODEL_TEMPERATURE" \
         '{
             agents: {
@@ -264,7 +297,7 @@ agents_section() {
                         }
                     }
                 },
-                list: [{ id: $id, workspace: $workspace }]
+                list: [{ id: $id, workspace: $workspace, skills: $skills }]
             }
         }'
 }
@@ -458,6 +491,32 @@ wait_for_security_node() {
     exit 1
 }
 
+verify_skills_available() {
+    local report missing
+
+    echo "Verifying OpenClaw skills for agent '$AGENT_ID'..."
+    if ! report=$(compose exec -T openclaw-gateway \
+        node dist/index.js skills list --agent "$AGENT_ID" --eligible --json); then
+        echo "ERROR: failed to query the OpenClaw skill inventory." >&2
+        exit 1
+    fi
+
+    missing=$(jq -n \
+        --argjson expected "$SKILLS_JSON" \
+        --argjson report "$report" \
+        '$expected - ($report.skills | map(.name))')
+    if ! jq -e 'length == 0' >/dev/null <<<"$missing"; then
+        echo "ERROR: configured skills are missing or ineligible:" >&2
+        jq -r '.[] | "  - \(.)"' <<<"$missing" >&2
+        echo >&2
+        compose exec -T openclaw-gateway \
+            node dist/index.js skills list --agent "$AGENT_ID" --verbose || true
+        exit 1
+    fi
+
+    echo "All configured skills are available: $(jq -r 'join(", ")' <<<"$SKILLS_JSON")"
+}
+
 configure_node_approvals() {
     echo "Applying cautious execution approvals to the security node..."
     compose exec -T openclaw-gateway node dist/index.js approvals set \
@@ -488,7 +547,9 @@ main() {
     parse_args "$@"
     load_model_config
     require_commands
+    load_skills
     write_environment
+    install_skills
     print_summary
     prepare_images
     configure_openclaw
@@ -505,6 +566,8 @@ main() {
     wait_for_security_node
     configure_node_approvals
     compose restart openclaw-gateway security-node
+    wait_for_security_node
+    verify_skills_available
 
     echo
     echo "Deployment complete."
