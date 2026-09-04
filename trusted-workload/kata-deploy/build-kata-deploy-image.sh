@@ -157,6 +157,10 @@ else
 fi
 done
 
+# configuration-qemu.toml is no longer shipped, so point configuration.toml
+# straight at the runtime-rs qemu config patched above.
+ln -sf "runtime-rs/configuration-qemu-runtime-rs.toml" "${KATA_CONFIG_DIR}/configuration.toml"
+
 #build kata binary and copy to artifacts
 "${BUILD_DIR}/build-kata-binary.sh"
 cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
