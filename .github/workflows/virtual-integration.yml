@@ -74,7 +74,7 @@ jobs:
           git cat-file -e "${head_sha}^{commit}"
 
           workflow_changed=false
-          if git diff --name-only "$base_sha" "$head_sha" -- \
+          if git diff --name-only "$base_sha...$head_sha" -- \
             .github/workflows/virtual-integration.yml | grep -Fxq '.github/workflows/virtual-integration.yml'; then
             workflow_changed=true
           fi
