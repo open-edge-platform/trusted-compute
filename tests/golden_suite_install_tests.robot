@@ -379,7 +379,7 @@ Deploy Sample Trusted Workload On DUT
     ...    ${SPACE}${SPACE}name: nginx-default
     ...    ${SPACE}${SPACE}namespace: nginx-test
     ...    spec:
-    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu
+    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu-runtime-rs
     ...    ${SPACE}${SPACE}containers:
     ...    ${SPACE}${SPACE}- name: nginx
     ...    ${SPACE}${SPACE}${SPACE}${SPACE}image: nginx:1.27.0
