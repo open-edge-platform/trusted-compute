@@ -151,6 +151,41 @@ stop_tc_docker_deploy() {
         || print_warning "Failed to stop kata-deploy via docker compose"
 }
 
+remove_docker_kata_runtime() {
+    local daemon_config="/etc/docker/daemon.json"
+    if [[ ! -f "$daemon_config" ]]; then
+        print_warning "Docker daemon config not found, skipping Kata runtime removal"
+        return
+    fi
+
+    print_status "Removing Kata runtime from Docker configuration..."
+    python3 - "$daemon_config" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as daemon_file:
+    config = json.load(daemon_file)
+
+runtimes = config.get("runtimes")
+if isinstance(runtimes, dict):
+    runtimes.pop("kata", None)
+    if not runtimes:
+        config.pop("runtimes", None)
+
+temporary_path = f"{path}.tmp"
+with open(temporary_path, "w", encoding="utf-8") as daemon_file:
+    json.dump(config, daemon_file, indent=2)
+    daemon_file.write("\n")
+os.replace(temporary_path, path)
+PY
+
+    systemctl restart docker \
+        && print_status "Docker restarted after removing the Kata runtime" \
+        || print_warning "Failed to restart Docker after removing the Kata runtime"
+}
+
 # Function to remove users/groups
 remove_tc_users_groups() {
     print_status "Removing trusted compute users and groups..."
@@ -189,6 +224,7 @@ print_tc_docker_uninstall_summary() {
     print_status "Uninstallation completed."
     print_status "Summary of removed components (TC uninstallation for Docker):"
     echo "  - kata-deploy container stopped and removed"
+    echo "  - Kata runtime removed from Docker configuration"
 }
 
 # Pre-flight check for K3s installation
@@ -399,6 +435,7 @@ uninstall_tc_docker() {
     check_tc_docker_installed
     print_status "Starting TC uninstallation for Docker..."
     stop_tc_docker_deploy
+    remove_docker_kata_runtime
     print_tc_docker_uninstall_summary
 }
 
