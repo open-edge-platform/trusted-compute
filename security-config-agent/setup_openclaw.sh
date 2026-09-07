@@ -311,10 +311,12 @@ gateway_section() {
                 auth: { mode: "token" },
                 port: $port,
                 bind: "lan",
-                tailscale: { mode: "off", resetOnExit: false },
+                tailscale: { mode: "off" },
                 nodes: {
-                    allowCommands: ["system.execApprovals.get", "system.execApprovals.set"],
-                    denyCommands: $ARGS.positional
+                    commands: {
+                        allow: ["system.execApprovals.get", "system.execApprovals.set"],
+                        deny: $ARGS.positional
+                    }
                 }
             }
         }' \

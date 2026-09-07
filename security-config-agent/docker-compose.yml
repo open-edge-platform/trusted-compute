@@ -115,6 +115,7 @@ services:
       OPENCLAW_CONFIG_PATH: /root/.openclaw/openclaw.json
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
       OPENCLAW_ALLOW_INSECURE_PRIVATE_WS: "1"
+      XDG_CACHE_HOME: /tmp
     volumes:
       - "${SECURITY_NODE_STATE_DIR}:/root/.openclaw"
       - "./skills:/root/.openclaw/skills:ro"
