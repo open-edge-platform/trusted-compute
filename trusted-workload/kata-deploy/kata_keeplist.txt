@@ -23,6 +23,9 @@ share/defaults root:bm-agents 750
 share/defaults/kata-containers root:bm-agents 750
 share/defaults/kata-containers/configuration-qemu.toml root:bm-agents 640
 share/defaults/kata-containers/configuration.toml root:bm-agents 640
+share/defaults/kata-containers/runtime-rs root:bm-agents 750
+share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml root:bm-agents 640
+share/defaults/kata-containers/runtime-rs/configuration.toml root:bm-agents 640
 share/kata-containers root:bm-agents 750
 share/kata-containers/trusted-vm.img root:bm-agents 640
 share/kata-containers/root_hash_confidential.txt root:root 600
@@ -35,5 +38,8 @@ share/kata-qemu/qemu/kvmvapic.bin root:bm-agents 640
 share/kata-qemu/qemu/linuxboot_dma.bin root:bm-agents 640
 share/kata-qemu/qemu/bios-256k.bin root:bm-agents 640
 share/kata-qemu/qemu/efi-virtio.rom root:bm-agents 640
+runtime-rs root:bm-agents 750
+runtime-rs/bin root:bm-agents 750
+runtime-rs/bin/containerd-shim-kata-v2 root:bm-agents 740
 VERSION root:root 600
 versions.yaml root:root 600

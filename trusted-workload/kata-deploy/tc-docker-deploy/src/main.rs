@@ -16,9 +16,9 @@ const TARBALLS_DIR: &str = "/opt/kata-artifacts/tarballs";
 const TAR_PREFIX: &str = "opt/kata";
 const TARBALL_ABS_PREFIX: &str = "/opt/kata";
 const KATA_DEST: &str = "/host/opt/kata";
-const SHIM_SOURCE: &str = "/host/opt/kata/bin/containerd-shim-kata-v2";
+const SHIM_SOURCE: &str = "/host/opt/kata/runtime-rs/bin/containerd-shim-kata-v2";
 const SHIM_DEST: &str = "/host/usr/bin/containerd-shim-kata-v2";
-const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/configuration.toml";
+const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/runtime-rs/configuration.toml";
 const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
 const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
 

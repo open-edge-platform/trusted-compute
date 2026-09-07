@@ -494,8 +494,8 @@ jobs:
 
           kd_cid="$(sudo docker create "$kd_image_ref")"
 
-          #In 3.32 config files live inside the compressed kata-static tarball.
-          # Copy it out, patch the configs, repack, and copy it back.
+          # In 4.1.0 config files live inside the compressed kata-static tarball.
+          # Copy it out, patch the runtime-rs config, repack, and copy it back.
           KD_TARBALLS_WORKDIR="$WORKDIR/kata-tarballs"
           KD_EXTRACT_DIR="$WORKDIR/kata-extract"
 
@@ -507,24 +507,20 @@ jobs:
           mkdir -p "$KD_EXTRACT_DIR"
           sudo tar --zstd -xf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR"
 
-          for KD_CFG_REL in \
-            "opt/kata/share/defaults/kata-containers/configuration-qemu.toml" \
-            "opt/kata/share/defaults/kata-containers/configuration.toml"; do
-            KD_CFG_HOST="$KD_EXTRACT_DIR/$KD_CFG_REL"
-            sudo test -f "$KD_CFG_HOST" || continue
+          KD_CFG_HOST="$KD_EXTRACT_DIR/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
+          sudo test -f "$KD_CFG_HOST"
 
-            # Avoid verbose guest boot logging, which can exceed the CRI sandbox deadline in nested VMs.
-            sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)true/\1false/' "$KD_CFG_HOST"
-            sudo grep -Eq '^\s*enable_debug\s*=\s*false' "$KD_CFG_HOST"
+          # Avoid verbose guest boot logging, which can exceed the CRI sandbox deadline in nested VMs.
+          sudo sed -i -E 's/^(\s*enable_debug\s*=\s*)true/\1false/' "$KD_CFG_HOST"
+          sudo grep -Eq '^\s*enable_debug\s*=\s*false' "$KD_CFG_HOST"
 
-            # Increase dial and container creation timeouts for nested VMs on small runners.
-            sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
-            sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
+          # Increase dial and container creation timeouts for nested VMs on small runners.
+          sudo sed -i -E 's/^#?(\s*dial_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
+          sudo sed -i -E 's/^#?(\s*create_container_timeout\s*=\s*)[0-9]+/\1900/' "$KD_CFG_HOST"
 
-            # Increase kata vCPU count from the default value.
-            sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
-            sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
-          done
+          # Increase kata vCPU count from the default value.
+          sudo sed -i -E 's/^#?(\s*default_vcpus\s*=\s*)[0-9]+/\14/' "$KD_CFG_HOST"
+          sudo grep -E 'dial_timeout|create_container_timeout|default_vcpus' "$KD_CFG_HOST"
 
           sudo tar --zstd -cf "$KD_TARBALL_HOST" -C "$KD_EXTRACT_DIR" .
           sudo docker cp "$KD_TARBALL_HOST" "$kd_cid:/opt/kata-artifacts/tarballs/$KD_TARBALL_BASENAME"
