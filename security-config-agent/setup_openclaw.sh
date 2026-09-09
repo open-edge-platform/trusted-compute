@@ -35,6 +35,13 @@ AGENT_ID="main"
 AGENT_WORKSPACE="/home/node/.openclaw/workspace"
 SKILLS_SOURCE_DIR="$SRC_DIR/skills"
 SKILLS_JSON=""
+NODE_EXECUTED_SKILLS=(
+    boot-guard
+    disk-encryption
+    secure-boot
+    tme
+    trusted-compute-install
+)
 
 MODEL_TIMEOUT_SECONDS=600
 MODEL_CONTEXT_TOKENS=""
@@ -260,12 +267,44 @@ EOF
     chmod 600 "$ENV_FILE"
 }
 
+enable_installed_node_skill() {
+    local file="$1" metadata_start metadata_end metadata temp line
+
+    metadata_start=$(grep -n -m1 '^metadata:[[:space:]]*$' "$file" | cut -d: -f1)
+    metadata_end=$(awk -v start="$metadata_start" 'NR > start && /^---$/ { print NR; exit }' "$file")
+    if [[ -z "$metadata_start" || -z "$metadata_end" ]]; then
+        echo "ERROR: invalid metadata frontmatter in $file" >&2
+        exit 1
+    fi
+
+    metadata=$(sed -n "$((metadata_start + 1)),$((metadata_end - 1))p" "$file")
+    if ! metadata=$(jq -e '.openclaw.always = true' <<<"$metadata"); then
+        echo "ERROR: invalid OpenClaw metadata in $file" >&2
+        exit 1
+    fi
+
+    temp=$(mktemp "${file}.XXXXXX")
+    {
+        head -n "$metadata_start" "$file"
+        while IFS= read -r line; do
+            printf '  %s\n' "$line"
+        done <<<"$metadata"
+        tail -n "+$metadata_end" "$file"
+    } >"$temp"
+    chmod --reference="$file" "$temp"
+    mv "$temp" "$file"
+}
+
 install_skills() {
-    local destination="$STATE_ROOT/workspace/skills"
+    local destination="$STATE_ROOT/workspace/skills" skill
 
     echo "Installing OpenClaw skills into $destination..."
     mkdir -p "$destination"
     cp -R "$SKILLS_SOURCE_DIR/." "$destination/"
+
+    for skill in "${NODE_EXECUTED_SKILLS[@]}"; do
+        enable_installed_node_skill "$destination/$skill/SKILL.md"
+    done
 }
 
 prepare_images() {
