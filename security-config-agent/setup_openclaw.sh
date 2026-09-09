@@ -529,7 +529,12 @@ configure_node_approvals() {
     "security": "allowlist",
     "ask": "on-miss",
     "askFallback": "deny"
-  }
+    },
+    "agents": {
+        "main": {
+            "autoAllowSkills": true
+        }
+    }
 }
 EOF
 }
