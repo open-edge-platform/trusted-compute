@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Run a Langfuse dataset as an experiment against the OpenClaw agent (via Gateway).
 
-Each dataset item's `input` is sent to `openclaw agent --json ...`, the agent's
-reply is captured, and a Langfuse trace/dataset-run-item is created linking the
-run to the dataset. Scoring is handled by the LLM-as-judge Evaluator already
-configured in the Langfuse project (it scores new dataset-run traces against
-each item's `expected_output` automatically).
+Each dataset item's `input` is sent to the Gateway's OpenAI-compatible
+`/v1/chat/completions` endpoint, the agent's reply is captured, and a Langfuse
+trace/dataset-run-item is created linking the run to the dataset. Scoring is
+handled by the LLM-as-judge Evaluator already configured in the Langfuse
+project (it scores new dataset-run traces against each item's
+`expected_output` automatically).
+
+The Gateway's chatCompletions endpoint must be enabled first:
+    openclaw config set gateway.http.endpoints.chatCompletions.enabled true --strict-json
+    openclaw gateway restart
 
 Usage:
     python3 -m venv .venv
@@ -21,8 +26,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import time
+import urllib.error
+import urllib.request
 import uuid
 from pathlib import Path
 from typing import Any
@@ -30,6 +36,7 @@ from typing import Any
 from langfuse import Langfuse
 
 OPENCLAW_CONFIG_PATH = Path.home() / ".openclaw" / "openclaw.json"
+DEFAULT_GATEWAY_PORT = 18790
 
 
 def load_langfuse_config(config_path: Path) -> dict[str, str]:
@@ -54,6 +61,21 @@ def load_langfuse_config(config_path: Path) -> dict[str, str]:
     return {"public_key": public_key, "secret_key": secret_key, "host": host}
 
 
+def load_gateway_config(config_path: Path) -> dict[str, Any]:
+    """Read the Gateway's local URL and auth credential from the OpenClaw config."""
+    with config_path.open(encoding="utf-8") as config_file:
+        config = json.load(config_file)
+
+    gateway_config = config.get("gateway", {})
+    port = gateway_config.get("port", DEFAULT_GATEWAY_PORT)
+    auth = gateway_config.get("auth", {})
+    auth_mode = auth.get("mode", "none")
+    # token/password auth both send the credential as a bearer token.
+    credential = auth.get("token") if auth_mode == "token" else auth.get("password")
+
+    return {"url": f"http://127.0.0.1:{port}", "credential": credential}
+
+
 def extract_input_text(raw_input: Any) -> str:
     """Dataset item inputs may be a plain string or a dict; find the text to send."""
     if isinstance(raw_input, str):
@@ -72,34 +94,43 @@ def run_openclaw_agent(
     agent: str,
     session_key: str,
     model: str | None,
+    gateway_url: str,
+    credential: str | None,
 ) -> dict[str, Any]:
-    # This CLI call uses the Gateway path used by the OpenClaw TUI.
-    cmd = [
-        "openclaw",
-        "agent",
-        "--agent",
-        agent,
-        "--session-key",
-        session_key,
-        "--message",
-        message,
-        "--json",
-    ]
+    # Calls the Gateway's OpenAI-compatible endpoint (same codepath as `openclaw agent`).
+    request_body = {
+        "model": f"openclaw/{agent}",
+        "messages": [{"role": "user", "content": message}],
+        "user": session_key,
+    }
+    headers = {"Content-Type": "application/json"}
+    if credential:
+        headers["Authorization"] = f"Bearer {credential}"
     if model:
-        cmd += ["--model", model]
+        headers["x-openclaw-model"] = model
 
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        raise RuntimeError(f"openclaw agent failed (exit {proc.returncode}): {proc.stderr.strip()}")
+    request = urllib.request.Request(
+        f"{gateway_url}/v1/chat/completions",
+        data=json.dumps(request_body).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    # The gateway is always loopback traffic; corporate HTTP(S)_PROXY env vars must not apply.
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open(request, timeout=600) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"openclaw gateway request failed ({exc.code}): {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"openclaw gateway request failed: {exc.reason}") from exc
 
-    # OpenClaw returns the agent reply inside result.payloads.
-    payload = json.loads(proc.stdout)
-    payloads = payload.get("result", {}).get("payloads", [])
-    text = "\n".join(p.get("text", "") for p in payloads if p.get("text"))
+    text = payload["choices"][0]["message"]["content"]
     return {"text": text, "raw": payload}
 
 
-def build_task(*, agent: str, model: str | None, run_name: str):
+def build_task(*, agent: str, model: str | None, run_name: str, gateway_url: str, credential: str | None):
     def task(*, item: Any, **_: Any) -> str:
         message = extract_input_text(item.input)
         # Isolate each dataset item so previous answers cannot affect this run.
@@ -109,6 +140,8 @@ def build_task(*, agent: str, model: str | None, run_name: str):
             agent=agent,
             session_key=session_key,
             model=model,
+            gateway_url=gateway_url,
+            credential=credential,
         )
         return outcome["text"]
 
@@ -235,27 +268,46 @@ def plot_scores(
         encoding="utf-8",
     )
 
+    metric_names = sorted(
+        {
+            name
+            for run in comparison_runs
+            for name in run.get("scores", {})
+        }
+    )
     item_count = max(
         len(values)
         for run in comparison_runs
         for values in run.get("scores", {}).values()
     )
     item_numbers = list(range(1, item_count + 1))
-    figure, axis = plt.subplots(figsize=(12, 6))
-    for run in comparison_runs:
-        for name, values in run.get("scores", {}).items():
+    figure, axes = plt.subplots(
+        len(metric_names),
+        1,
+        figsize=(14, max(4 * len(metric_names), 6)),
+        sharex=True,
+        squeeze=False,
+    )
+    for axis, name in zip(axes.flat, metric_names):
+        for run in comparison_runs:
+            values = run.get("scores", {}).get(name)
+            if values is None:
+                continue
             run_items = list(range(1, len(values) + 1))
-            label = f"{run['model']} - {name}"
-            axis.plot(run_items, values, marker="o", label=label)
-    axis.set_title("Evaluator score comparison by model")
-    axis.set_xlabel("Dataset item")
-    axis.set_ylabel("Score")
-    axis.set_xticks(item_numbers)
-    axis.grid(True, alpha=0.3)
-    axis.legend()
-    figure.tight_layout()
+            label = f"{run['model']} - {run['run_name']}"
+            axis.plot(run_items, values, marker="o", linewidth=2, label=label)
+        axis.set_title(name, loc="left", fontweight="bold")
+        axis.set_ylabel("Score")
+        axis.set_ylim(-0.05, 1.05)
+        axis.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+        axis.set_xticks(item_numbers)
+        axis.grid(True, alpha=0.3)
+        axis.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=9)
+    axes.flat[-1].set_xlabel("Dataset item")
+    figure.suptitle("Evaluator score comparison by model", fontsize=16)
+    figure.subplots_adjust(hspace=0.45, right=0.72, top=0.95)
     output_path = output_dir / "all_metrics.png"
-    figure.savefig(output_path, dpi=150)
+    figure.savefig(output_path, dpi=180, bbox_inches="tight")
     plt.close(figure)
     print(f"Score graph (all metrics): {output_path.resolve()}")
     print(f"Score comparison data: {comparison_data_path.resolve()}")
@@ -271,7 +323,17 @@ def main() -> None:
         "--config-path",
         type=Path,
         default=OPENCLAW_CONFIG_PATH,
-        help="OpenClaw config containing the langfuse-bridge keys",
+        help="OpenClaw config containing the langfuse-bridge keys and gateway settings",
+    )
+    parser.add_argument(
+        "--gateway-url",
+        default=None,
+        help="Gateway base URL (default: derived from gateway.port in the OpenClaw config)",
+    )
+    parser.add_argument(
+        "--gateway-token",
+        default=None,
+        help="Gateway auth token/password override (default: read from the OpenClaw config)",
     )
     parser.add_argument(
         "--plot-dir",
@@ -298,7 +360,22 @@ def main() -> None:
         default=2.0,
         help="Seconds between evaluator score polling attempts",
     )
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=1,
+        help="Number of times to repeat the dataset run (default: 1)",
+    )
+    parser.add_argument(
+        "--iteration-delay-seconds",
+        type=float,
+        default=0.0,
+        help="Seconds to wait between iterations",
+    )
     args = parser.parse_args()
+
+    if args.iterations < 1:
+        parser.error("--iterations must be at least 1")
 
     langfuse_config = load_langfuse_config(args.config_path)
     # The SDK uses these config values to read the dataset and write run results.
@@ -308,31 +385,50 @@ def main() -> None:
         host=langfuse_config["host"],
     )
 
+    gateway_config = load_gateway_config(args.config_path)
+    gateway_url = args.gateway_url or gateway_config["url"]
+    gateway_credential = args.gateway_token or gateway_config["credential"]
+
     # The original dataset remains unchanged; outputs are stored in a dataset run.
     dataset = langfuse.get_dataset(args.dataset_name)
     if args.limit is not None:
         dataset.items = dataset.items[: args.limit]
-    task = build_task(agent=args.agent, model=args.model, run_name=args.run_name)
 
-    # Langfuse calls task once per item and associates its return value with that item.
-    result = dataset.run_experiment(
-        name=args.run_name,
-        description="OpenClaw agent responses evaluated by the configured LLM-as-judge Evaluator",
-        task=task,
-        max_concurrency=args.max_concurrency,
-        metadata={"agent": args.agent, "model": args.model or "default"},
-    )
+    for iteration in range(1, args.iterations + 1):
+        # Each iteration gets its own run name so Langfuse keeps them as separate dataset runs.
+        run_name = args.run_name if args.iterations == 1 else f"{args.run_name}-{iteration}"
+        if args.iterations > 1:
+            print(f"\n=== Iteration {iteration}/{args.iterations}: {run_name} ===")
 
-    persisted_scores = wait_for_persisted_scores(
-        result,
-        langfuse,
-        wait_seconds=args.score_wait_seconds,
-        poll_seconds=args.score_poll_seconds,
-    )
-    print_persisted_scores(persisted_scores)
-    plot_scores(result, args.plot_dir, persisted_scores, args.model or "default")
-    # print(result.format(include_item_results=True))
-    print(f"Langfuse results: {result.dataset_run_url}")
+        task = build_task(
+            agent=args.agent,
+            model=args.model,
+            run_name=run_name,
+            gateway_url=gateway_url,
+            credential=gateway_credential,
+        )
+
+        # Langfuse calls task once per item and associates its return value with that item.
+        result = dataset.run_experiment(
+            name=run_name,
+            description="OpenClaw agent responses evaluated by the configured LLM-as-judge Evaluator",
+            task=task,
+            max_concurrency=args.max_concurrency,
+            metadata={"agent": args.agent, "model": args.model or "default"},
+        )
+
+        persisted_scores = wait_for_persisted_scores(
+            result,
+            langfuse,
+            wait_seconds=args.score_wait_seconds,
+            poll_seconds=args.score_poll_seconds,
+        )
+        print_persisted_scores(persisted_scores)
+        plot_scores(result, args.plot_dir, persisted_scores, args.model or "default")
+        print(f"Langfuse results: {result.dataset_run_url}")
+
+        if iteration < args.iterations and args.iteration_delay_seconds > 0:
+            time.sleep(args.iteration_delay_seconds)
 
 
 if __name__ == "__main__":

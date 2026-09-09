@@ -6,7 +6,7 @@ This directory contains utilities for evaluating an OpenClaw agent against a Lan
 
 - `setup_langfuse_openclaw_integration.sh` — sets up a local Langfuse stack, installs the Langfuse/OpenClaw plugin, and configures the OpenClaw CLI to talk to Langfuse.
 - `upload_dataset_to_langfuse.py` — validates a dataset JSON file and uploads it to the configured Langfuse project.
-- `run_openclaw_for_dataset.py` — runs each dataset item through the OpenClaw agent and records the result as a Langfuse dataset run.
+- `run_openclaw_for_dataset.py` — runs each dataset item through the OpenClaw agent (via the Gateway's OpenAI-compatible HTTP API) and records the result as a Langfuse dataset run.
 - `requirements.txt` — Python dependencies for the dataset runner and uploader.
 
 ## Prerequisites
@@ -23,6 +23,13 @@ Before using these tools, make sure the following are available on the host:
 - `openssl`
 
 The scripts read configuration from `~/.openclaw/openclaw.json`.
+
+`run_openclaw_for_dataset.py` calls the Gateway's `/v1/chat/completions` HTTP endpoint instead of shelling out to the `openclaw` CLI. Enable it once before running the dataset:
+
+```bash
+openclaw config set gateway.http.endpoints.chatCompletions.enabled true --strict-json
+openclaw gateway restart
+```
 
 ## Quick Start
 
@@ -158,7 +165,21 @@ Useful run options:
 - `--plot-dir`: change where score plots and comparison data are written,
 - `--limit`: run only the first N dataset items,
 - `--score-wait-seconds`: maximum time to wait for evaluator scores before plotting,
-- `--score-poll-seconds`: delay between score polling attempts.
+- `--score-poll-seconds`: delay between score polling attempts,
+- `--gateway-url`: override the Gateway base URL (default: derived from `gateway.port` in the OpenClaw config),
+- `--gateway-token`: override the Gateway auth token/password (default: read from the OpenClaw config),
+- `--iterations`: repeat the dataset run this many times (default: 1); each iteration is recorded as its own Langfuse dataset run named `<run-name>-<n>`,
+- `--iteration-delay-seconds`: pause between iterations (default: 0).
+
+Example running the dataset 5 times in a loop:
+
+```bash
+python run_openclaw_for_dataset.py \
+  --dataset-name example-dataset \
+  --run-name openclaw-baseline \
+  --agent main \
+  --iterations 5
+```
 
 ## Troubleshooting
 
