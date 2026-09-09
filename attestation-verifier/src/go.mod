@@ -1,6 +1,6 @@
 module github.com/open-edge-platform/trusted-compute/attestation-verifier/src
 
-go 1.25.7
+go 1.26.0
 
 toolchain go1.26.3
 
@@ -24,7 +24,7 @@ require (
 	github.com/nats-io/nkeys v0.4.16
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.32.1
-	github.com/onsi/gomega v1.42.1
+	github.com/onsi/gomega v1.43.0
 	github.com/pkg/errors v0.9.1
 	github.com/russellhaering/goxmldsig v1.6.1
 	github.com/sirupsen/logrus v1.10.2
@@ -34,7 +34,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.55.0
 	golang.org/x/net v0.58.0
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.23.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.6.2
 	gorm.io/gorm v1.31.2
