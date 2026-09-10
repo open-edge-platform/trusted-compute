@@ -25,6 +25,8 @@ INDEX_HTML = STATIC_DIR / "index.html"
 MAX_BODY_BYTES = 8 * 1024
 # Hosts that haven't reported in this long are dropped from the dashboard.
 STALE_AFTER_S = 300
+# Bounds untrusted "host" tag values so a client can't inflate dict-key memory.
+MAX_HOST_LEN = 128
 
 _lock = threading.Lock()
 _npu_metrics: dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
@@ -70,9 +72,12 @@ def parse_line_protocol(line: str) -> tuple[str, dict, dict] | None:
         if value.endswith("i"):
             value = value[:-1]
         try:
-            fields[key] = float(value)
+            v = float(value)
         except ValueError:
             continue
+        if v != v or v in (float("inf"), float("-inf")):  # reject NaN/Infinity: not valid JSON
+            continue
+        fields[key] = v
 
     if not fields:
         return None
@@ -86,7 +91,7 @@ def _ingest_line(line: str, now: float) -> bool:
         return False
     measurement, tags, fields = parsed
     host = tags.get("host")
-    if not host:
+    if not host or len(host) > MAX_HOST_LEN:
         return False
 
     if measurement == "npu":
@@ -100,6 +105,8 @@ def _ingest_line(line: str, now: float) -> bool:
 
     if measurement in ("gpu_engine_usage", "gpu_frequency", "gpu_power"):
         gpu_id = tags.get("gpu_id", "0")
+        if len(gpu_id) > MAX_HOST_LEN:
+            return False
         gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
         if measurement == "gpu_engine_usage" and "usage" in fields:
             gpu_entry["engines"][tags.get("engine", "unknown")] = fields["usage"]

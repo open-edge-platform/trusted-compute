@@ -26,6 +26,7 @@
     font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   }
   h1 { font-size: 1.4rem; margin: 0 0 1.5rem; }
+  .section { font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 1.5rem; }
   #empty { color: var(--muted); }
   .grid {
     display: grid;
@@ -84,7 +85,6 @@
   }
   .metrics div span { color: var(--muted); }
   .metrics div b { float: right; }
-  h1.section { margin-top: 2.5rem; }
   .gpu-card table {
     width: 100%;
     border-collapse: collapse;
@@ -129,11 +129,11 @@
 </head>
 <body>
   <h1>GPU/NPU Usage Display</h1>
-  <h1 class="section">NPU Usage Matrix</h1>
+  <h2 class="section">NPU Usage Matrix</h2>
   <p id="empty">Waiting for NPU telemetry&hellip;</p>
   <div class="grid" id="grid"></div>
 
-  <h1 class="section">GPU Usage Matrix</h1>
+  <h2 class="section">GPU Usage Matrix</h2>
   <p id="gpu-empty">Waiting for GPU telemetry&hellip;</p>
   <div class="grid" id="gpu-grid"></div>
 
