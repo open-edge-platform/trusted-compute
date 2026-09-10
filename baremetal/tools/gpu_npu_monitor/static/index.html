@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU/NPU Usage Display</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --crit: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 1.5rem; }
+  .section { font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 1.5rem; }
+  #empty { color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    transition: opacity 0.3s ease;
+  }
+  .card.stale { opacity: 0.45; }
+  .card h2 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card h2 .age { font-size: 0.75rem; color: var(--muted); font-weight: normal; }
+  .gauge-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+  }
+  .gauge {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: conic-gradient(var(--gauge-color, var(--accent)) calc(var(--pct, 0) * 1%), #21262d 0);
+  }
+  .gauge::before {
+    content: "";
+    position: absolute;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: var(--card);
+  }
+  .gauge span {
+    position: relative;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  .metrics div span { color: var(--muted); }
+  .metrics div b { float: right; }
+  .gpu-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+  .gpu-card td { padding: 0.2rem 0; }
+  .gpu-card td.engine-name { color: var(--muted); white-space: nowrap; padding-right: 0.5rem; }
+  .gpu-card td.engine-bar { width: 100%; }
+  .bar-track {
+    background: #21262d;
+    border-radius: 4px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-pct { display: inline-block; min-width: 2.5rem; text-align: right; margin-left: 0.5rem; }
+  .gauge-sm {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: conic-gradient(var(--gauge-color, var(--accent)) calc(var(--pct, 0) * 1%), #21262d 0);
+  }
+  .gauge-sm::before {
+    content: "";
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--card);
+  }
+  .gauge-sm span {
+    position: relative;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <h1>GPU/NPU Usage Display</h1>
+  <h2 class="section">NPU Usage Matrix</h2>
+  <p id="empty">Waiting for NPU telemetry&hellip;</p>
+  <div class="grid" id="grid"></div>
+
+  <h2 class="section">GPU Usage Matrix</h2>
+  <p id="gpu-empty">Waiting for GPU telemetry&hellip;</p>
+  <div class="grid" id="gpu-grid"></div>
+
+<script>
+const POLL_MS = 1000;
+const STALE_AFTER_S = 15;
+
+// Resolved once; these CSS custom properties never change at runtime.
+const ROOT_STYLE = getComputedStyle(document.documentElement);
+const COLOR_CRIT = ROOT_STYLE.getPropertyValue('--crit').trim();
+const COLOR_WARN = ROOT_STYLE.getPropertyValue('--warn').trim();
+const COLOR_OK = ROOT_STYLE.getPropertyValue('--ok').trim();
+
+function pctColor(pct) {
+  if (pct >= 85) return COLOR_CRIT;
+  if (pct >= 60) return COLOR_WARN;
+  return COLOR_OK;
+}
+
+function fmt(v, digits = 1) {
+  return (typeof v === "number") ? v.toFixed(digits) : "—";
+}
+
+// Tag values (host, engine, power type) come from untrusted telemetry data.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+function render(hosts) {
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  const names = Object.keys(hosts).sort();
+  empty.style.display = names.length ? "none" : "block";
+
+  grid.innerHTML = names.map((host) => {
+    const m = hosts[host];
+    const pct = Math.max(0, Math.min(100, m.utilization ?? 0));
+    const stale = (m.age_s ?? 0) > STALE_AFTER_S;
+    return `
+      <div class="card ${stale ? 'stale' : ''}">
+        <h2>${esc(host)} <span class="age">${stale ? 'stale · ' : ''}${fmt(m.age_s, 0)}s ago</span></h2>
+        <div class="gauge-wrap">
+          <div class="gauge" style="--pct:${pct}; --gauge-color:${pctColor(pct)}">
+            <span>${fmt(pct, 0)}%</span>
+          </div>
+        </div>
+        <div class="metrics">
+          <div><span>Power</span><b>${fmt(m.power, 2)} W</b></div>
+          <div><span>Frequency</span><b>${fmt(m.frequency, 0)} Hz</b></div>
+          <div><span>Temperature</span><b>${fmt(m.temperature, 0)} °C</b></div>
+          <div><span>Bandwidth</span><b>${fmt(m.bandwidth, 1)} MB/s</b></div>
+          <div><span>Tile config</span><b>${fmt(m.tile_config, 0)}</b></div>
+          <div><span>Memory</span><b>${m.memory_mb != null && m.memory_mb >= 0 ? fmt(m.memory_mb, 1) + " MB" : "N/A"}</b></div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function renderGpu(hosts) {
+  const grid = document.getElementById("gpu-grid");
+  const empty = document.getElementById("gpu-empty");
+  const rows = [];
+  for (const host of Object.keys(hosts).sort()) {
+    for (const gpuId of Object.keys(hosts[host]).sort()) {
+      rows.push([host, gpuId, hosts[host][gpuId]]);
+    }
+  }
+  empty.style.display = rows.length ? "none" : "block";
+
+  grid.innerHTML = rows.map(([host, gpuId, m]) => {
+    const stale = (m.age_s ?? 0) > STALE_AFTER_S;
+    const engines = Object.keys(m.engines ?? {}).sort();
+    const overallPct = engines.length
+      ? Math.max(0, Math.min(100, engines.reduce((sum, name) => sum + (m.engines[name] ?? 0), 0) / engines.length))
+      : 0;
+    const engineRows = engines.map((name) => {
+      const pct = Math.max(0, Math.min(100, m.engines[name] ?? 0));
+      return `
+        <tr>
+          <td class="engine-name">${esc(name)}</td>
+          <td class="engine-bar">
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${pctColor(pct)}"></div></div>
+          </td>
+          <td><span class="bar-pct">${fmt(pct, 0)}%</span></td>
+        </tr>`;
+    }).join("");
+    const power = Object.entries(m.power ?? {})
+      .map(([k, v]) => `<div><span>${esc(k)}</span><b>${fmt(v, 2)} W</b></div>`)
+      .join("");
+    return `
+      <div class="card gpu-card ${stale ? 'stale' : ''}">
+        <h2>${esc(host)} &middot; gpu${esc(gpuId)} <span class="age">${stale ? 'stale · ' : ''}${fmt(m.age_s, 0)}s ago</span></h2>
+        <div class="gauge-wrap">
+          <div class="gauge-sm" style="--pct:${overallPct}; --gauge-color:${pctColor(overallPct)}">
+            <span>${fmt(overallPct, 0)}%</span>
+          </div>
+        </div>
+        <table>${engineRows || '<tr><td class="engine-name">no engine data</td></tr>'}</table>
+        <div class="metrics">
+          <div><span>Frequency</span><b>${fmt(m.frequency, 0)} MHz</b></div>
+          ${power}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+async function poll() {
+  try {
+    const [npuRes, gpuRes] = await Promise.all([
+      fetch("/api/npu", { cache: "no-store" }),
+      fetch("/api/gpu", { cache: "no-store" }),
+    ]);
+    if (npuRes.ok) render(await npuRes.json());
+    if (gpuRes.ok) renderGpu(await gpuRes.json());
+  } catch (e) {
+    // Server unreachable; leave last known state on screen.
+  } finally {
+    setTimeout(poll, POLL_MS);
+  }
+}
+
+poll();
+</script>
+</body>
+</html>
