@@ -141,10 +141,16 @@
 const POLL_MS = 1000;
 const STALE_AFTER_S = 15;
 
+// Resolved once; these CSS custom properties never change at runtime.
+const ROOT_STYLE = getComputedStyle(document.documentElement);
+const COLOR_CRIT = ROOT_STYLE.getPropertyValue('--crit').trim();
+const COLOR_WARN = ROOT_STYLE.getPropertyValue('--warn').trim();
+const COLOR_OK = ROOT_STYLE.getPropertyValue('--ok').trim();
+
 function pctColor(pct) {
-  if (pct >= 85) return getComputedStyle(document.documentElement).getPropertyValue('--crit');
-  if (pct >= 60) return getComputedStyle(document.documentElement).getPropertyValue('--warn');
-  return getComputedStyle(document.documentElement).getPropertyValue('--ok');
+  if (pct >= 85) return COLOR_CRIT;
+  if (pct >= 60) return COLOR_WARN;
+  return COLOR_OK;
 }
 
 function fmt(v, digits = 1) {

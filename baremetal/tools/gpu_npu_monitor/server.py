@@ -27,6 +27,10 @@ MAX_BODY_BYTES = 8 * 1024
 STALE_AFTER_S = 300
 # Bounds untrusted "host" tag values so a client can't inflate dict-key memory.
 MAX_HOST_LEN = 128
+# Same bound for "engine"/"type" tag values used as keys in per-GPU dicts.
+MAX_TAG_LEN = 64
+# Caps distinct engine/power keys per GPU so a client can't grow them unbounded.
+MAX_KEYS_PER_GPU = 32
 
 _lock = threading.Lock()
 _npu_metrics: dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
@@ -48,7 +52,7 @@ def parse_line_protocol(line: str) -> tuple[str, dict, dict] | None:
     if not line or line.startswith("#"):
         return None
 
-    parts = line.split(" ")
+    parts = line.split()
     if len(parts) < 2:
         return None
     measurement_and_tags, field_set = parts[0], parts[1]
@@ -109,11 +113,21 @@ def _ingest_line(line: str, now: float) -> bool:
             return False
         gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
         if measurement == "gpu_engine_usage" and "usage" in fields:
-            gpu_entry["engines"][tags.get("engine", "unknown")] = fields["usage"]
+            engine = tags.get("engine", "unknown")
+            if len(engine) > MAX_TAG_LEN:
+                return False
+            if engine not in gpu_entry["engines"] and len(gpu_entry["engines"]) >= MAX_KEYS_PER_GPU:
+                return False
+            gpu_entry["engines"][engine] = fields["usage"]
         elif measurement == "gpu_frequency" and "value" in fields:
             gpu_entry["frequency"] = fields["value"]
         elif measurement == "gpu_power" and "value" in fields:
-            gpu_entry["power"][tags.get("type", "unknown")] = fields["value"]
+            ptype = tags.get("type", "unknown")
+            if len(ptype) > MAX_TAG_LEN:
+                return False
+            if ptype not in gpu_entry["power"] and len(gpu_entry["power"]) >= MAX_KEYS_PER_GPU:
+                return False
+            gpu_entry["power"][ptype] = fields["value"]
         else:
             return False
         gpu_entry["received_at"] = now
