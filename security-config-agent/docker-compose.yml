@@ -4,6 +4,9 @@ services:
   ovms:
     image: ${OVMS_IMAGE}
     restart: unless-stopped
+    networks:
+      - internal
+      - ovms-egress
     user: "${HOST_UID}:${HOST_GID}"
     read_only: true
     tmpfs:
@@ -39,6 +42,8 @@ services:
   openclaw-gateway:
     image: ${OPENCLAW_IMAGE}
     restart: unless-stopped
+    networks:
+      - internal
     user: "${HOST_UID}:${HOST_GID}"
     init: true
     environment: &openclaw-environment
@@ -103,6 +108,8 @@ services:
       args:
         OPENCLAW_IMAGE: ${OPENCLAW_IMAGE}
     restart: unless-stopped
+    networks:
+      - internal
     privileged: true
     user: "0:0"
     pid: host
@@ -144,3 +151,8 @@ services:
     depends_on:
       openclaw-gateway:
         condition: service_healthy
+
+networks:
+  internal:
+    internal: true
+  ovms-egress:
