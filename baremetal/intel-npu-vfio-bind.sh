@@ -70,6 +70,7 @@ current_driver_spc() {
 
 iommu_group_for_spc() {
     local link="/sys/bus/pci/devices/$SPC_PCI_FULL/iommu_group"
+
     if [ -L "$link" ]; then
         basename "$(readlink -f "$link")"
     else
