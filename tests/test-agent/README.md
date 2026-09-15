@@ -51,6 +51,8 @@ openclaw gateway restart
 
    This script will:
    - download the Langfuse Docker Compose configuration,
+  - configure access to an LLM running on the Docker host,
+  - enable Langfuse trace batch exports,
    - create a local Langfuse environment file,
    - deploy Langfuse,
    - install the OpenClaw Langfuse bridge plugin,
@@ -131,6 +133,11 @@ The script creates or reuses the Langfuse dataset entry and inserts each item wi
 - creates a dataset run in Langfuse,
 - lets the configured Langfuse evaluator score the run automatically.
 
+This setup runs Langfuse server v4 and therefore requires Langfuse Python SDK
+v4. Configure evaluators to target experiment items or observations. Trace-level
+evaluators do not produce scores when a self-hosted v4 deployment is running in
+`events_only` mode.
+
 When `matplotlib` is installed, the runner also writes score comparison output under `score_plots/` by default:
 
 - `all_metrics.png` contains the score graph,
@@ -187,6 +194,8 @@ python run_openclaw_for_dataset.py \
 - If Langfuse setup fails, check Docker is running and that the required container services can start.
 - If dataset upload fails, ensure the JSON file matches the expected structure and contains valid strings for `input` and `expectedOutput`.
 - If the last dataset item prints `Score: no persisted evaluation found`, rerun with a larger `--score-wait-seconds` value. The evaluator may still be running when the plot is generated.
+- If the server reports that an endpoint is unavailable in Langfuse v4 `events_only` mode, reinstall `requirements.txt` to use the supported v4 SDK and Scores API v3.
+- If scores remain missing on Langfuse v4, edit the evaluator in Langfuse and target experiment items or observations instead of traces.
 - If scoring does not appear in Langfuse after increasing the wait time, verify the bridge plugin is enabled and the project keys in `~/.openclaw/openclaw.json` match the deployed Langfuse project.
 
 ## Related references

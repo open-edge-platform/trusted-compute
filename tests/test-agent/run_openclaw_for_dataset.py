@@ -154,17 +154,17 @@ def get_persisted_scores(result: Any, langfuse: Langfuse) -> list[dict[str, Any]
     for index, item_result in enumerate(result.item_results, start=1):
         item = item_result.item
         input_value = item.get("input") if isinstance(item, dict) else item.input
-        trace_scores = langfuse.api.score_v_2.get(trace_id=item_result.trace_id, limit=100)
+        trace_scores = langfuse.api.scores_v3.get_many_v3(
+            trace_id=item_result.trace_id,
+            fields="subject",
+            limit=100,
+        )
         persisted_scores.append(
             {
                 "input": input_value,
                 "output": item_result.output,
                 "scores": {
-                    score.name: (
-                        score.value
-                        if getattr(score, "string_value", None) is None
-                        else score.string_value
-                    )
+                    score.name: score.value
                     for score in trace_scores.data
                 },
             }
@@ -209,7 +209,9 @@ def wait_for_persisted_scores(
     if missing_count:
         print(
             "Timed out waiting for persisted evaluator scores "
-            f"({missing_count} item(s) still missing)."
+            f"({missing_count} item(s) still missing). In Langfuse v4, ensure "
+            "the evaluator targets experiment items or observations; trace-level "
+            "evaluators are not supported in events_only mode."
         )
 
     return persisted_scores

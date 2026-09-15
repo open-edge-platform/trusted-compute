@@ -12,6 +12,7 @@ LANGFUSE_DIR="${LANGFUSE_DIR:-${SCRIPT_DIR}/langfuse}"
 LANGFUSE_COMPOSE_REF="${LANGFUSE_COMPOSE_REF:-b8248a752a8fb309f6a4da3497c72206f6e5927f}"
 LANGFUSE_COMPOSE_URL="${LANGFUSE_COMPOSE_URL:-https://raw.githubusercontent.com/langfuse/langfuse/${LANGFUSE_COMPOSE_REF}/docker-compose.yml}"
 LANGFUSE_COMPOSE_FILE="${LANGFUSE_DIR}/docker-compose.yml"
+LANGFUSE_COMPOSE_OVERRIDE_FILE="${LANGFUSE_COMPOSE_OVERRIDE_FILE:-${LANGFUSE_DIR}/docker-compose.openclaw.yml}"
 LANGFUSE_ENV_FILE="${LANGFUSE_ENV_FILE:-${LANGFUSE_DIR}/.env}"
 LANGFUSE_BASE_URL="${LANGFUSE_BASE_URL:-http://localhost:3000}"
 
@@ -54,6 +55,25 @@ download_langfuse_compose() {
     mv "${temporary_file}" "${LANGFUSE_COMPOSE_FILE}"
 }
 
+write_langfuse_compose_override() {
+        cat >"${LANGFUSE_COMPOSE_OVERRIDE_FILE}" <<'EOF'
+services:
+    langfuse-worker:
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        environment:
+            LANGFUSE_LLM_CONNECTION_WHITELISTED_HOST: ${LANGFUSE_LLM_CONNECTION_WHITELISTED_HOST:-host.docker.internal}
+            LANGFUSE_S3_BATCH_EXPORT_ENABLED: ${LANGFUSE_S3_BATCH_EXPORT_ENABLED:-true}
+    langfuse-web:
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        environment:
+            LANGFUSE_LLM_CONNECTION_WHITELISTED_HOST: ${LANGFUSE_LLM_CONNECTION_WHITELISTED_HOST:-host.docker.internal}
+            LANGFUSE_S3_BATCH_EXPORT_ENABLED: ${LANGFUSE_S3_BATCH_EXPORT_ENABLED:-true}
+EOF
+        log "Wrote local LLM and trace export configuration to ${LANGFUSE_COMPOSE_OVERRIDE_FILE}"
+}
+
 clone_plugin_if_missing() {
     local repository="$1"
     local destination="$2"
@@ -77,7 +97,8 @@ container_env_value() {
     local container
 
     container="$(docker compose --project-directory "${LANGFUSE_DIR}" \
-        --file "${LANGFUSE_COMPOSE_FILE}" ps -q "${service}")"
+        --file "${LANGFUSE_COMPOSE_FILE}" \
+        --file "${LANGFUSE_COMPOSE_OVERRIDE_FILE}" ps -q "${service}")"
     [[ -n "${container}" ]] || fail "No running container found for service: ${service}"
 
     docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${container}" \
@@ -123,7 +144,8 @@ EOF
 langfuse_compose() {
     docker compose --project-directory "${LANGFUSE_DIR}" \
         --env-file "${LANGFUSE_ENV_FILE}" \
-        --file "${LANGFUSE_COMPOSE_FILE}" "$@"
+    --file "${LANGFUSE_COMPOSE_FILE}" \
+    --file "${LANGFUSE_COMPOSE_OVERRIDE_FILE}" "$@"
 }
 
 write_langfuse_config() {
@@ -136,7 +158,8 @@ write_langfuse_config() {
         return
     fi
     if docker compose --project-directory "${LANGFUSE_DIR}" \
-        --file "${LANGFUSE_COMPOSE_FILE}" ps -q | grep -q .; then
+        --file "${LANGFUSE_COMPOSE_FILE}" \
+        --file "${LANGFUSE_COMPOSE_OVERRIDE_FILE}" ps -q | grep -q .; then
         adopt_existing_config
         return
     fi
@@ -217,6 +240,7 @@ main() {
 
     # Download only the upstream file needed to run the Langfuse stack.
     download_langfuse_compose
+    write_langfuse_compose_override
     write_langfuse_config
 
     log "Deploying Langfuse"
