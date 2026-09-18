@@ -13,6 +13,7 @@
 
 import argparse
 import json
+import socket
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -37,6 +38,9 @@ MAX_KEYS_PER_GPU = 32
 MAX_HOSTS = 256
 # Caps distinct gpu_id values tracked per host, for the same reason.
 MAX_GPUS_PER_HOST = 32
+# Socket read/write timeout so a client that stops sending mid-request can't
+# block a worker thread (and thus a connection slot) forever.
+REQUEST_TIMEOUT_S = 10
 
 _lock = threading.Lock()
 _npu_metrics: Dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
@@ -160,6 +164,7 @@ def _ingest_line(line: str, now: float) -> bool:
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "npu-usage-display/1.0"
+    timeout = REQUEST_TIMEOUT_S  # applied to the socket by StreamRequestHandler.setup()
 
     def log_message(self, fmt, *args):  # quieter default logging
         pass
@@ -239,7 +244,13 @@ class Handler(BaseHTTPRequestHandler):
         if length <= 0 or length > MAX_BODY_BYTES:
             self._send_json(400, {"error": "invalid or oversized body"})
             return
-        body = self.rfile.read(length).decode("utf-8", errors="replace")
+        try:
+            body = self.rfile.read(length).decode("utf-8", errors="replace")
+        except socket.timeout:
+            # Client advertised Content-Length but stalled mid-body; drop the
+            # connection instead of leaving this worker thread blocked.
+            self.close_connection = True
+            return
 
         accepted = 0
         now = time.time()
