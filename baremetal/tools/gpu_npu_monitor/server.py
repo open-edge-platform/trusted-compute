@@ -17,6 +17,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Dict, Optional, Tuple
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
@@ -33,16 +34,16 @@ MAX_TAG_LEN = 64
 MAX_KEYS_PER_GPU = 32
 
 _lock = threading.Lock()
-_npu_metrics: dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
+_npu_metrics: Dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
 # host -> gpu_id -> {"engines": {name: pct}, "power": {type: watts}, "frequency": mhz, "received_at": epoch_s}
-_gpu_metrics: dict[str, dict] = {}
+_gpu_metrics: Dict[str, dict] = {}
 
 # Fields emitted by npu_reader.py; values ending in "i" are integers.
 _INT_FIELDS = {"temperature", "tile_config", "utilization"}
-_NPU_FIELDS = _INT_FIELDS | {"power", "frequency", "bandwidth", "memory_mb"}
+_NPU_FIELDS = _INT_FIELDS.union({"power", "frequency", "bandwidth", "memory_mb"})
 
 
-def parse_line_protocol(line: str) -> tuple[str, dict, dict] | None:
+def parse_line_protocol(line: str) -> Optional[Tuple[str, dict, dict]]:
     """Parse a single InfluxDB line-protocol point into (measurement, tags, fields).
 
     Expected shape (no spaces within tags/fields):
@@ -109,27 +110,35 @@ def _ingest_line(line: str, now: float) -> bool:
 
     if measurement in ("gpu_engine_usage", "gpu_frequency", "gpu_power"):
         gpu_id = tags.get("gpu_id", "0")
-        if len(gpu_id) > MAX_HOST_LEN:
+        if len(gpu_id) > MAX_TAG_LEN:
             return False
-        gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
-        if measurement == "gpu_engine_usage" and "usage" in fields:
+
+        if measurement == "gpu_engine_usage":
+            if "usage" not in fields:
+                return False
             engine = tags.get("engine", "unknown")
             if len(engine) > MAX_TAG_LEN:
                 return False
+            gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
             if engine not in gpu_entry["engines"] and len(gpu_entry["engines"]) >= MAX_KEYS_PER_GPU:
                 return False
             gpu_entry["engines"][engine] = fields["usage"]
-        elif measurement == "gpu_frequency" and "value" in fields:
+        elif measurement == "gpu_frequency":
+            if "value" not in fields:
+                return False
+            gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
             gpu_entry["frequency"] = fields["value"]
-        elif measurement == "gpu_power" and "value" in fields:
+        else:  # gpu_power
+            if "value" not in fields:
+                return False
             ptype = tags.get("type", "unknown")
             if len(ptype) > MAX_TAG_LEN:
                 return False
+            gpu_entry = _gpu_metrics.setdefault(host, {}).setdefault(gpu_id, {"engines": {}, "power": {}})
             if ptype not in gpu_entry["power"] and len(gpu_entry["power"]) >= MAX_KEYS_PER_GPU:
                 return False
             gpu_entry["power"][ptype] = fields["value"]
-        else:
-            return False
+
         gpu_entry["received_at"] = now
         return True
 
@@ -183,14 +192,19 @@ class Handler(BaseHTTPRequestHandler):
                         del gpus[g]
                     if not gpus:
                         del _gpu_metrics[host]
-                snapshot = {
-                    host: {
-                        gpu_id: {**{k: v for k, v in m.items() if k != "received_at"},
-                                 "age_s": round(now - m["received_at"], 1)}
-                        for gpu_id, m in gpus.items()
-                    }
-                    for host, gpus in _gpu_metrics.items()
-                }
+                snapshot = {}
+                for host, gpus in _gpu_metrics.items():
+                    out_gpus = {}
+                    for gpu_id, m in gpus.items():
+                        out = {
+                            "engines": dict(m.get("engines", {})),
+                            "power": dict(m.get("power", {})),
+                            "age_s": round(now - m["received_at"], 1),
+                        }
+                        if "frequency" in m:
+                            out["frequency"] = m["frequency"]
+                        out_gpus[gpu_id] = out
+                    snapshot[host] = out_gpus
             self._send_json(200, snapshot)
         else:
             self._send_json(404, {"error": "not found"})
