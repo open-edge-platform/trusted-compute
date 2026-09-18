@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@397dffe012cee10625714cd3f14f8200bde000db  # 2026.1.4
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@5bf1c402a05b6492b724643e2be4bcc7de1dd67c  # 2026.1.4
       - name: Detect virtual integration workflow change
         id: detect-workflow-change
         env:
@@ -258,7 +258,7 @@ jobs:
             KATA_DEPLOY_VERSION="$(cat trusted-workload/kata-deploy/VERSION)${kd_suffix}"
 
           echo "Build complete:"
-          ls -lh baremetal/trusted-compute-installation-package.tgz
+          ls -lh baremetal/out/trusted-compute-installation-package.tgz
 
       - name: Download docker-images-attestation-verifier artifact
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && contains(needs.pre-checks.outputs.changed_projects, 'attestation-verifier') && needs.wait-for-pre-merge.outputs.pre_merge_run_id != '' }}
@@ -295,7 +295,7 @@ jobs:
           SRC_REGISTRY="080137407410.dkr.ecr.us-west-2.amazonaws.com"
           DST_REGISTRY="registry-rs.edgeorchestration.intel.com"
 
-          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          PKG_TGZ="baremetal/out/trusted-compute-installation-package.tgz"
           if [[ ! -f "$PKG_TGZ" ]]; then
             echo "Package not found: $PKG_TGZ"
             exit 1
@@ -385,7 +385,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          PKG_TGZ="baremetal/trusted-compute-installation-package.tgz"
+          PKG_TGZ="baremetal/out/trusted-compute-installation-package.tgz"
           SRC_ROOT_CA="/var/lib/swtpm-localca/swtpm-localca-rootca-cert.pem"
           SRC_01_PEM="/var/lib/swtpm-localca/01.pem"
 
@@ -561,7 +561,7 @@ jobs:
         with:
           name: trusted-compute-installation-package
           path: |
-            baremetal/trusted-compute-installation-package.tgz
+            baremetal/out/trusted-compute-installation-package.tgz
             baremetal/swtpm-localca.tar.gz
           if-no-files-found: error
           retention-days: 1
@@ -603,8 +603,8 @@ jobs:
 
       - name: Verify downloaded installation package
         run: |
-          test -f baremetal/trusted-compute-installation-package.tgz
-          ls -lh baremetal/trusted-compute-installation-package.tgz
+          test -f baremetal/out/trusted-compute-installation-package.tgz
+          ls -lh baremetal/out/trusted-compute-installation-package.tgz
 
       - name: Show system resources
         run: |
@@ -874,7 +874,7 @@ jobs:
             --variable DUT_HOST:"$DUT_IP" \
             --variable DUT_USERNAME:user \
             --variable DUT_PASSWORD:user \
-            --variable TC_PACKAGE:baremetal/trusted-compute-installation-package.tgz \
+            --variable TC_PACKAGE:baremetal/out/trusted-compute-installation-package.tgz \
             --variable INSTALL_TIMEOUT:600 \
             ${{ matrix.robot_test_file }}
 

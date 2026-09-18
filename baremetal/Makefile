@@ -11,6 +11,7 @@ VERSION                          ?= $(shell cat ./VERSION)$(VERSION_SUFFIX)
 OCI_REPOSITORY                   ?= edge-orch/trusted-compute
 OCI_REGISTRY                     ?= 080137407410.dkr.ecr.us-west-2.amazonaws.com
 INSTALLATION_PACKAGE             ?= ${OCI_REGISTRY}/${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package
+OUT_DIR                          ?= $(CURDIR)/out
 ATTESTATION_VERIFIER_VERSION     ?= $(shell cat ./../attestation-verifier/VERSION)$(VERSION_SUFFIX)
 ATTESTATION_MANAGER_VERSION      ?= $(shell cat ./../attestation-manager/VERSION)$(VERSION_SUFFIX)
 TRUSTED_WORKLOAD_VERSION         ?= $(shell cat ./../trusted-workload/VERSION)$(VERSION_SUFFIX)
@@ -35,10 +36,11 @@ build:
 	# existing directory owned by another user/root. We need the shell PID
 	# (shell $$). Makefile reduces $$$$ -> $$ when passing to the shell,
 	# so use $$$$ here to ensure the shell receives the PID variable.
-	STAGEDIR="$(CURDIR)/$${PKG_NAME}-staging-$$$$"
+	STAGEDIR="$(OUT_DIR)/$${PKG_NAME}-staging-$$$$"
 	CHARTS_DIR="$(CURDIR)/charts"
 	IMAGES_DIR="$(CURDIR)/images"
 
+	mkdir -p "$(OUT_DIR)"
 	rm -rf "$$STAGEDIR" || true
 	mkdir -p "$$STAGEDIR"/charts "$$STAGEDIR"/containerd "$$STAGEDIR"/images "$$STAGEDIR"/k3s "$$STAGEDIR"/manifests "$$STAGEDIR"/tools
 
@@ -134,15 +136,16 @@ build:
 		fi; \
 	done
 
-	# create final gzipped tarball in the baremetal directory
-	tar -C "$$STAGEDIR" --transform "s,^,$${PKG_NAME}/," -czf "$(CURDIR)/$${PKG_TAR}" .
-	echo "Created $(CURDIR)/$${PKG_TAR}"
+	# create final gzipped tarball in the output directory
+	tar -C "$$STAGEDIR" --transform "s,^,$${PKG_NAME}/," -czf "$(OUT_DIR)/$${PKG_TAR}" .
+	echo "Created $(OUT_DIR)/$${PKG_TAR}"
 	rm -rf "$$STAGEDIR" || true
 	@echo "---END MAKEFILE Build---"
 
 clean:
 	@# Help: Runs clean stage
 	@echo "---MAKEFILE CLEAN---"
+	rm -rf "$(OUT_DIR)"
 	@echo "---END MAKEFILE CLEAN---"
 
 .PHONY: docker-push
@@ -184,7 +187,7 @@ license:
 artifact-publish:
 	@echo "Publishing trusted-compute-installation-package.tgz to Production Release Service."
 	aws ecr create-repository --region us-west-2 --repository-name ${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package || true
-	oras push $(INSTALLATION_PACKAGE):$(VERSION) ./trusted-compute-installation-package.tgz
+	oras push $(INSTALLATION_PACKAGE):$(VERSION) "$(OUT_DIR)/trusted-compute-installation-package.tgz"
 
 list: 
 	@# Help: displays make targets
