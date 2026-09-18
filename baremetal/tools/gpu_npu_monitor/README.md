@@ -29,3 +29,11 @@ io.katacontainers.config.hypervisor.kernel_params: "push_host=<host_ip> push_por
 Hosts (or GPUs) that stop reporting for a short period are marked stale
 (dimmed) in the dashboard, and are dropped entirely after a longer period of
 inactivity.
+
+## Security
+
+This server has no authentication: any client that can reach it can read
+telemetry from `/api/*` and post fake data to `/metrics`. It is intended for
+local testing on `127.0.0.1` (the default). If you bind to `0.0.0.0` or
+another non-loopback address, only do so on a trusted private network, or
+put it behind an authenticating reverse proxy.

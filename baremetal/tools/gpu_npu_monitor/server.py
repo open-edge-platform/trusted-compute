@@ -32,6 +32,11 @@ MAX_HOST_LEN = 128
 MAX_TAG_LEN = 64
 # Caps distinct engine/power keys per GPU so a client can't grow them unbounded.
 MAX_KEYS_PER_GPU = 32
+# Caps distinct hosts tracked per metrics dict so a flood of new "host" values
+# can't grow memory unbounded before the 300s stale-cleanup runs.
+MAX_HOSTS = 256
+# Caps distinct gpu_id values tracked per host, for the same reason.
+MAX_GPUS_PER_HOST = 32
 
 _lock = threading.Lock()
 _npu_metrics: Dict[str, dict] = {}  # host -> {field: value, "received_at": epoch_s}
@@ -103,6 +108,8 @@ def _ingest_line(line: str, now: float) -> bool:
         fields = {k: v for k, v in fields.items() if k in _NPU_FIELDS}
         if not fields:
             return False
+        if host not in _npu_metrics and len(_npu_metrics) >= MAX_HOSTS:
+            return False
         entry = _npu_metrics.setdefault(host, {})
         entry.update(fields)
         entry["received_at"] = now
@@ -111,6 +118,12 @@ def _ingest_line(line: str, now: float) -> bool:
     if measurement in ("gpu_engine_usage", "gpu_frequency", "gpu_power"):
         gpu_id = tags.get("gpu_id", "0")
         if len(gpu_id) > MAX_TAG_LEN:
+            return False
+
+        host_gpus = _gpu_metrics.get(host, {})
+        if host not in _gpu_metrics and len(_gpu_metrics) >= MAX_HOSTS:
+            return False
+        if gpu_id not in host_gpus and len(host_gpus) >= MAX_GPUS_PER_HOST:
             return False
 
         if measurement == "gpu_engine_usage":
@@ -246,6 +259,15 @@ def main():
     parser.add_argument("--host", default="127.0.0.1", help="bind address (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8080, help="bind port (default: 8080)")
     args = parser.parse_args()
+
+    if args.host not in ("127.0.0.1", "localhost", "::1"):
+        print(
+            "WARNING: binding to a non-loopback address. This server has no "
+            "authentication: any network client that can reach it can read "
+            "telemetry (/api/*) and inject fake data (/metrics). Only expose "
+            "it on a trusted private network or behind an authenticating "
+            "reverse proxy.",
+        )
 
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"GPU/NPU usage display listening on http://{args.host}:{args.port}/")
