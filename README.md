@@ -6,19 +6,19 @@
 ## Overview
 
 Trusted Compute is a set of software-defined security extensions that utilize
-hardware security capabilities of the Edge Node within the
-Open Edge Manageability Framework.
+the hardware security capabilities of a node.
 
-A user can select and deploy trusted compute extensions on a node to achieve
+A user can deploy the Trusted Compute standalone package on a node to achieve
 higher security assurances for their workloads.
-This extension enhances edge node protection through:
+These extensions enhance node protection through:
 
 - **Continuous Monitoring**
 - **Workload Protection through Isolated Execution**
 
 ## Get Started
 
-See the Documentation to get started using Trusted Compute.
+See the [Trusted Compute documentation](docs/README.md) for the architecture
+overview and installation guides.
 
 ## Develop
 
@@ -34,8 +34,3 @@ are required:
 - At least 256 GB NVMe or SATA storage
 - 4–8 GB RAM
 - 8-core or better CPU
-
-## Contribute
-
-Trusted Compute contribution details can be found in the following  
-[documentation](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide)
