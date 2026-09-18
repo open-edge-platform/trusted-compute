@@ -8,6 +8,7 @@ path = [
     "**.zip",
     "**.tar.gz",
     "**.bin",
+    "**.png",
     "**.qcow2",
     "**.qcow2_enc",
     "attestation-verifier/src/pkg/lib/common/3rd_party_component_licenses.zip",
