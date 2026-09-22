@@ -15,6 +15,7 @@ COPY tools/aas-manager/populate-users /usr/bin/populate-users
 COPY --chmod=0755 --from=kubectl /bin/kubectl /usr/local/bin/kubectl
 
 RUN apt-get update -y && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends ca-certificates && \
     chmod +x /usr/bin/populate-users && \
     apt-get clean && \
