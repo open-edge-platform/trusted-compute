@@ -28,7 +28,7 @@ build:
 	@# Help: Runs build stage
 	@echo "---MAKEFILE BUILD---"
 	cd src/ && go mod tidy
-	cd src/cmd/app && go build -o main
+	cd src/cmd/app && CGO_ENABLED=0 go build -o main
 	@echo "---END MAKEFILE Build---"
 
 clean:
