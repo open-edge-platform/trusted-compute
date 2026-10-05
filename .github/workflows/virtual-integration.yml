@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@2bbcd12607ef5f88b6b9b3d299ea8358d0f2c958  # 2026.1.4
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@aecadde81d72ac3e3ef5a52277539600621d3cb8  # 2026.1.4
       - name: Detect virtual integration workflow change
         id: detect-workflow-change
         env:
