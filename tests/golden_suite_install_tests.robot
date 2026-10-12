@@ -365,6 +365,67 @@ Cleanup After Tamper Test
     [Documentation]    Restore tampered Kata config.
     Restore Kata Configuration On DUT
 
+Verify Trusted Workload Files Permissions On DUT
+    [Documentation]    Validate /opt/kata file ownership and mode against kata_keeplist.txt plus additional allowed entries.
+
+    ${opt_kata_out}    ${opt_kata_rc}=    Execute Command
+    ...    test -d /opt/kata
+    ...    return_stdout=True
+    ...    return_rc=True
+    Should Be Equal As Integers    ${opt_kata_rc}    0    msg=Directory /opt/kata not found on DUT
+
+    ${keeplist_path}=    Set Variable    ${EXECDIR}/trusted-workload/kata-deploy/kata_keeplist.txt
+    ${version_path}=    Set Variable    ${EXECDIR}/trusted-workload/kata-deploy/version.yaml
+
+    ${keeplist_content}=    OperatingSystem.Get File    ${keeplist_path}
+    ${version_content}=    OperatingSystem.Get File    ${version_path}
+    ${version_data}=    Evaluate    yaml.safe_load($version_content)    modules=yaml
+    ${kernel_name}=    Evaluate    str($version_data.get('kernel', {}).get('name', '')).strip()
+    ${kernel_config}=    Evaluate    str($version_data.get('kernel', {}).get('config', '')).strip()
+    Should Not Be Empty    ${kernel_name}    msg=Failed to parse kernel.name from ${version_path}
+    Should Not Be Empty    ${kernel_config}    msg=Failed to parse kernel.config from ${version_path}
+
+    ${added_files}=    Create List
+    ...    share/kata-containers/${kernel_config} root:root 600
+    ...    share/kata-containers/vmlinux.container root:root 777
+    ...    share/kata-containers/kata-containers.img root:root 777
+    ...    share/kata-containers/${kernel_name} root:bm-agents 640
+    ...    share/defaults/kata-containers/configuration.toml root:root 777
+
+    ${expected_entries}=    Evaluate    sorted(set([ln.strip() for ln in $keeplist_content.splitlines() if ln.strip() and not ln.strip().startswith('#')] + $added_files))
+
+    ${actual_raw}    ${actual_rc}=    Execute Command
+    ...    cd /opt/kata && sudo find . -printf '%p %u:%g %m\n'
+    ...    return_stdout=True
+    ...    return_rc=True
+    Should Be Equal As Integers    ${actual_rc}    0    msg=Failed to collect /opt/kata permissions from DUT
+
+    ${actual_entries}=    Evaluate    sorted(set([f"{path[2:] if path.startswith('./') else path} {(owner[:-4] + ':bm-agents') if owner.endswith(':500') else owner} {perms}" for ln in $actual_raw.splitlines() if ln.strip() and ln.split()[0] != '.' for path, owner, perms in [ln.split()[:3]]]))
+    ${expected_text}=    Evaluate    chr(10).join($expected_entries) if $expected_entries else ''
+    ${actual_text}=    Evaluate    chr(10).join($actual_entries) if $actual_entries else ''
+    Log    Expected entries:\n${expected_text}
+    Log    Actual entries:\n${actual_text}
+
+    ${missing_entries}=    Evaluate    sorted(set($expected_entries) - set($actual_entries))
+    ${unexpected_entries}=    Evaluate    sorted(set($actual_entries) - set($expected_entries))
+
+    ${missing_count}=    Get Length    ${missing_entries}
+    ${unexpected_count}=    Get Length    ${unexpected_entries}
+    ${missing_text}=    Evaluate    chr(10).join($missing_entries) if $missing_entries else ''
+    ${unexpected_text}=    Evaluate    chr(10).join($unexpected_entries) if $unexpected_entries else ''
+
+    IF    ${missing_count} > 0
+        Log    Missing expected entries:\n${missing_text}
+    END
+    IF    ${unexpected_count} > 0
+        Log    Unexpected entries:\n${unexpected_text}
+    END
+    IF    ${missing_count} > 0 or ${unexpected_count} > 0
+        Fail    Trusted workload file permission verification failed.\nMissing entries:\n${missing_text}\nUnexpected entries:\n${unexpected_text}
+    END
+
+    Log    INFO: TW file and directory permissions are set correctly
+
 Deploy Sample Trusted Workload On DUT
     [Documentation]    Create namespace and deploy a sample nginx pod using kata-qemu runtime class via local kubectl.
     ${create_ns_cmd}=    Set Variable    kubectl --kubeconfig ${LOCAL_KUBECONFIG} create namespace nginx-test --dry-run=client -o yaml | kubectl --kubeconfig ${LOCAL_KUBECONFIG} apply -f -
@@ -558,7 +619,12 @@ TC-GS-08 Verify Attestation Manager Reports False After Kata Config Tamper
     Wait Until Keyword Succeeds    3 min    15 sec    Verify Node Is SchedulingDisabled
     [Teardown]    Cleanup After Tamper Test
 
-TC-GS-09 Collect Pod Logs
+TC-GS-09 Verify Trusted Workload File Permissions
+    [Documentation]    Verify /opt/kata file ownership and mode settings match the trusted workload keep-list policy.
+    [Tags]    golden-suite    validate    trusted-workload    permissions
+    Verify Trusted Workload Files Permissions On DUT
+
+TC-GS-10 Collect Pod Logs
     [Documentation]    Collect trusted-compute pod logs/events and inner-VM system logs.
     [Tags]    golden-suite    collect    logs
     Collect Pod Logs Using Local Kubectl
