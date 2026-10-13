@@ -27,8 +27,20 @@ all:
 build:
 	@# Help: Runs build stage
 	@echo "---MAKEFILE BUILD---"
-	cd src/ && go mod tidy
-	cd src/cmd/app && go build -o main
+	@set -eu; \
+	required_version="$$(awk '$$1 == "go" { print $$2; exit }' src/go.mod)"; \
+	test -n "$$required_version" || { echo "Missing Go version in src/go.mod" >&2; exit 1; }; \
+	current_version="$$(GOTOOLCHAIN=local go env GOVERSION)"; \
+	if [ "$$current_version" != "go$$required_version" ]; then \
+		echo "Installing/using Go $$required_version (current: $$current_version)"; \
+	fi; \
+	export GOTOOLCHAIN="go$$required_version"; \
+	selected_version="$$(go env GOVERSION)"; \
+	test "$$selected_version" = "$$GOTOOLCHAIN" || { echo "Go 1.21+ is required for automatic toolchain installation" >&2; exit 1; }; \
+	cd src/; \
+	go mod tidy; \
+	cd cmd/app; \
+	go build -o main
 	@echo "---END MAKEFILE Build---"
 
 clean:
@@ -65,7 +77,19 @@ lint:
 test:
 	@# Help: Runs test stage
 	@echo "---MAKEFILE ATTESTATION MANAGER TEST---"
-	cd src/ && go mod tidy && go test  -v ./...
+	@set -eu; \
+	required_version="$$(awk '$$1 == "go" { print $$2; exit }' src/go.mod)"; \
+	test -n "$$required_version" || { echo "Missing Go version in src/go.mod" >&2; exit 1; }; \
+	current_version="$$(GOTOOLCHAIN=local go env GOVERSION)"; \
+	if [ "$$current_version" != "go$$required_version" ]; then \
+		echo "Installing/using Go $$required_version (current: $$current_version)"; \
+	fi; \
+	export GOTOOLCHAIN="go$$required_version"; \
+	selected_version="$$(go env GOVERSION)"; \
+	test "$$selected_version" = "$$GOTOOLCHAIN" || { echo "Go 1.21+ is required for automatic toolchain installation" >&2; exit 1; }; \
+	cd src/; \
+	go mod tidy; \
+	go test -v ./...
 	@echo "---END MAKEFILE ATTESTATION MANAGER TEST---"
 	
 coverage:
