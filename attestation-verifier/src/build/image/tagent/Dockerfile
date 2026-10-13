@@ -9,7 +9,7 @@ LABEL org.label-schema.name="Trustagent Agent" \
     org.label-schema.url="https://github.com/open-edge-platform/trusted-compute"
 
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends libtss2-esys-3.0.2-0 && \
+    apt-get install -y --no-install-recommends libtss2-esys-3.0.2-0t64 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -p /opt/trustagent/var/system-info/ /opt/trustagent/var/ramfs /var/log/trustagent /config/
