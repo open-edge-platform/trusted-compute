@@ -1,2 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
+# TODO: Remove once kubectl ships with patched Go and golang.org/x/net.
+CVE-2026-78667
+CVE-2026-78669
+CVE-2026-97031
