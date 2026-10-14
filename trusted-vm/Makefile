@@ -9,56 +9,73 @@ export GOTOOLCHAIN := go1.26.0
 MAKEFILE_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 $(if $(shell command -v yq 2>/dev/null),,$(error ERROR: yq command not found. Please install yq))
 
-EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolkit.git
-EDGE_MICROVISOR_BRANCH?=26.06
-EDGE_MICROVISOR_COMMIT?="26.06-20260722"
-EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
-
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
 KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../trusted-workload/kata-deploy/version.yaml)
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
- 
+# Guest kernel version to build; defaults to the version kata-containers itself pins.
+# GPU (i915/Xe) and NPU (ivpu) driver support is enabled via the config
+# fragment at kernel-config/gpu-npu.conf, merged into kata's generated
+# .config after 'setup' and before 'build' (see build-kernel target below).
+KERNEL_VERSION?=
+KERNEL_INSTALL_DIR=$(BUILD_DIR)/kernel
+GPU_NPU_KERNEL_CONFIG=$(MAKEFILE_DIR)kernel-config/gpu-npu.conf
+
+# Image variant to build:
+#   base    - minimal guest rootfs only (default)
+#   gpu-npu - base + GPU/NPU telemetry agents and the GPU prestart hook
+#   custom  - gpu-npu + extra packages from CUSTOM_EXTRA_PKGS (e.g. debugging tools)
+IMAGE_VARIANT?=base
+ifeq ($(filter $(IMAGE_VARIANT),base gpu-npu custom),)
+$(error ERROR: IMAGE_VARIANT must be one of: base, gpu-npu, custom (got '$(IMAGE_VARIANT)'))
+endif
+CUSTOM_EXTRA_PKGS?=strace gdb pciutils procps iproute2
+
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test
- 
+.PHONY: all clone clone-kata build build-kernel build-tvm-image image-gpu-npu image-custom clean-all clean clean-kata clean-kernel help lint test
+
 all:
 	@# Help: Runs build all
 	sudo true  # Prompt for password once
-	sudo -E $(MAKE) clone build-microvisor-image build-tvm-image
+	sudo -E $(MAKE) clone build-kernel build-tvm-image
 
-clone: clone-microvisor clone-kata
+clone: clone-kata
 	@# Help: Runs clone all
-
-clone-microvisor:
-	@# Help: Runs clone microvisor and checks out to a specific commit ID
-	mkdir -p $(BUILD_DIR)
-	rm -rf "$(EDGE_MICROVISOR_SRC_DIR)"
-	git clone -b $(EDGE_MICROVISOR_BRANCH) $(EDGE_MICROVISOR_SRC) $(EDGE_MICROVISOR_SRC_DIR)
-	cd $(EDGE_MICROVISOR_SRC_DIR) && git checkout $(EDGE_MICROVISOR_COMMIT)
 
 clone-kata:
 	@# Help: Runs clone kata containers
 	mkdir -p $(BUILD_DIR)
 	rm -rf "$(KATA_CONTAINERS_SRC_DIR)"
 	git clone -b $(KATA_CONTAINERS_TAG) $(KATA_CONTAINERS_SRC) $(KATA_CONTAINERS_SRC_DIR)
- 
-build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
+
+build: clone build-kernel build-tvm-image clean-kata clean-rootfs
 	@# Help: Runs build all
 
-build-microvisor-image:
-	@# Help: Runs build image phase only
+build-kernel: clone-kata
+	@# Help: Builds the guest kernel from kata-containers source (with Intel GPU/NPU passthrough driver support)
 	sudo true  # Prompt for password once
-	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
+	version="$(KERNEL_VERSION)"; \
+	[ -n "$$version" ] || version=$$(yq '.assets.kernel.version' $(KATA_CONTAINERS_SRC_DIR)/versions.yaml); \
+	cd $(KATA_CONTAINERS_SRC_DIR)/tools/packaging/kernel && \
+	sudo -E ./build-kernel.sh -v "$$version" -f setup && \
+	version_no_v="$${version#v}"; \
+	kernel_src_dir=$$(find . -maxdepth 1 -type d -name "kata-linux-$${version_no_v}-*" | head -n1); \
+	[ -n "$$kernel_src_dir" ] || { echo "ERROR: failed to locate kernel source dir for version $$version" >&2; exit 1; }; \
+	sudo -E bash -c "cd '$$kernel_src_dir' && scripts/kconfig/merge_config.sh -m .config '$(GPU_NPU_KERNEL_CONFIG)' && make ARCH=x86_64 olddefconfig" && \
+	sudo -E ./build-kernel.sh -v "$$version" build && \
+	sudo -E DESTDIR=$(KERNEL_INSTALL_DIR) PREFIX=/usr ./build-kernel.sh -v "$$version" install
 
-build-tvm-image: build-tvm-agent
-	@# Help: Runs build Trusted VM image
+build-tvm-image: build-kernel
+	@# Help: Runs build Trusted VM image (set IMAGE_VARIANT=base|gpu-npu|custom, default base)
 	sudo true  # Prompt for password once
-	sudo bash $(MAKEFILE_DIR)/tvm_image_build.sh
+	sudo IMAGE_VARIANT="$(IMAGE_VARIANT)" CUSTOM_EXTRA_PKGS="$(CUSTOM_EXTRA_PKGS)" bash $(MAKEFILE_DIR)/tvm_image_build.sh
 
-build-tvm-agent:
-	@# Help: Runs build trusted VM agent
-	sudo true  # Prompt for password once
-	cd tvm-agent && bash ./tvm_agent_build.sh
+image-gpu-npu:
+	@# Help: Builds the GPU/NPU-enabled Trusted VM image
+	$(MAKE) build-tvm-image IMAGE_VARIANT=gpu-npu
+
+image-custom:
+	@# Help: Builds the custom Trusted VM image (GPU/NPU + CUSTOM_EXTRA_PKGS)
+	$(MAKE) build-tvm-image IMAGE_VARIANT=custom
 
 docker-build:
 	@echo "This is a dummy docker-build target."
@@ -78,13 +95,9 @@ clean-all:
 	echo $@
 	@echo "---END MAKEFILE CLEAN-ALL---"
 
-clean: clean-microvisor clean-kata clean-rootfs
+clean: clean-kata clean-rootfs clean-kernel
 	@# Help: Runs clean all
 	sudo rm -rf $(BUILD_DIR)
-
-clean-microvisor:
-	@# Help: Runs clean microvisor
-	sudo rm -rf $(EDGE_MICROVISOR_SRC_DIR)
 
 clean-kata:
 	@# Help: Runs clean kata containers
@@ -93,6 +106,10 @@ clean-kata:
 clean-rootfs:
 	@# Help: Runs clean rootfs
 	sudo rm -rf $(BUILD_DIR)/rootfs
+
+clean-kernel:
+	@# Help: Runs clean kernel build output
+	sudo rm -rf $(KERNEL_INSTALL_DIR)
 
 lint:
 	@# Help: Runs lint stage

@@ -8,68 +8,96 @@
 set -euo pipefail
 
 apt update
-apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
+apt install -o Acquire::Retries=3 -y --no-install-recommends \
+    git qemu-utils parted udev gcc ca-certificates build-essential curl \
+    mmdebstrap debian-archive-keyring erofs-utils musl-tools xz-utils zstd makedev sudo gnupg golang-go
+
+# Ubuntu's bundled debian-archive-keyring predates Debian 13's signing keys;
+# refresh it from Debian's own archive (TLS-verified) so mmdebstrap can
+# authenticate the trixie Release file.
+echo "deb https://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/debian-keyring-bootstrap.list
+apt-get update -o Acquire::AllowInsecureRepositories=true
+apt-get install -y --allow-unauthenticated --reinstall debian-archive-keyring
+rm -f /etc/apt/sources.list.d/debian-keyring-bootstrap.list
+apt-get update
+
+# Build yq/oras from source via the Go module proxy, pinned to the exact
+# versions kata's own install_yq.sh/install_oras.sh expect. This avoids both
+# a host-binary dependency (bind-mounts break on systems without them) and
+# kata's upstream scripts, which fetch prebuilt binaries from GitHub release
+# assets.
+GOBIN=/usr/local/bin go install github.com/mikefarah/yq/v4@v4.44.5
+GOBIN=/usr/local/bin go install oras.land/oras/cmd/oras@v1.2.0
 
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
-TVM_AGENT_DIR="/trusted-vm/tvm-agent"
+KATA_CONTAINERS_SRC_DIR="${BUILD_DIR}/kata_src"
 GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
 NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
-TRUSTED_VM_IMAGE="trusted-vm.img"
 
-# edge_microvisor image
-EDGE_MICROVISOR_IMAGE_NAME=""
-EDGE_MICROVISOR_DIR=${BUILD_DIR}/microvisor_src
-EDGE_MICROVISOR_IMAGE_DIR=${EDGE_MICROVISOR_DIR}/out/images/trusted-compute-os
+# kata_src is cloned on the host (non-root); silence git's ownership check
+# so version-detection commands running as root here don't fail/go empty.
+git config --global --add safe.directory "${KATA_CONTAINERS_SRC_DIR}"
+
+# base:    minimal guest rootfs only
+# gpu-npu: base + GPU/NPU telemetry agents and the GPU prestart hook
+# custom:  gpu-npu + extra packages from CUSTOM_EXTRA_PKGS (e.g. debugging tools)
+IMAGE_VARIANT="${IMAGE_VARIANT:-base}"
+case "${IMAGE_VARIANT}" in
+    base|gpu-npu|custom) ;;
+    *) echo "ERROR: IMAGE_VARIANT must be one of: base, gpu-npu, custom" >&2; exit 1 ;;
+esac
+CUSTOM_EXTRA_PKGS="${CUSTOM_EXTRA_PKGS:-strace gdb pciutils procps iproute2}"
+if [[ "${IMAGE_VARIANT}" == "base" ]]; then
+    TRUSTED_VM_IMAGE="trusted-vm.img"
+else
+    TRUSTED_VM_IMAGE="trusted-vm-${IMAGE_VARIANT}.img"
+fi
 
 # Kata Containers
-KATA_CONTAINERS_SRC_DIR=${BUILD_DIR}/kata_src
+ROOTFS_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/rootfs-builder"
 IMAGE_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/image-builder"
+
+# Kernel built separately by the Makefile's build-kernel target
+KERNEL_INSTALL_DIR="${BUILD_DIR}/kernel/usr/share/kata-containers"
 
 mkdir -p "${ROOTFS_DIR}"
 
-# Function to extract edge_microvisor image rootfs
-extract_edge_microvisor_image_rootfs() {
-    EDGE_MICROVISOR_IMAGE_NAME=$(find ${EDGE_MICROVISOR_IMAGE_DIR} -type f -name "Trusted-Compute*.tar.gz")
-    if [ $(echo "${EDGE_MICROVISOR_IMAGE_NAME}" | wc -l) -ne 1 ]; then
-        echo "ERROR: Expected exactly one rootfs tar.gz file, but found multiple or none."
+# Build the Debian (trixie) guest rootfs via kata-containers' own rootfs-builder
+build_debian_rootfs() {
+    echo "INFO: Building Debian guest rootfs via kata rootfs-builder (variant: ${IMAGE_VARIANT})"
+    local extra_pkgs="ca-certificates"
+    # GPU (i915/Xe) firmware for the in-guest DRM driver enabled in the kernel
+    # build; the NPU (ivpu) firmware has no Debian package and is installed
+    # separately in install_npu_firmware() below.
+    [[ "${IMAGE_VARIANT}" != "base" ]] && extra_pkgs="${extra_pkgs} firmware-intel-graphics"
+    [[ "${IMAGE_VARIANT}" == "custom" ]] && extra_pkgs="${extra_pkgs} ${CUSTOM_EXTRA_PKGS}"
+    pushd "${ROOTFS_BUILD_SCRIPT_DIR}"
+    # kata-containers' debian/config.sh still defaults to stretch/10.11 and the
+    # Ubuntu mirror; override explicitly rather than depending on an upstream fix.
+    if ! ROOTFS_DIR="${ROOTFS_DIR}" OS_VERSION=trixie OS_NAME=trixie \
+        REPO_URL=http://deb.debian.org/debian \
+        REPO_COMPONENTS="main contrib non-free non-free-firmware" \
+        EXTRA_PKGS="${extra_pkgs}" SECCOMP="${SECCOMP:-yes}" \
+        bash ${DEBUG:+-x} ./rootfs.sh debian; then
+        echo "ERROR: Failed to build Debian guest rootfs"
         exit 1
     fi
-    tar -xf "${EDGE_MICROVISOR_IMAGE_NAME}" -C "${ROOTFS_DIR}"
-    EDGE_MICROVISOR_IMAGE_NAME=$(basename ${EDGE_MICROVISOR_IMAGE_NAME})
-    echo "INFO: edge_microvisor image rootfs extracted successfully in ${ROOTFS_DIR}"
-
-    #copy the kernel from the rootfs
-    KERNEL_NAME=$(find "${ROOTFS_DIR}/boot" -type f -name "vmlinuz-*")
-    if [ $(echo "${KERNEL_NAME}" | wc -l) -ne 1 ]; then
-        echo "WARNING: Expected exactly one kernel Image, but found multiple or none. Skipping kernel copy."
-        exit 1
-    fi
-    cp "${KERNEL_NAME}" "${BUILD_DIR}"
-    chmod 644 "${BUILD_DIR}/$(basename ${KERNEL_NAME})"
-    echo "INFO: Kernel copied successfully to ${BUILD_DIR}"
-
-    #copy kernel config from the rootfs
-    KERNEL_CONFIG=$(find "${ROOTFS_DIR}/boot" -type f -name "config-*")
-    if [ $(echo "${KERNEL_CONFIG}" | wc -l) -ne 1 ]; then
-        echo "WARNING: Expected exactly one kernel config file, but found multiple or none. Skipping kernel config copy."
-        exit 1
-    fi
-    cp "${KERNEL_CONFIG}" "${BUILD_DIR}"
-    chmod 644 "${BUILD_DIR}/$(basename ${KERNEL_CONFIG})"
-    echo "INFO: Kernel config copied successfully to ${BUILD_DIR}"
-
-    #remove boot directory from rootfs
-    rm -rf "${ROOTFS_DIR}/boot"
-
+    popd
+    echo "INFO: Debian guest rootfs built successfully in ${ROOTFS_DIR}"
 }
 
-#install tvm-agent and service files
-install_tvm_agent() {
-    echo "INFO: Installing Kata Agent in rootfs"
-    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TVM_AGENT_DIR}/output/kata-agent"
-    install -o root -g root -m 0440 ${TVM_AGENT_DIR}/output/kata-agent.service "${ROOTFS_DIR}/usr/lib/systemd/system/"
-    install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
+# Copy the kernel produced by the Makefile's build-kernel target next to the image
+install_kernel() {
+    local vmlinuz
+    vmlinuz=$(find "${KERNEL_INSTALL_DIR}" -maxdepth 1 -type f -name "vmlinuz-*" ! -name "*.container")
+    if [ "$(echo "${vmlinuz}" | wc -l)" -ne 1 ]; then
+        echo "ERROR: Expected exactly one kernel image in ${KERNEL_INSTALL_DIR}, found: ${vmlinuz}"
+        exit 1
+    fi
+    cp "${vmlinuz}" "${BUILD_DIR}"
+    chmod 644 "${BUILD_DIR}/$(basename "${vmlinuz}")"
+    echo "INFO: Kernel copied successfully to ${BUILD_DIR}"
 }
 
 #install guest OCI hooks
@@ -164,12 +192,47 @@ install_npu_telemetry() {
     rm -rf "${bin_src}"
 }
 
+# Install Intel NPU (ivpu) firmware into the rootfs. Debian has no package
+# for this, so fetch the exact blobs the in-kernel ivpu driver requests
+# (see drivers/accel/ivpu/ivpu_fw.c) directly from upstream linux-firmware.git
+# via git.kernel.org's lightweight cgit "plain" endpoint (a few MB per file,
+# vs. ~800MB for a full git clone of that repo) pinned to a fixed commit and
+# verified by checksum, rather than depending on a vendor GitHub release CDN.
+install_npu_firmware() {
+    echo "INFO: Installing Intel NPU firmware in rootfs"
+    local commit="15980c983529328f5d81139c0b1f7fb505cd96e9"
+    local base_url="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/intel/vpu"
+    local fw_dest="${ROOTFS_DIR}/lib/firmware/intel/vpu"
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+
+    # name -> sha256
+    local -A fw_files=(
+        [vpu_37xx_v1.bin]="4078ca4af807e3f28b095df0c7539482ec79afc8c69160ef0480e6d7b67722e6"
+        [vpu_40xx_v1.bin]="cdfe2ebd66aaec21d896134c93d82d60de2d8eede75a2c62898aeb9006e5a26f"
+        [vpu_50xx_v1.bin]="c8ca936bc259198f040b1623ff632fd44b66ec006067c646dceb24b2ee3fbb3e"
+    )
+
+    for name in "${!fw_files[@]}"; do
+        curl -fsSL --retry 3 "${base_url}/${name}?id=${commit}" -o "${tmp_dir}/${name}"
+        echo "${fw_files[${name}]}  ${tmp_dir}/${name}" | sha256sum -c - > /dev/null || {
+            echo "ERROR: NPU firmware checksum verification failed for ${name}"
+            exit 1
+        }
+    done
+
+    mkdir -p "${fw_dest}"
+    install -o root -g root -m 0444 "${tmp_dir}"/*.bin "${fw_dest}/"
+    rm -rf "${tmp_dir}"
+    echo "INFO: Intel NPU firmware installed successfully"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
     pushd "${IMAGE_BUILD_SCRIPT_DIR}"
-    # Run the image builder script
-    if ! IMAGE="${TRUSTED_VM_IMAGE}" bash ${DEBUG:+-x} ./image_builder.sh "${ROOTFS_DIR}"; then
+    # erofs keeps the guest image compressed and read-only for minimal size
+    if ! IMAGE="${TRUSTED_VM_IMAGE}" FS_TYPE=erofs bash ${DEBUG:+-x} ./image_builder.sh "${ROOTFS_DIR}"; then
         echo "ERROR: Failed to build Trusted VM image"
         exit 1
     fi
@@ -189,11 +252,14 @@ copy_tc_image(){
 
 # main function
 ################
-extract_edge_microvisor_image_rootfs
-install_tvm_agent
-install_guest_hooks
-download_jq
-install_gpu_telemetry
-install_npu_telemetry
+build_debian_rootfs
+install_kernel
+if [[ "${IMAGE_VARIANT}" != "base" ]]; then
+    install_guest_hooks
+    download_jq
+    install_gpu_telemetry
+    install_npu_telemetry
+    install_npu_firmware
+fi
 build_trusted_vm_image
 copy_tc_image

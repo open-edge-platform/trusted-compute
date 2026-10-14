@@ -18,4 +18,5 @@ attestation-verifier/src/tools/aas-manager/populate-users
 /attestation-verifier/src/pkg/lib/common/serialize/test.yml
 trusted-workload/kata-deploy/tc-docker-deploy/target/
 trusted-vm/gpu-telemetry/binaries/
+trusted-vm/build/
 /baremetal/out/
