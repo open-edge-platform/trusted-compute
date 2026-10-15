@@ -1,11 +1,22 @@
 # SR-IOV Enablement User Guide
 
+[Documentation home](README.md) | [Shared device concepts](capabilities.md#pcie-device-passthrough)
+
 Prepare an Intel platform for SR-IOV using the provided automation scripts.
+
+Complete the [shared prerequisites](prerequisites.md), install either
+[Kubernetes](kubernetes.md) or [Docker](docker.md), and verify the basic workload
+before adding devices. This guide shares host preparation across both models;
+use only the matching launch section below.
+
+SR-IOV requires a supported GPU, firmware and matching host/guest drivers. It is
+not interchangeable with whole-GPU passthrough. Keep the physical function bound
+to its native host driver and assign distinct VFs to separate VMs.
 
 | Script | Purpose |
 | --- | --- |
 | [`setup_host.sh`](https://github.com/intel/kvm-multios/blob/v0.21.0/host_setup/ubuntu/setup_host.sh) (kvm-multios) | Official Intel host setup: BIOS checks, SR-IOV kernel command-line parameters, GRUB configuration |
-| [`setup_sriov_vfs.sh`](../baremetal/setup_sriov_vfs.sh) | Create VFs, bind to vfio-pci, generate CDI specs |
+| [`setup_sriov_vfs.sh`](https://github.com/open-edge-platform/trusted-compute/blob/main/baremetal/setup_sriov_vfs.sh) | Create VFs, bind to vfio-pci, generate CDI specs |
 
 ---
 
@@ -39,6 +50,11 @@ Check the following settings in BIOS and ensure they match the table below. Name
 
 Use Intel's official [kvm-multios](https://github.com/intel/kvm-multios) host setup script (`v0.21.0`) to configure the host for SR-IOV — this checks BIOS prerequisites, sets the required kernel command-line parameters, and updates GRUB.
 
+Review the external script before running it: it can also change desktop,
+power-management, virtualization and update settings. Back up the affected host
+configuration and preserve Secure Boot. This is optional device preparation,
+not a dependency of the base Trusted Compute installation.
+
 > **Note:** Run this from the host's physical/local display session (logged in at the graphical console), not over SSH. `-u GUI` mode configures the desktop session (idle/lock settings, display env) for the logged-in user and requires an active local display.
 
 ```bash
@@ -70,27 +86,27 @@ Expected output includes a non-zero `sriov_totalvfs` and the SR-IOV kernel comma
 
 ## 3. Create SR-IOV Virtual Functions
 
-[`setup_sriov_vfs.sh`](../baremetal/setup_sriov_vfs.sh) creates VFs, binds all of them to vfio-pci, and generates CDI device specs under `/etc/cdi/`.
+[`setup_sriov_vfs.sh`](https://github.com/open-edge-platform/trusted-compute/blob/main/baremetal/setup_sriov_vfs.sh)
+creates VFs, binds them to vfio-pci, and generates CDI device specs under
+`/etc/cdi/`. Use a Trusted Compute repository checkout matching your release;
+this helper is not currently copied into the installation package.
+
+From the root of that checkout:
 
 ```bash
-cd baremetal
+sudo ./baremetal/setup_sriov_vfs.sh setup
 ```
 
-**Create all supported VFs and bind all to vfio-pci:**
+The command above creates and binds all supported VFs. To select a specific
+number instead:
 
 ```bash
-sudo ./setup_sriov_vfs.sh setup
-```
-
-**Create and bind a specific number of VFs to vfio-pci:**
-
-```bash
-sudo NUM_VFS=2 ./setup_sriov_vfs.sh setup
+sudo NUM_VFS=2 ./baremetal/setup_sriov_vfs.sh setup
 ```
 
 The bound VFs are exposed as CDI devices:
 
-```
+```text
 gpu.intel.com/igpu=tc1
 gpu.intel.com/igpu=tc2
 ```
@@ -100,7 +116,7 @@ CDI spec files are written to `/etc/cdi/intel-igpu-tc{N}.yaml`.
 **Remove all VFs and CDI specs:**
 
 ```bash
-sudo ./setup_sriov_vfs.sh remove
+sudo ./baremetal/setup_sriov_vfs.sh remove
 ```
 
 ---
@@ -110,6 +126,9 @@ sudo ./setup_sriov_vfs.sh remove
 SR-IOV VF passthrough can be verified by deploying a workload that uses the GPU inside a Kata VM. The example below uses [an OpenCL image](https://github.com/intel/intel-device-plugins-for-kubernetes/tree/v0.36.0/demo/intel-opencl-icd) which runs **clinfo**, outputting the GPU capabilities detected by the driver installed in the image.
 
 > **Note:** Follow either the Kubernetes (K3s/K8s) or Docker Compose deployment section below based on your installation. Each VF can run an independent workload simultaneously — one pod/container per CDI device (`tc1`, `tc2`, …).
+
+CDI injection does not reserve a VF in the scheduler. Allocate each VF to only
+one active VM and ensure workloads run on the host where its CDI spec exists.
 
 ### Build and Push the Image
 
@@ -235,7 +254,8 @@ docker compose down
 After all pods/containers are stopped, remove the VFs and CDI specs:
 
 ```bash
-sudo baremetal/setup_sriov_vfs.sh remove
+# Run from the Trusted Compute repository root:
+sudo ./baremetal/setup_sriov_vfs.sh remove
 ```
 
 This removes all VFs (sets `sriov_numvfs=0`) and deletes all CDI spec files under `/etc/cdi/intel-igpu-tc*.yaml`. The `vfio-pci` module is not explicitly unloaded. The host GPU (PF) remains available via the `i915`/`xe` driver throughout.
@@ -244,7 +264,13 @@ This removes all VFs (sets `sriov_numvfs=0`) and deletes all CDI spec files unde
 
 ## 6. Revert kvm-multios Host Setup
 
-Manually undo the changes `setup_host.sh` made across GRUB, auto-upgrade, desktop/audio, libvirt, swap, and power-management config:
+Prefer restoring your recorded pre-setup configuration. The checklist below
+shows areas the external script can change; it is not a universal reset script.
+Run only commands matching changes actually made on your host, after checking
+that the named files/services are not used by other workloads.
+
+Manually undo the applicable changes across GRUB, auto-upgrade, desktop/audio,
+libvirt, swap, and power-management config:
 
 ```bash
 # GRUB: remove SR-IOV/hibernate kernel params from /etc/default/grub, then:
@@ -355,4 +381,3 @@ sudo reboot
 # Verify the active kernel
 uname -a
 ```
-
