@@ -1,5 +1,7 @@
 # NPU Enablement in Trusted Compute Environment
 
+[Documentation home](README.md) | [Shared device concepts](capabilities.md#pcie-device-passthrough)
+
 This document provides a step-by-step guide to enable NPU (Neural Processing Unit) passthrough in a Trusted Compute environment. It includes instructions for NPU driver management and running a sample application.
 
 ## Table of Contents
@@ -21,13 +23,16 @@ NPU passthrough allows a virtual machine to directly access a physical Intel NPU
 
 ## Prerequisites
 
-- Intel CPU with VT-x/VT-d support and an integrated NPU
-- IOMMU enabled in BIOS/UEFI and Linux kernel with VFIO and `intel_vpu` driver support
-- K3s, K8s, or Docker with Trusted Compute version 1.5.3 or newer
+- Complete the prerequisites for [Kubernetes](kubernetes.md#prerequisites) or
+  [Docker](docker.md#prerequisites).
+- Use a supported Intel integrated NPU with matching guest drivers/firmware.
+- The host kernel must support VFIO and the native `intel_vpu` driver.
+- Use Trusted Compute version 1.5.3 or newer.
 
 ## Install Trusted Compute Package
 
-Follow the [Trusted Compute Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
+Install and verify a basic workload using either the
+[Kubernetes](kubernetes.md) or [Docker](docker.md) deployment guide.
 
 > **Note:** During the Trusted Compute installation, you will set up K3s, K8s, or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation. The K3s and K8s options both use `kubectl` and share the same deployment steps.
 
@@ -42,6 +47,9 @@ sudo ./tools/intel-npu-vfio-bind.sh bind
 ```
 
 The script auto-detects the Intel NPU and the companion Signal Processing Controller (`8086:b07d`, required for NPU telemetry inside the VM), unbinds both from their native drivers, binds them to `vfio-pci`, prints the assigned VFIO device paths, and generates a CDI spec at `/etc/cdi/intel-npu-tc-cdi.yaml`.
+
+The companion controller is platform-dependent. The script warns and skips it
+when absent; do not assume telemetry support on such a platform.
 
 ### Verify VFIO Binding
 
@@ -143,6 +151,11 @@ services:
           memory: 2G
 ```
 
+If the script did not report an SPC device, omit its mapping. If NPU and SPC
+share an IOMMU group, specify that group only once. The broad `/dev` mount is a
+demonstration setting; review device exposure for production and do not assign
+the same function to concurrent VMs.
+
 Deploy and verify:
 
 ```bash
@@ -159,7 +172,9 @@ If NPU passthrough is successful, the device list will include `NPU`.
 
 ## Revert NPU Binding
 
-After you are done using NPU passthrough, use the same script to restore the NPU to its native driver so the host regains NPU access.
+Delete the sample pod (`kubectl delete pod openvino-npu`) or stop the
+application Compose project (`docker compose down`) first. Ensure no other
+workload is using these devices, then restore their native drivers:
 
 ```bash
 sudo ./tools/intel-npu-vfio-bind.sh unbind
@@ -179,10 +194,10 @@ lspci -nnk | grep -A3 -iE 'Processing accelerators.*Intel'
 The Trusted Compute environment supports NPU telemetry collection from workloads running in Kata VMs. To enable telemetry, configure the collection endpoint via Kata kernel parameters in your pod/container annotations:
 
 ```yaml
-# In pod annotations (K3s):
+# In Kubernetes pod annotations or Docker Compose service annotations:
 io.katacontainers.config.hypervisor.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
 
-# Example for a Prometheus/InfluxDB compatible collector:
+# Example for a collector that accepts InfluxDB line protocol:
 io.katacontainers.config.hypervisor.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
 ```
 
