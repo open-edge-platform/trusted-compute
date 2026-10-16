@@ -8,22 +8,31 @@
 Trusted Compute is a set of software-defined security extensions that utilize
 the hardware security capabilities of a node.
 
-A user can deploy the Trusted Compute standalone package on a node to achieve
-higher security assurances for their workloads.
-These extensions enhance node protection through:
+Trusted Compute runs directly on an Ubuntu node in two deployment models:
 
-- **Continuous Monitoring**
-- **Workload Protection through Isolated Execution**
+- **Kubernetes:** K3s or an existing single-node Kubernetes cluster, with host
+  attestation and VM-isolated container workloads.
+- **Docker/container-based:** Docker Engine and Compose, with VM-isolated
+  containers but without the Kubernetes host-attestation services.
+
+Both models use Kata Containers and QEMU/KVM for isolated execution.
+See the [architecture and trust model](docs/overview.md) for security boundaries.
 
 ## Get Started
 
-See the [Trusted Compute documentation](docs/README.md) for the architecture
-overview and installation guides.
+1. Check the [platform prerequisites](docs/prerequisites.md).
+2. Choose a [deployment model](docs/deployment-options.md).
+3. [Download the package](docs/trusted_compute_baremetal.md), then follow the
+   [Kubernetes](docs/kubernetes.md) or [Docker](docs/docker.md) workflow.
+
+The [documentation index](docs/README.md) also covers device passthrough,
+attestation, troubleshooting and sample applications.
 
 ## Develop
 
-To develop Trusted Compute, the following development prerequisites
-are required:
+The following are development/build prerequisites, not deployment-host
+requirements. For deployment, use the
+[Ubuntu 24.04 host checklist](docs/prerequisites.md).
 
 - Ubuntu 22.04
 - Docker.io
