@@ -1,0 +1,212 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# Runs inside the Ubuntu build container. Turns the rootfs tarball produced by
+# the EMT toolkit into a Trusted VM image: extracts it, lifts out the kernel EMT
+# ships in /boot, installs the kata agent, guest hooks and telemetry, then hands
+# the tree to kata's image_builder.sh.
+
+set -euo pipefail
+
+apt update
+apt install -o Acquire::Retries=3 -y --no-install-recommends \
+    git qemu-utils parted udev gcc ca-certificates build-essential curl
+
+BUILD_DIR="/trusted-vm/build"
+ROOTFS_DIR="${BUILD_DIR}/rootfs"
+TVM_AGENT_DIR="/trusted-vm/tvm-agent"
+GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
+NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
+
+IMAGE_VARIANT="${IMAGE_VARIANT:-npu}"
+case "${IMAGE_VARIANT}" in
+    minimal|gpu|npu|custom) ;;
+    *) echo "ERROR: IMAGE_VARIANT must be one of: minimal, gpu, npu, custom" >&2; exit 1 ;;
+esac
+# Constant regardless of guest OS and variant, so downstream packaging never
+# has to know which variant produced the image.
+TRUSTED_VM_IMAGE="trusted-vm.img"
+
+# Space-separated list resolved from the variant config by build_emt.sh.
+IMAGE_FEATURES="${IMAGE_FEATURES:-}"
+has_feature() { [[ " ${IMAGE_FEATURES} " == *" $1 "* ]]; }
+
+# edge_microvisor image
+EDGE_MICROVISOR_IMAGE_NAME=""
+EDGE_MICROVISOR_DIR="${BUILD_DIR}/microvisor_src"
+EDGE_MICROVISOR_IMAGE_DIR="${EDGE_MICROVISOR_DIR}/out/images/emt-os-${IMAGE_VARIANT}"
+
+# Kata Containers
+KATA_CONTAINERS_SRC_DIR="${BUILD_DIR}/kata_src"
+IMAGE_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/image-builder"
+
+mkdir -p "${ROOTFS_DIR}"
+
+# Function to extract edge_microvisor image rootfs
+extract_edge_microvisor_image_rootfs() {
+    EDGE_MICROVISOR_IMAGE_NAME=$(find "${EDGE_MICROVISOR_IMAGE_DIR}" -type f -name "Trusted-Compute*.tar.gz")
+    if [ "$(echo "${EDGE_MICROVISOR_IMAGE_NAME}" | wc -l)" -ne 1 ] || [ -z "${EDGE_MICROVISOR_IMAGE_NAME}" ]; then
+        echo "ERROR: Expected exactly one rootfs tar.gz file in ${EDGE_MICROVISOR_IMAGE_DIR}, but found multiple or none."
+        exit 1
+    fi
+    tar -xf "${EDGE_MICROVISOR_IMAGE_NAME}" -C "${ROOTFS_DIR}"
+    echo "INFO: edge_microvisor image rootfs extracted successfully in ${ROOTFS_DIR}"
+
+    #copy the kernel from the rootfs
+    KERNEL_NAME=$(find "${ROOTFS_DIR}/boot" -type f -name "vmlinuz-*")
+    if [ "$(echo "${KERNEL_NAME}" | wc -l)" -ne 1 ] || [ -z "${KERNEL_NAME}" ]; then
+        echo "ERROR: Expected exactly one kernel image in ${ROOTFS_DIR}/boot, but found multiple or none."
+        exit 1
+    fi
+    cp "${KERNEL_NAME}" "${BUILD_DIR}"
+    chmod 644 "${BUILD_DIR}/$(basename "${KERNEL_NAME}")"
+    echo "INFO: Kernel copied successfully to ${BUILD_DIR}"
+
+    #copy kernel config from the rootfs
+    KERNEL_CONFIG=$(find "${ROOTFS_DIR}/boot" -type f -name "config-*")
+    if [ "$(echo "${KERNEL_CONFIG}" | wc -l)" -ne 1 ] || [ -z "${KERNEL_CONFIG}" ]; then
+        echo "ERROR: Expected exactly one kernel config file in ${ROOTFS_DIR}/boot, but found multiple or none."
+        exit 1
+    fi
+    cp "${KERNEL_CONFIG}" "${BUILD_DIR}"
+    chmod 644 "${BUILD_DIR}/$(basename "${KERNEL_CONFIG}")"
+    echo "INFO: Kernel config copied successfully to ${BUILD_DIR}"
+
+    #remove boot directory from rootfs
+    rm -rf "${ROOTFS_DIR}/boot"
+}
+
+#install tvm-agent and service files
+install_tvm_agent() {
+    echo "INFO: Installing Kata Agent in rootfs"
+    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TVM_AGENT_DIR}/output/kata-agent"
+    install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-agent.service" "${ROOTFS_DIR}/usr/lib/systemd/system/"
+    install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
+}
+
+#install guest OCI hooks
+install_guest_hooks() {
+    echo "INFO: Installing guest OCI hooks in rootfs"
+    local hooks_src="/trusted-vm/hooks"
+    local hooks_dest="${ROOTFS_DIR}/usr/share/oci/hooks"
+    local gpu_hook="${hooks_src}/prestart/scan-for-gpu.sh"
+
+    [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
+
+    mkdir -p "${hooks_dest}/prestart"
+    install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
+    echo "INFO: Guest hooks installed successfully"
+}
+
+# Download jq binary with SHA256 verification
+download_jq() {
+    echo "INFO: Downloading jq binary"
+    local jq_version="1.7.1"
+    local jq_sha256="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"
+    local bin_src="${GPU_TELEMETRY_DIR}/binaries"
+    local jq_path="${bin_src}/jq"
+
+    mkdir -p "${bin_src}"
+    curl -fsSL --retry 3 "https://github.com/jqlang/jq/releases/download/jq-${jq_version}/jq-linux-amd64" -o "${jq_path}"
+
+    echo "${jq_sha256}  ${jq_path}" | sha256sum -c - > /dev/null || {
+        echo "ERROR: jq binary checksum verification failed"
+        exit 1
+    }
+    chmod +x "${jq_path}"
+    echo "INFO: jq downloaded and verified successfully"
+}
+
+# Install GPU telemetry binaries and config into the rootfs.
+install_gpu_telemetry() {
+    echo "INFO: Installing GPU telemetry agent in rootfs"
+    local bin_src="${GPU_TELEMETRY_DIR}/binaries"
+    local files_src="${GPU_TELEMETRY_DIR}/files"
+
+    [[ -d "${bin_src}" ]]        || { echo "ERROR: ${bin_src} not found"; exit 1; }
+    [[ -x "${bin_src}/qmassa" ]] || { echo "ERROR: qmassa not found in ${bin_src}"; exit 1; }
+    [[ -x "${bin_src}/qmmd" ]]   || { echo "ERROR: qmmd not found in ${bin_src}"; exit 1; }
+    [[ -x "${bin_src}/jq" ]]     || { echo "ERROR: jq not found in ${bin_src}"; exit 1; }
+    [[ -d "${files_src}" ]]      || { echo "ERROR: ${files_src} not found"; exit 1; }
+
+    mkdir -p "${ROOTFS_DIR}/etc/gpu-telemetry" \
+             "${ROOTFS_DIR}/etc/udev/rules.d" \
+             "${ROOTFS_DIR}/usr/local/bin" \
+             "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
+    install -o root -g root -m 0550 "${bin_src}/qmassa" "${ROOTFS_DIR}/usr/local/bin/qmassa"
+    install -o root -g root -m 0550 "${bin_src}/qmmd"   "${ROOTFS_DIR}/usr/local/bin/qmmd"
+    install -o root -g root -m 0550 "${bin_src}/jq"     "${ROOTFS_DIR}/usr/local/bin/jq"
+    install -o root -g root -m 0550 "${files_src}/gpu-telemetry-agent.sh" "${ROOTFS_DIR}/usr/local/bin/gpu-telemetry-agent.sh"
+    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.env" "${ROOTFS_DIR}/etc/gpu-telemetry/gpu-telemetry.env"
+    install -o root -g root -m 0440 "${files_src}/gpu-telemetry-guest.service" "${ROOTFS_DIR}/usr/lib/systemd/system/gpu-telemetry.service"
+    ln -sf ../gpu-telemetry.service "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants/gpu-telemetry.service"
+    install -o root -g root -m 0444 "${files_src}/90-gpu-telemetry.rules" "${ROOTFS_DIR}/etc/udev/rules.d/90-gpu-telemetry.rules"
+
+    echo "INFO: GPU telemetry installed successfully"
+    rm -rf "${bin_src}"
+}
+
+# Install NPU telemetry binary and config into the rootfs.
+install_npu_telemetry() {
+    echo "INFO: Installing NPU telemetry agent in rootfs"
+    local bin_src="${NPU_TELEMETRY_DIR}/binaries"
+    local files_src="${NPU_TELEMETRY_DIR}/files"
+
+    [[ -d "${bin_src}" ]]             || { echo "ERROR: ${bin_src} not found"; exit 1; }
+    [[ -x "${bin_src}/npu-reader" ]]  || { echo "ERROR: npu-reader not found in ${bin_src}"; exit 1; }
+    [[ -d "${files_src}" ]]           || { echo "ERROR: ${files_src} not found"; exit 1; }
+
+    mkdir -p "${ROOTFS_DIR}/etc/npu-telemetry" \
+             "${ROOTFS_DIR}/etc/udev/rules.d" \
+             "${ROOTFS_DIR}/usr/local/bin" \
+             "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants"
+    install -o root -g root -m 0550 "${bin_src}/npu-reader"                    "${ROOTFS_DIR}/usr/local/bin/npu-reader"
+    install -o root -g root -m 0550 "${files_src}/npu-telemetry-agent.sh"      "${ROOTFS_DIR}/usr/local/bin/npu-telemetry-agent.sh"
+    install -o root -g root -m 0440 "${files_src}/npu-telemetry-guest.env"     "${ROOTFS_DIR}/etc/npu-telemetry/npu-telemetry.env"
+    install -o root -g root -m 0440 "${files_src}/npu-telemetry-guest.service" "${ROOTFS_DIR}/usr/lib/systemd/system/npu-telemetry.service"
+    ln -sf ../npu-telemetry.service "${ROOTFS_DIR}/usr/lib/systemd/system/kata-containers.target.wants/npu-telemetry.service"
+    install -o root -g root -m 0444 "${files_src}/90-npu-telemetry.rules"      "${ROOTFS_DIR}/etc/udev/rules.d/90-npu-telemetry.rules"
+
+    echo "INFO: NPU telemetry installed successfully"
+    rm -rf "${bin_src}"
+}
+
+#build Trusted vm image from rootfs
+build_trusted_vm_image() {
+    echo "INFO: Starting Trusted VM image build"
+    pushd "${IMAGE_BUILD_SCRIPT_DIR}"
+    if ! IMAGE="${TRUSTED_VM_IMAGE}" bash ${DEBUG:+-x} ./image_builder.sh "${ROOTFS_DIR}"; then
+        echo "ERROR: Failed to build Trusted VM image"
+        exit 1
+    fi
+    if [ ! -f "${TRUSTED_VM_IMAGE}" ]; then
+        echo "ERROR: ${TRUSTED_VM_IMAGE} image not generated"
+        exit 1
+    fi
+    popd
+}
+
+#copy the image to the output directory
+copy_tc_image() {
+    cp "${IMAGE_BUILD_SCRIPT_DIR}/${TRUSTED_VM_IMAGE}" "${BUILD_DIR}/${TRUSTED_VM_IMAGE}"
+}
+
+# main function
+################
+extract_edge_microvisor_image_rootfs
+install_tvm_agent
+if has_feature guest-hooks; then
+    install_guest_hooks
+fi
+if has_feature gpu-telemetry; then
+    download_jq
+    install_gpu_telemetry
+fi
+if has_feature npu-telemetry; then
+    install_npu_telemetry
+fi
+build_trusted_vm_image
+copy_tc_image

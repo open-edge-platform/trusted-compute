@@ -1,0 +1,8 @@
+{
+    "packages": [
+        "kernel-drivers-gpu",
+        "linux-firmware-i915",
+        "intel-npu-driver",
+        "intel-npu-firmware"
+    ]
+}

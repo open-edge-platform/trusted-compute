@@ -1,0 +1,11 @@
+{
+    "packages": [
+        "firmware-intel-graphics"
+    ],
+    "features": [
+        "guest-hooks",
+        "gpu-telemetry",
+        "npu-telemetry",
+        "npu-firmware"
+    ]
+}

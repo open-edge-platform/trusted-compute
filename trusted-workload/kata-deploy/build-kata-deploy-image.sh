@@ -65,8 +65,16 @@ if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
 fi
 
 #check if edge microvisor kernel and config file exists
+# version.yaml pins EMT's kernel; the Debian flow builds its own and ships no
+# config-*, so fall back to whatever kernel the trusted-vm build produced.
+if [ ! -f "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL}" ]; then
+	discovered_kernel=$(find "${EDGE_MICROVISOR_SRC}" -maxdepth 1 -type f -name 'vmlinuz-*' ! -name '*.container' -printf '%f\n' | head -n1)
+	[ -n "${discovered_kernel}" ] || { echo "ERROR: no vmlinuz-* kernel found in ${EDGE_MICROVISOR_SRC}"; exit 1; }
+	echo "INFO: ${EDGE_MICROVISOR_KERNEL} not present, using ${discovered_kernel}"
+	EDGE_MICROVISOR_KERNEL="${discovered_kernel}"
+	EDGE_MICROVISOR_KERNEL_CONFIG="${EDGE_MICROVISOR_KERNEL/vmlinuz-/config-}"
+fi
 check_file_exists "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL}"
-check_file_exists "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL_CONFIG}"
 check_file_exists "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_ROOTFS}"
 
 #check if old artifacts are present and remove them
@@ -93,8 +101,12 @@ echo "INFO: Copying edge microvisor kernel to the Kata artifacts"
 cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}"
 
 #copy edge microvisor kernel config to the kata artifacts
-echo "INFO: Copying edge microvisor kernel config to the Kata artifacts"
-cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL_CONFIG}" "${KATA_BOOT_COMPONENT_DIR}"
+if [ -f "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL_CONFIG}" ]; then
+	echo "INFO: Copying edge microvisor kernel config to the Kata artifacts"
+	cp "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL_CONFIG}" "${KATA_BOOT_COMPONENT_DIR}"
+else
+	echo "INFO: No kernel config ${EDGE_MICROVISOR_KERNEL_CONFIG} to copy, skipping"
+fi
 
 #copy edge microvisor rootfs image to the kata artifacts
 echo "INFO: Copying edge microvisor rootfs image to the Kata artifacts"

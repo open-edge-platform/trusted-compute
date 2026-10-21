@@ -1,0 +1,6 @@
+{
+    "packages": [
+        "igt-gpu-tools",
+        "pciutils"
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "packages": [
+        "edge-release",
+        "edge-repos",
+        "edge-rpm-macros",
+        "filesystem",
+        "bash",
+        "systemd",
+        "systemd-udev",
+        "systemd-networkd",
+        "systemd-resolved",
+        "dbus",
+        "shadow-utils",
+        "util-linux",
+        "e2fsprogs",
+        "iana-etc",
+        "iproute",
+        "ca-certificates",
+        "ca-certificates-base",
+        "openssl",
+        "zlib",
+        "ncurses-libs",
+        "rpm",
+        "rpm-libs",
+        "tdnf",
+        "tdnf-plugin-repogpgcheck"
+    ]
+}

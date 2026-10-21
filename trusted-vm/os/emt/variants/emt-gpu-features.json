@@ -1,0 +1,6 @@
+{
+    "features": [
+        "guest-hooks",
+        "gpu-telemetry"
+    ]
+}

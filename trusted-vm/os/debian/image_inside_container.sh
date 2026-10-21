@@ -39,20 +39,23 @@ NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
 # so version-detection commands running as root here don't fail/go empty.
 git config --global --add safe.directory "${KATA_CONTAINERS_SRC_DIR}"
 
-# base:    minimal guest rootfs only
-# gpu-npu: base + GPU/NPU telemetry agents and the GPU prestart hook
-# custom:  gpu-npu + extra packages from CUSTOM_EXTRA_PKGS (e.g. debugging tools)
-IMAGE_VARIANT="${IMAGE_VARIANT:-base}"
+# minimal - guest rootfs only
+# gpu     - minimal + GPU telemetry agent, i915/Xe firmware and the GPU prestart hook
+# npu     - gpu + NPU telemetry agent and ivpu firmware
+# custom  - npu + extra packages from CUSTOM_EXTRA_PKGS (e.g. debugging tools)
+IMAGE_VARIANT="${IMAGE_VARIANT:-npu}"
 case "${IMAGE_VARIANT}" in
-    base|gpu-npu|custom) ;;
-    *) echo "ERROR: IMAGE_VARIANT must be one of: base, gpu-npu, custom" >&2; exit 1 ;;
+    minimal|gpu|npu|custom) ;;
+    *) echo "ERROR: IMAGE_VARIANT must be one of: minimal, gpu, npu, custom" >&2; exit 1 ;;
 esac
 CUSTOM_EXTRA_PKGS="${CUSTOM_EXTRA_PKGS:-strace gdb pciutils procps iproute2}"
-if [[ "${IMAGE_VARIANT}" == "base" ]]; then
-    TRUSTED_VM_IMAGE="trusted-vm.img"
-else
-    TRUSTED_VM_IMAGE="trusted-vm-${IMAGE_VARIANT}.img"
-fi
+# Constant regardless of guest OS and variant, so downstream packaging never
+# has to know which variant produced the image.
+TRUSTED_VM_IMAGE="trusted-vm.img"
+
+VARIANT_CONFIG="/trusted-vm/os/debian/variants/debian-${IMAGE_VARIANT}-packages.json"
+[[ -f "${VARIANT_CONFIG}" ]] || { echo "ERROR: no variant config ${VARIANT_CONFIG}" >&2; exit 1; }
+has_feature() { yq -p=json -o=yaml '.features[]' "${VARIANT_CONFIG}" | grep -qx "$1"; }
 
 # Kata Containers
 ROOTFS_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/rootfs-builder"
@@ -67,10 +70,7 @@ mkdir -p "${ROOTFS_DIR}"
 build_debian_rootfs() {
     echo "INFO: Building Debian guest rootfs via kata rootfs-builder (variant: ${IMAGE_VARIANT})"
     local extra_pkgs="ca-certificates"
-    # GPU (i915/Xe) firmware for the in-guest DRM driver enabled in the kernel
-    # build; the NPU (ivpu) firmware has no Debian package and is installed
-    # separately in install_npu_firmware() below.
-    [[ "${IMAGE_VARIANT}" != "base" ]] && extra_pkgs="${extra_pkgs} firmware-intel-graphics"
+    extra_pkgs="${extra_pkgs} $(yq -p=json -o=yaml '.packages[]' "${VARIANT_CONFIG}" | tr '\n' ' ')"
     [[ "${IMAGE_VARIANT}" == "custom" ]] && extra_pkgs="${extra_pkgs} ${CUSTOM_EXTRA_PKGS}"
     pushd "${ROOTFS_BUILD_SCRIPT_DIR}"
     # kata-containers' debian/config.sh still defaults to stretch/10.11 and the
@@ -85,6 +85,25 @@ build_debian_rootfs() {
     fi
     popd
     echo "INFO: Debian guest rootfs built successfully in ${ROOTFS_DIR}"
+}
+
+# Kata's rootfs-builder installs the agent as kata-agent. The shim only reaches
+# it over vsock, so binary and unit can be renamed as long as they stay in sync.
+rename_agent() {
+    echo "INFO: Renaming kata-agent to tvm-agent in rootfs"
+    local bin_dir="${ROOTFS_DIR}/usr/bin"
+    local unit_dir="${ROOTFS_DIR}/usr/lib/systemd/system"
+
+    [[ -x "${bin_dir}/kata-agent" ]] || { echo "ERROR: ${bin_dir}/kata-agent not found"; exit 1; }
+    mv "${bin_dir}/kata-agent" "${bin_dir}/tvm-agent"
+
+    mv "${unit_dir}/kata-agent.service" "${unit_dir}/tvm-agent.service"
+    sed -i 's|/usr/bin/kata-agent|/usr/bin/tvm-agent|' "${unit_dir}/tvm-agent.service"
+    sed -i 's|^Requires=kata-agent.service$|Requires=tvm-agent.service|' "${unit_dir}/kata-containers.target"
+
+    grep -q '^Requires=tvm-agent.service$' "${unit_dir}/kata-containers.target" || {
+        echo "ERROR: kata-containers.target still requires kata-agent.service"; exit 1; }
+    echo "INFO: Agent renamed to tvm-agent successfully"
 }
 
 # Copy the kernel produced by the Makefile's build-kernel target next to the image
@@ -253,12 +272,19 @@ copy_tc_image(){
 # main function
 ################
 build_debian_rootfs
+rename_agent
 install_kernel
-if [[ "${IMAGE_VARIANT}" != "base" ]]; then
+if has_feature guest-hooks; then
     install_guest_hooks
+fi
+if has_feature gpu-telemetry; then
     download_jq
     install_gpu_telemetry
+fi
+if has_feature npu-telemetry; then
     install_npu_telemetry
+fi
+if has_feature npu-firmware; then
     install_npu_firmware
 fi
 build_trusted_vm_image
