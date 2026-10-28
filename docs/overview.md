@@ -76,6 +76,9 @@ These services run in the Kubernetes `trusted-compute` namespace. This flow is
 not part of the Docker installation. No external management plane is required
 for the documented standalone workflows.
 
+See the [attestation API overview](attestation-api.md) for the service flow and
+the AAS, CMS and HVS endpoint references.
+
 ## Trust Model and Security Properties
 
 The security boundary depends on a correctly provisioned and administered host:

@@ -195,6 +195,21 @@ Inspect effective values with `sudo helm get values attestation-verifier
 generated containerd files. See [attestation flows](capabilities.md#attestation-and-security-flows)
 before changing measured host files or reference flavors.
 
+## Attestation API Reference
+
+For administrative access to the attestation services, see the
+[attestation API overview](attestation-api.md) for the service roles,
+authentication flow and connection settings:
+
+- [AAS API](aas-api.md): JWT tokens and service credentials.
+- [CMS API](cms-api.md): CA certificates and certificate signing.
+- [HVS API](hvs-api.md): flavors, host registration, status, reports and TPM
+  endorsements.
+
+The Attestation Manager already automates registration, reference creation and
+report polling. These APIs are optional administrative interfaces, not additional
+installation steps, and are not installed by the Docker workflow.
+
 ## Trusted VM Configuration
 
 Keep the guest kernel, image and runtime configuration from the same release.

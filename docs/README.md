@@ -34,6 +34,7 @@ model, not separate security architectures.
 | Kubernetes | [Prerequisites, installation, configuration, launch and removal](kubernetes.md) |
 | Docker | [Prerequisites, installation, configuration, launch and removal](docker.md) |
 | Common capabilities | [VM lifecycle, integrity, attestation and PCIe passthrough](capabilities.md) |
+| Attestation APIs (Kubernetes) | [Overview](attestation-api.md), [AAS](aas-api.md), [CMS](cms-api.md), [HVS](hvs-api.md) |
 | Devices | [GPU](trusted_compute_gpu_enablement.md), [NPU](trusted_compute_npu_enablement.md), [GPU SR-IOV](sriov_enablement_user_guide.md) |
 | Operations | [Logging, troubleshooting and known limitations](troubleshooting.md) |
 | Sample workloads | TBD |
