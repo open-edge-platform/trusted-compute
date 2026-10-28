@@ -30,7 +30,7 @@ RUN set -eux; \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Dependabot can update kubectl by tracking this image tag.
-FROM registry.k8s.io/kubectl:v1.37.1@sha256:b7cab618e281b1ee7484e7b706a96e2135fbb6e072c2a573a7dab4e87d7f2385 AS kubectl
+FROM registry.k8s.io/kubectl:v1.37.2@sha256:fe049faa65ae483ac200009a949a68fa4c9985daea12c9cb1195c9c7965301fc AS kubectl
 
 FROM debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
 COPY --from=kubectl --chmod=0755 /bin/kubectl /usr/local/bin/kubectl
