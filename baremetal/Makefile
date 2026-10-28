@@ -77,17 +77,10 @@ build:
 
 	cp -a "$(CURDIR)/config-v3.toml.tmpl" "$$STAGEDIR/containerd/config-v3.toml.tmpl"
 
-	# Readme points to docs/trusted_compute_baremetal.md
-	if [ -f "$(CURDIR)/../docs/trusted_compute_baremetal.md" ]; then
-		cp "$(CURDIR)/../docs/trusted_compute_baremetal.md" "$$STAGEDIR/readme.md"
-	else
-		printf "See docs/trusted_compute_baremetal.md in repository" > "$$STAGEDIR/readme.md"
-	fi
-
-	# Copy documentation files
+	# Keep the deployment guides and their relative documentation links together.
 	mkdir -p "$$STAGEDIR/docs"
-	cp -a "$(CURDIR)/../docs/trusted_compute_gpu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
-	cp -a "$(CURDIR)/../docs/trusted_compute_npu_enablement.md" "$$STAGEDIR/docs/" 2>/dev/null || true
+	cp -a "$(CURDIR)/../docs/"*.md "$$STAGEDIR/docs/"
+	printf '# Trusted Compute Installation Package\n\nStart with the [documentation index](docs/README.md).\n' > "$$STAGEDIR/readme.md"
 
 	# Ensure helm charts are built and available in the helm output
 	@echo "Building helm charts (../helm helm-build)"
