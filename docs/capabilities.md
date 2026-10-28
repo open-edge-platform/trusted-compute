@@ -79,6 +79,9 @@ covered by that allowlist.
 
 This section applies to the packaged **Kubernetes** installation.
 
+For service endpoints, authentication and request examples, see the
+[attestation API overview](attestation-api.md) and its AAS, CMS and HVS references.
+
 1. Secure Boot and measured boot establish the host boot evidence. IMA records
    runtime measurements according to its policy.
 2. The Trust Agent provides host metadata, event logs and TPM-backed quotes
