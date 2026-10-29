@@ -44,8 +44,8 @@ ${TC_PACKAGE}           ${EMPTY}    # Required: local path to trusted-compute-in
 ${REMOTE_DIR}           ${EMPTY}    # Optional: override remote working directory
 ${INSTALL_TIMEOUT}      600         # Seconds to wait for install.sh
 ${LOCAL_KUBECONFIG}     ${EXECDIR}/k3s.yaml
-${KATA_CONFIG_PATH}     /opt/kata/share/defaults/kata-containers/configuration-qemu.toml
-${KATA_CONFIG_BACKUP}    /tmp/configuration-qemu.toml.backup
+${KATA_CONFIG_PATH}     /opt/kata/share/defaults/kata-containers/runtime-rs/configuration.toml
+${KATA_CONFIG_BACKUP}    /tmp/configuration-runtime-rs.toml.backup
 
 *** Keywords ***
 Open SSH Connection To DUT
@@ -379,7 +379,7 @@ Deploy Sample Trusted Workload On DUT
     ...    ${SPACE}${SPACE}name: nginx-default
     ...    ${SPACE}${SPACE}namespace: nginx-test
     ...    spec:
-    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu
+    ...    ${SPACE}${SPACE}runtimeClassName: kata-qemu-runtime-rs
     ...    ${SPACE}${SPACE}containers:
     ...    ${SPACE}${SPACE}- name: nginx
     ...    ${SPACE}${SPACE}${SPACE}${SPACE}image: nginx:1.27.0

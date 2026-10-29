@@ -280,6 +280,10 @@ check_tc_requirements_docker() {
         print_error "docker is not installed or not in PATH"
         exit 1
     fi
+    if ! command -v python3 &>/dev/null; then
+        print_error "python3 is not installed or not in PATH"
+        exit 1
+    fi
     if ! docker compose version &>/dev/null; then
         print_error "docker compose plugin is not installed or not available"
         exit 1
@@ -318,6 +322,44 @@ start_docker_deploy() {
         fi
         sleep 5
     done
+}
+
+configure_docker_kata_runtime() {
+    local daemon_config="/etc/docker/daemon.json"
+    print_status "Registering Kata runtime-rs with Docker..."
+    mkdir -p "$(dirname "$daemon_config")"
+
+    python3 - "$daemon_config" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+config = {}
+if os.path.exists(path) and os.path.getsize(path) > 0:
+    with open(path, encoding="utf-8") as daemon_file:
+        config = json.load(daemon_file)
+
+runtimes = config.setdefault("runtimes", {})
+runtimes["kata"] = {
+    "runtimeType": "/opt/kata/runtime-rs/bin/containerd-shim-kata-v2",
+    "options": {
+        "ConfigPath": "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
+    }
+}
+
+temporary_path = f"{path}.tmp"
+with open(temporary_path, "w", encoding="utf-8") as daemon_file:
+    json.dump(config, daemon_file, indent=2)
+    daemon_file.write("\n")
+os.replace(temporary_path, path)
+PY
+
+    systemctl restart docker \
+        && print_status "Docker restarted with Kata runtime-rs configured" \
+        || { print_error "Failed to restart Docker with Kata runtime-rs configured"; exit 1; }
+    docker info --format '{{json .Runtimes}}' | grep -q '"kata"' \
+        || { print_error "Docker did not register the Kata runtime"; exit 1; }
 }
 
 # Function to print summary (TC installation for Docker)
@@ -540,6 +582,7 @@ install_tc_docker() {
     print_status "Starting TC installation for Docker..."
     import_kata_deploy_image
     start_docker_deploy
+    configure_docker_kata_runtime
     print_tc_docker_summary
 }
 
