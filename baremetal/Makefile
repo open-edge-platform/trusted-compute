@@ -187,7 +187,7 @@ license:
 artifact-publish:
 	@echo "Publishing trusted-compute-installation-package.tgz to Production Release Service."
 	aws ecr create-repository --region us-west-2 --repository-name ${OCI_REPOSITORY}/baremetal/trusted-compute-installation-package || true
-	oras push $(INSTALLATION_PACKAGE):$(VERSION) "$(OUT_DIR)/trusted-compute-installation-package.tgz"
+	cd "$(OUT_DIR)" && oras push $(INSTALLATION_PACKAGE):$(VERSION) trusted-compute-installation-package.tgz
 
 list: 
 	@# Help: displays make targets
