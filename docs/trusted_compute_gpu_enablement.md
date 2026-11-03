@@ -1,5 +1,7 @@
 # GPU Enablement in Trusted Compute Environment
 
+[Documentation home](README.md) | [Shared device concepts](capabilities.md#pcie-device-passthrough)
+
 This document provides a step-by-step guide to enable GPU passthrough in a Trusted Compute environment. It includes instructions for GPU driver management and running a sample application.
 
 ## Table of Contents
@@ -22,13 +24,19 @@ GPU passthrough allows a virtual machine to directly access a physical GPU, bypa
 
 ## Prerequisites
 
-- Intel CPU with VT-x/VT-d support and integrated GPU
-- IOMMU enabled in BIOS/UEFI and Linux kernel with VFIO, DRM/i915 or xe driver support
-- K3s, K8s, or Docker with Trusted Compute version 1.5.2 or newer
+- Complete the prerequisites for [Kubernetes](kubernetes.md#prerequisites) or
+  [Docker](docker.md#prerequisites).
+- Use a supported Intel integrated GPU with matching guest drivers.
+- The host kernel must support VFIO and the GPU's native `i915` or `xe` driver.
+- Use Trusted Compute version 1.5.2 or newer; see the
+  [Docker version compatibility note](trusted_compute_baremetal.md).
+- This guide assigns the entire GPU to one VM. For separate VFs, use the
+  [SR-IOV guide](sriov_enablement_user_guide.md) instead, not both on the same GPU.
 
 ## Install Trusted Compute Package
 
-Follow the [Trusted Compute Installation on Standalone Ubuntu Edge Node](https://github.com/open-edge-platform/trusted-compute/blob/main/docs/trusted_compute_baremetal.md) guide for instructions on installing Trusted Compute on a standalone system.
+Install and verify a basic workload using either the
+[Kubernetes](kubernetes.md) or [Docker](docker.md) deployment guide.
 
 > **Note:** During the Trusted Compute installation, you will set up K3s, K8s, or Docker. Follow the corresponding deployment section in this guide based on which option you chose during installation. The K3s and K8s options both use `kubectl` and share the same deployment steps.
 
@@ -65,6 +73,7 @@ GPU passthrough can be verified by deploying [an OpenCL image](https://github.co
 ### Build and Push the Image
 
 Clone and build the image:
+
 ```bash
 # Use the desired release tag or main
 $ git clone https://github.com/intel/intel-device-plugins-for-kubernetes -b v0.36.0
@@ -120,6 +129,9 @@ $ kubectl apply -f opencl-pod.yaml
 $ kubectl exec -it intel-opencl-icd -- clinfo
 ```
 
+If the image has already completed its default command, inspect
+`kubectl logs intel-opencl-icd` instead of executing into a stopped container.
+
 If GPU passthrough is successful, `clinfo` will display the detected GPU and its OpenCL capabilities. If the GPU is not detected, review the previous steps to ensure the GPU is bound to `vfio-pci` and the CDI annotation is correct.
 
 ### Deploy with Docker Compose
@@ -150,6 +162,10 @@ services:
           memory: 2G
 ```
 
+The `/dev` mount is broad device access used by this demonstration. Review and
+restrict device exposure for production. Do not assign the same GPU to another
+VM concurrently.
+
 Deploy and verify:
 
 ```bash
@@ -164,7 +180,9 @@ If GPU passthrough is successful, `clinfo` will display the detected GPU and its
 
 ## Revert GPU Binding
 
-After you are done using GPU passthrough, use the same script to restore the GPU to its native driver so the host regains GPU access.
+Delete the sample pod (`kubectl delete pod intel-opencl-icd`) or stop the
+application Compose project (`docker compose down`) first. Ensure no other
+workload is using the GPU, then restore its native driver:
 
 ```bash
 sudo ./tools/intel-igpu-vfio-bind.sh unbind
@@ -184,10 +202,10 @@ lspci -nnk | grep -A4 -E '(VGA|Display).*Intel'
 The Trusted Compute environment supports GPU telemetry collection from workloads running in Kata VMs. To enable telemetry, configure the collection endpoint via Kata kernel parameters in your pod/container annotations:
 
 ```yaml
-# In pod annotations (K3s):
+# In Kubernetes pod annotations or Docker Compose service annotations:
 io.katacontainers.config.hypervisor.kernel_params: "push_host=<collector-ip> push_port=<port> push_path=<path>"
 
-# Example for a Prometheus/InfluxDB compatible collector:
+# Example for a collector that accepts InfluxDB line protocol:
 io.katacontainers.config.hypervisor.kernel_params: "push_host=192.168.1.100 push_port=8086 push_path=/api/v1/write"
 ```
 
