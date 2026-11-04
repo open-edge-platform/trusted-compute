@@ -1,15 +1,9 @@
 ---
 name: trusted-compute-install
 description: Install or uninstall the Intel Trusted Compute stack on bare-metal Ubuntu 24.04, via K3s or Docker. Use when asked to install, deploy, verify, or remove Trusted Compute packages.
+compatibility: Requires Linux (Ubuntu 24.04), oras, mokutil, Secure Boot enabled, and root/sudo access.
 metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "📦",
-        "os": ["linux"],
-        "requires": { "bins": ["oras", "mokutil"] }
-      }
-  }
+  emoji: "📦"
 ---
 
 # Trusted Compute Packages Skill
@@ -30,7 +24,7 @@ This skill installs the Trusted Compute stack on a bare-metal Ubuntu system.
 
 - Ubuntu 24.04 installed
 - Secure Boot enabled in BIOS/UEFI
-- `oras` CLI installed (see https://oras.land/docs/installation)
+- `oras` CLI installed (see the [ORAS installation guide](https://oras.land/docs/installation/))
 - Root/sudo access
 
 ### Installation Steps (K3s Deployment)
@@ -44,7 +38,7 @@ Execute these steps in order. Wait for each step to complete before proceeding.
 cat /etc/os-release | grep -E "VERSION_ID|NAME"
 
 # Check if oras is installed
-which oras || echo "ERROR: oras not installed - see https://oras.land/docs/installation"
+which oras || echo "ERROR: oras not installed - see https://oras.land/docs/installation/"
 
 # Check Secure Boot status
 mokutil --sb-state

@@ -1,15 +1,9 @@
 ---
 name: tme
 description: Report Intel Total Memory Encryption (TME/MKTME) support, activation state, and encryption algorithm. Use when asked about memory encryption on an Intel platform.
+compatibility: Requires Linux, rdmsr (msr-tools), and root/sudo access.
 metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "🧠",
-        "os": ["linux"],
-        "requires": { "bins": ["rdmsr"] }
-      }
-  }
+  emoji: "🧠"
 ---
 
 # Intel TME Configuration Skill
