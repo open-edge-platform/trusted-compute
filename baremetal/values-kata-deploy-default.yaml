@@ -5,6 +5,8 @@ image:
   reference: registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy
   tag:
 k8sDistribution: "k3s" # k8s, k3s, rke2, k0s, microk8s
+# Chart >= 4.1 defaults to "job", which needs the k8s-job-dispatcher image (not in the offline bundle)
+deploymentMode: daemonset
 debug: false
 snapshotter:
   setup: [] # ["nydus", "erofs"] or []
@@ -13,11 +15,11 @@ snapshotter:
 # Set disableAll: true to disable all shims, then explicitly enable specific ones:
 #   shims:
 #     disableAll: true
-#     qemu:
-#       enabled: true  # Only qemu is enabled
+#     qemu-runtime-rs:
+#       enabled: true  # Only qemu-runtime-rs is enabled
 shims:
   disableAll: true
-  qemu:
+  qemu-runtime-rs:
     enabled: true
     supportedArches:
       - amd64
@@ -25,11 +27,12 @@ shims:
       snapshotter: ""
 # Default shim per architecture
 defaultShim:
-  amd64: qemu
+  amd64: qemu-runtime-rs
 runtimeClasses:
   enabled: true
-  createDefault: false
-  defaultName: "kata"
+  # Also emit a "kata-qemu" RuntimeClass (handler kata-qemu-runtime-rs) so pre-4.x manifests keep working
+  createDefault: true
+  defaultName: "kata-qemu"
 node-feature-discovery:
   enabled: false
 imagePullPolicy: IfNotPresent

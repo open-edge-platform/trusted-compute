@@ -52,6 +52,16 @@ check_dir_exists() {
     [ -d "$dir" ] || { echo "ERROR: Directory $dir not found"; exit 1; }
 }
 
+ensure_kata_repo() {
+    if [ -d "${KATA_CONTAINERS_DIR}" ]; then
+        echo "INFO: Removing existing Kata Containers repo at ${KATA_CONTAINERS_DIR}"
+        rm -rf "${KATA_CONTAINERS_DIR}"
+    fi
+
+    echo "INFO: Cloning Kata Containers repo (${KATA_CONTAINERS_TAG})"
+    git clone --single-branch --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}" "${KATA_CONTAINERS_DIR}"
+}
+
 #check if edge microvisor source directory exists
 if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
 	echo "WARR: Edge microvisor source directory not found"
@@ -105,11 +115,12 @@ echo "INFO: Change symlink to point to the new kernel and rootfs"
 ln -sf "${EDGE_MICROVISOR_KERNEL}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_KERNEL_NAME}"
 ln -sf "${EDGE_MICROVISOR_ROOTFS}" "${KATA_BOOT_COMPONENT_DIR}/${KATA_ARTIFACT_ROOTFS_NAME}"
 
-# Enable virtio_mem in configuration.toml
-echo "INFO: Enabling virtio_mem in configuration.toml"
-for KATA_CONFIG_FILE in \
-    "${KATA_CONFIG_DIR}/configuration.toml" \
-    "${KATA_CONFIG_DIR}/configuration-qemu.toml"; do
+# Since Kata 4.1.0 kata-static-*.tar.zst ships only the Rust runtime (runtime-rs);
+# its qemu config lives under runtime-rs/. Patch the real file so the
+# runtime-rs/configuration.toml symlink stays intact.
+KATA_CONFIG_FILE="${KATA_CONFIG_DIR}/runtime-rs/configuration-qemu-runtime-rs.toml"
+echo "INFO: Enabling virtio_mem in ${KATA_CONFIG_FILE}"
+
 if [ -f "${KATA_CONFIG_FILE}" ]; then
     sed -i 's/^enable_virtio_mem = false/enable_virtio_mem = true/' "${KATA_CONFIG_FILE}"
     if grep -q '^enable_virtio_mem = true$' "${KATA_CONFIG_FILE}"; then
@@ -143,9 +154,11 @@ if [ -f "${KATA_CONFIG_FILE}" ]; then
         echo "WARNING: kernel_params line not found in ${KATA_CONFIG_FILE}"
     fi
 
-    # Enable additional annotations in configuration.toml
+    # Enable additional annotations in configuration.toml.
+    # runtime-rs has no hot_plug_vfio option (VFIO is always QMP hot-plugged) and
+    # rejects pods carrying enabled-but-unknown annotations, so it must not be listed.
     echo "INFO: Enabling additional annotations in configuration.toml"
-    extra_annotations=("pcie_root_port" "hot_plug_vfio" "enable_virtio_mem" "default_memory")
+    extra_annotations=("pcie_root_port" "enable_virtio_mem" "default_memory")
     annotations_str=""
     for ann in "${extra_annotations[@]}"; do
         annotations_str+=", \"${ann}\""
@@ -155,13 +168,10 @@ else
     echo "ERROR: ${KATA_CONFIG_FILE} not found"
     exit 1
 fi
-done
 
-#build kata binary and copy to artifacts
-"${BUILD_DIR}/build-kata-binary.sh"
-cp "${BUILD_DIR}/kata-runtime" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-cp "${BUILD_DIR}/containerd-shim-kata-v2" "${KATA_ARTIFACT_DIR}/opt/kata/bin/"
-rm -rf "${BUILD_DIR}/kata-runtime" "${BUILD_DIR}/containerd-shim-kata-v2"
+# The tarball ships a dangling configuration.toml -> configuration-qemu.toml
+# (Go runtime) symlink; point it at the runtime-rs qemu config patched above.
+ln -sf "runtime-rs/configuration-qemu-runtime-rs.toml" "${KATA_CONFIG_DIR}/configuration.toml"
 
 # Iterate over all files, directories, clean up unwanted files and directories and set permission and onwership
 chmod 750 "${KATA_ARTIFACT_DIR}/opt/kata"
@@ -203,12 +213,7 @@ echo "INFO: tc-docker-deploy binary installed to ${KATA_ARTIFACT_DIR}/opt/kata/b
 echo "INFO: Retar the artifacts"
 tar --zstd -cf "${KATA_ARTIFACT_NEW_NAME}" -C "${KATA_ARTIFACT_DIR}" .
 
-#remove kata repo if it exists
-[ -d "${KATA_CONTAINERS_DIR}" ] && rm -rf "${KATA_CONTAINERS_DIR}"
-
-#clone the kata containers repo
-echo "INFO: Cloning Kata Containers repo"
-git clone --branch "${KATA_CONTAINERS_TAG}" "${KATA_CONTAINERS_SRC}"
+ensure_kata_repo
 
 #patch the kata-deploy Dockerfile to add tc-docker-deploy support
 "${BUILD_DIR}/patch-dockerfile.sh" "${KATA_DOCKERFILE}"
@@ -218,6 +223,8 @@ mkdir -p "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts"
 #copy the build artifacts to the kata repo with version suffix
 echo "INFO: Copying build artifacts to Kata Containers repo"
 cp "${KATA_ARTIFACT_NEW_NAME}" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/kata-static-${KATA_CONTAINERS_TAG}-amd64.tar.zst"
+# The kata-deploy Dockerfile COPYs kata-artifacts/VERSION (installed to /opt/kata/VERSION on the host)
+cp "${KATA_CONTAINERS_DIR}/VERSION" "${KATA_CONTAINERS_DIR}/tools/packaging/kata-deploy/kata-artifacts/VERSION"
 
 #build kata-deploy-static component tarballs required by new Dockerfile
 echo "INFO: Building kata-deploy-static component tarballs"
