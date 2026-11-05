@@ -1,8 +1,6 @@
 module github.com/open-edge-platform/trusted-compute/attestation-verifier/src
 
-go 1.26.9
-
-toolchain go1.26.9
+go 1.27.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
