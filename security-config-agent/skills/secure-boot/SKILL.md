@@ -1,15 +1,9 @@
 ---
 name: secure-boot
 description: Report UEFI Secure Boot configuration on an Intel edge platform - enabled state, Setup Mode, and enrolled PK/KEK/db keys. Use when asked about Secure Boot status or boot chain key enrollment.
+compatibility: Requires Linux, mokutil, UEFI boot mode, and access to /sys/firmware/efi/.
 metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "🔒",
-        "os": ["linux"],
-        "requires": { "bins": ["mokutil"] }
-      }
-  }
+  emoji: "🔒"
 ---
 
 # Secure Boot Configuration Skill

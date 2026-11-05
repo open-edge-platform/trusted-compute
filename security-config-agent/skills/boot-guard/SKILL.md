@@ -1,15 +1,9 @@
 ---
 name: boot-guard
 description: Report Intel Boot Guard provisioning state, profile (0, 3, 4, or 5), and Verified/Measured Boot modes. Use when asked about Boot Guard, BtG profiles, or firmware root of trust.
+compatibility: Requires Linux, rdmsr (msr-tools), tpm2_pcrread (tpm2-tools), and root/sudo access.
 metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "🛡️",
-        "os": ["linux"],
-        "requires": { "bins": ["rdmsr", "tpm2_pcrread"] }
-      }
-  }
+  emoji: "🛡️"
 ---
 
 # Intel Boot Guard Configuration Skill
