@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-# TODO: Remove once kubectl ships with patched Go and golang.org/x/net.
-CVE-2026-78667
+# TODO: Remove once kubectl ships with patched golang.org/x/net.
 CVE-2026-78669
-CVE-2026-97031
 
-# Kata deploy requires root to install runtime artifacts into host-mounted paths.
-AVD-DS-0002
+# TODO: Remove once kubectl ships with golang.org/x/text v0.41.0 or newer.
+CVE-2026-56851
+
+# TODO: Remove once all scanned Debian base images include patched APT packages.
+CVE-2026-109518
