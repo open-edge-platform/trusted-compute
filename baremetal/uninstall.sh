@@ -151,6 +151,45 @@ stop_tc_docker_deploy() {
         || print_warning "Failed to stop kata-deploy via docker compose"
 }
 
+remove_docker_kata_runtime() {
+    local daemon_config="/etc/docker/daemon.json"
+    if [[ ! -f "$daemon_config" ]]; then
+        print_warning "Docker daemon config not found, skipping Kata runtime removal"
+        return
+    fi
+    if ! command -v python3 &>/dev/null; then
+        print_warning "python3 not found, leaving Kata runtime entry in $daemon_config"
+        return
+    fi
+
+    print_status "Removing Kata runtime from Docker configuration..."
+    python3 - "$daemon_config" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as daemon_file:
+    config = json.load(daemon_file)
+
+runtimes = config.get("runtimes")
+if isinstance(runtimes, dict):
+    runtimes.pop("kata", None)
+    if not runtimes:
+        config.pop("runtimes", None)
+
+temporary_path = f"{path}.tmp"
+with open(temporary_path, "w", encoding="utf-8") as daemon_file:
+    json.dump(config, daemon_file, indent=2)
+    daemon_file.write("\n")
+os.replace(temporary_path, path)
+PY
+
+    systemctl reload docker \
+        && print_status "Docker reloaded after removing the Kata runtime" \
+        || print_warning "Failed to reload Docker after removing the Kata runtime"
+}
+
 # Function to remove users/groups
 remove_tc_users_groups() {
     print_status "Removing trusted compute users and groups..."
@@ -189,6 +228,7 @@ print_tc_docker_uninstall_summary() {
     print_status "Uninstallation completed."
     print_status "Summary of removed components (TC uninstallation for Docker):"
     echo "  - kata-deploy container stopped and removed"
+    echo "  - Kata runtime removed from Docker configuration"
 }
 
 # Pre-flight check for K3s installation
@@ -327,13 +367,13 @@ remove_k8s_containerd_images() {
 restore_containerd_config_k8s() {
     print_status "Restoring containerd configuration..."
 
-    # Remove the kata-qemu drop-in we added
-    if [[ -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" ]]; then
-        rm -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
-            && print_status "Removed kata-qemu.toml drop-in" \
-            || print_warning "Failed to remove kata-qemu.toml drop-in"
+    # Remove the kata-qemu-runtime-rs drop-in we added
+    if [[ -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu-runtime-rs.toml" ]]; then
+        rm -f "$K8S_CONTAINERD_DIR/conf.d/kata-qemu-runtime-rs.toml" \
+            && print_status "Removed kata-qemu-runtime-rs.toml drop-in" \
+            || print_warning "Failed to remove kata-qemu-runtime-rs.toml drop-in"
     else
-        print_warning "kata-qemu.toml drop-in not found, skipping"
+        print_warning "kata-qemu-runtime-rs.toml drop-in not found, skipping"
     fi
 
     # Undo the conf.d imports edit made to config.toml during install
@@ -366,7 +406,7 @@ print_tc_k8s_uninstall_summary() {
     echo "  - Helm releases:         attestation-verifier, kata-deploy, trusted-workload"
     echo "  - Namespaces deleted:    trusted-compute, kata-deploy"
     echo "  - Images removed from:   containerd (k8s.io namespace)"
-    echo "  - Containerd config:     kata-qemu.toml drop-in removed"
+    echo "  - Containerd config:     kata-qemu-runtime-rs.toml drop-in removed"
     echo "  - Users/groups removed:  tc-agent, tc-ima, bm-agents"
 }
 
@@ -399,6 +439,7 @@ uninstall_tc_docker() {
     check_tc_docker_installed
     print_status "Starting TC uninstallation for Docker..."
     stop_tc_docker_deploy
+    remove_docker_kata_runtime
     print_tc_docker_uninstall_summary
 }
 

@@ -17,11 +17,11 @@ cat > "${SHIM_COMPONENTS_JSON}" <<EOF
     "All names correspond directly to kata-static-<name>.tar.zst build artifacts."
   ],
   "shims": {
-    "qemu": {
+    "qemu-runtime-rs": {
       "x86_64": ["${KATA_TAG}-amd64"]
     }
   }
 }
 EOF
 
-echo "INFO: shim-components.json patched: qemu/x86_64 -> [\"${KATA_TAG}-amd64\"]"
+echo "INFO: shim-components.json patched: qemu-runtime-rs/x86_64 -> [\"${KATA_TAG}-amd64\"]"
