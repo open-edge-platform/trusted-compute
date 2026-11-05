@@ -29,7 +29,7 @@ git apply "${PATCH_FILE}"
 popd
 
 GO_VERSION=$(yq '.languages.golang.version' "${KATA_DIR}/versions.yaml" 2>/dev/null || true)
-[[ "${GO_VERSION}" == "null" || -z "${GO_VERSION}" ]] && GO_VERSION="1.25.9"
+[[ "${GO_VERSION}" == "null" || -z "${GO_VERSION}" ]] && GO_VERSION="1.27.3"
 echo "INFO: Using Go version ${GO_VERSION}"
 
 # Create build script for inside the container

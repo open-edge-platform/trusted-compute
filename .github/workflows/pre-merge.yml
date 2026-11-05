@@ -96,6 +96,7 @@ jobs:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.docker_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@ccda485c43504937be8c1680c643c0ee2858c568  # 2026.1.4
     with:
+      security_scans_advisory: ${{ matrix.project_folder == 'trusted-workload' }}
       run_security_scans: true
       run_version_check: false
       run_build: true
