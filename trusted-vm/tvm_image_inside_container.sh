@@ -7,6 +7,9 @@
 
 set -euo pipefail
 
+source /trusted-vm/scripts/tvm_config_lib.sh
+tvm_config_load "${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}" no
+
 apt update
 apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
 
@@ -26,6 +29,8 @@ EDGE_MICROVISOR_IMAGE_DIR=${EDGE_MICROVISOR_DIR}/out/images/trusted-compute-os
 KATA_CONTAINERS_SRC_DIR=${BUILD_DIR}/kata_src
 IMAGE_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/image-builder"
 
+# Start from a clean rootfs so components of a previous build with other features do not leak in
+rm -rf "${ROOTFS_DIR}"
 mkdir -p "${ROOTFS_DIR}"
 
 # Function to extract edge_microvisor image rootfs
@@ -79,10 +84,12 @@ install_guest_hooks() {
     local hooks_dest="${ROOTFS_DIR}/usr/share/oci/hooks"
     local gpu_hook="${hooks_src}/prestart/scan-for-gpu.sh"
 
-    [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
-
+    # The host kata config always sets guest_hook_path, so keep the directory even without hooks
     mkdir -p "${hooks_dest}/prestart"
-    install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
+    if tvm_enabled gpu; then
+        [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
+        install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
+    fi
     echo "INFO: Guest hooks installed successfully"
 }
 
@@ -164,6 +171,15 @@ install_npu_telemetry() {
     rm -rf "${bin_src}"
 }
 
+# Record enabled features and non-base packages so the guest image can be inspected later
+install_features_manifest() {
+    local manifest="${BUILD_DIR}/trusted-vm-features.conf"
+    [[ -f "${manifest}" ]] || { echo "ERROR: ${manifest} not found"; exit 1; }
+    mkdir -p "${ROOTFS_DIR}/etc/trusted-vm"
+    install -o root -g root -m 0444 "${manifest}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
+    echo "INFO: Installed feature manifest at /etc/trusted-vm/features.conf"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
@@ -192,8 +208,13 @@ copy_tc_image(){
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
 install_guest_hooks
-download_jq
-install_gpu_telemetry
-install_npu_telemetry
+if tvm_enabled gpu-telemetry; then
+    download_jq
+    install_gpu_telemetry
+fi
+if tvm_enabled npu-telemetry; then
+    install_npu_telemetry
+fi
+install_features_manifest
 build_trusted_vm_image
 copy_tc_image

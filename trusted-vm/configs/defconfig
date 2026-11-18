@@ -1,0 +1,24 @@
+# Default Trusted-VM image configuration: all features enabled except debug tools.
+# Copy to trusted-vm/.tvm.config (or run 'make defconfig') and edit y/n values, or run 'make menuconfig'.
+# A telemetry feature needs its device support (gpu / npu) enabled.
+
+# Guest OS: emt
+TVM_OS=emt
+
+# GPU support: GPU drivers, i915 firmware, scan-for-gpu OCI hook
+TVM_GPU=y
+
+# GPU telemetry agent: qmassa, qmmd, jq
+TVM_GPU_TELEMETRY=y
+
+# NPU support: intel-npu driver and firmware
+TVM_NPU=y
+
+# NPU telemetry agent: npu-reader
+TVM_NPU_TELEMETRY=y
+
+# Debug tools: bc, gawk, igt-gpu-tools, pciutils
+TVM_DEBUG=n
+
+# Extra emt packages to install, space separated
+TVM_EXTRA_PACKAGES=""

@@ -14,17 +14,36 @@ EDGE_MICROVISOR_BRANCH?=26.06
 EDGE_MICROVISOR_COMMIT?="26.06-20260722"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 
+# Image features: TVM_CONFIG holds the saved selection
+TVM_CONFIG?=$(MAKEFILE_DIR).tvm.config
+TVM_RESOLVED_CONFIG=$(BUILD_DIR)/tvm.config
+TVM_CONFIG_TOOL=bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_CONFIG)
+
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
 KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../trusted-workload/kata-deploy/version.yaml)
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test
+.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
+	menuconfig defconfig resolve-config
  
 all:
 	@# Help: Runs build all
 	sudo true  # Prompt for password once
 	sudo -E $(MAKE) clone build-microvisor-image build-tvm-image
+
+menuconfig:
+	@# Help: Select Trusted-VM image features in an interactive menu
+	$(TVM_CONFIG_TOOL) --gui
+
+defconfig:
+	@# Help: Create/reset .tvm.config with defaults (all features except debug) for manual editing
+	$(TVM_CONFIG_TOOL) --defaults
+
+resolve-config:
+	mkdir -p $(BUILD_DIR)
+	rm -f $(TVM_RESOLVED_CONFIG)
+	$(TVM_CONFIG_TOOL) --env --output $(TVM_RESOLVED_CONFIG)
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -45,15 +64,18 @@ clone-kata:
 build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs build all
 
-build-microvisor-image:
+build-microvisor-image: resolve-config
 	@# Help: Runs build image phase only
 	sudo true  # Prompt for password once
+	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
+	bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_RESOLVED_CONFIG) --show \
+		--gen-image-config $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 
-build-tvm-image: build-tvm-agent
+build-tvm-image: resolve-config build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
-	sudo bash $(MAKEFILE_DIR)/tvm_image_build.sh
+	sudo TVM_CONFIG_FILE=$(TVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh
 
 build-tvm-agent:
 	@# Help: Runs build trusted VM agent
