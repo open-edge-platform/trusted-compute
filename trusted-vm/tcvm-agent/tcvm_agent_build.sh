@@ -7,18 +7,18 @@
 
 set -euo pipefail
 
-TVM_AGENT_BUILD_DIR="${PWD}"
-KATA_CONTAINER_DIR="${TVM_AGENT_BUILD_DIR}/kata-containers"
+TCVM_AGENT_BUILD_DIR="${PWD}"
+KATA_CONTAINER_DIR="${TCVM_AGENT_BUILD_DIR}/kata-containers"
 
 KATA_CONTAINER_GIT_URL="https://github.com/kata-containers/kata-containers.git"
-KATA_CONTAINER_GIT_BRANCH="$(yq '.kata-containers.version' "$(dirname "${TVM_AGENT_BUILD_DIR}")/../trusted-workload/kata-deploy/version.yaml")"
+KATA_CONTAINER_GIT_BRANCH="$(yq '.kata-containers.version' "$(dirname "${TCVM_AGENT_BUILD_DIR}")/../trusted-workload/kata-deploy/version.yaml")"
 
 DOCKER_IMAGE="ubuntu:24.04"
-TVM_AGENT_CLEAN_AFTER_BUILD="yes"
+TCVM_AGENT_CLEAN_AFTER_BUILD="yes"
 
 # Function to clean up after build
 cleanup() {
-    if [ "${TVM_AGENT_CLEAN_AFTER_BUILD}" == "yes" ]; then
+    if [ "${TCVM_AGENT_CLEAN_AFTER_BUILD}" == "yes" ]; then
         echo "INFO: Cleaning up after build"
         if ! rm -rf "${KATA_CONTAINER_DIR}" 2>/dev/null; then
             echo "INFO: Permission denied, trying with sudo"
@@ -29,7 +29,7 @@ cleanup() {
 }
 
 # Trap to ensure cleanup is called on script exit
-if [ "${TVM_AGENT_CLEAN_AFTER_BUILD}" == "yes" ]; then
+if [ "${TCVM_AGENT_CLEAN_AFTER_BUILD}" == "yes" ]; then
     trap cleanup EXIT
 fi
 
@@ -54,7 +54,7 @@ fi
 
 # Apply upstream fix for ORAS cache stdout pollution causing curl fallback
 # timeouts (exit 28): https://github.com/kata-containers/kata-containers/pull/13563
-ORAS_CACHE_PATCH="${TVM_AGENT_BUILD_DIR}/patches/0001-ci-keep-oras-installer-stdout-from-polluting-tarball-paths.patch"
+ORAS_CACHE_PATCH="${TCVM_AGENT_BUILD_DIR}/patches/0001-ci-keep-oras-installer-stdout-from-polluting-tarball-paths.patch"
 if [ -f "${ORAS_CACHE_PATCH}" ]; then
     echo "INFO: Applying ORAS cache stdout pollution fix patch"
     if ! git -C "${KATA_CONTAINER_DIR}" apply --check "${ORAS_CACHE_PATCH}" 2>/dev/null; then
@@ -66,17 +66,17 @@ fi
 
 # Run the build inside a Docker container
 docker run --rm \
-    -v "${TVM_AGENT_BUILD_DIR}:/tvm_agent" \
+    -v "${TCVM_AGENT_BUILD_DIR}:/tcvm_agent" \
     ubuntu:24.04 \
-    /bin/bash /tvm_agent/tvm_agent_inside_container.sh
+    /bin/bash /tcvm_agent/tcvm_agent_inside_container.sh
 
 # create a directory to store the kata-agent binary
-mkdir -p "${TVM_AGENT_BUILD_DIR}/output"
+mkdir -p "${TCVM_AGENT_BUILD_DIR}/output"
 
 #copy kata-agent binary and service files to the current directory
 echo "INFO: Copying kata-agent binary and service to output directory"
-cp "${KATA_CONTAINER_DIR}/target/x86_64-unknown-linux-musl/release/kata-agent" "${TVM_AGENT_BUILD_DIR}/output"
-cp "${KATA_CONTAINER_DIR}/src/agent/kata-agent.service" "${TVM_AGENT_BUILD_DIR}/output"
-cp "${KATA_CONTAINER_DIR}/src/agent/kata-containers.target" "${TVM_AGENT_BUILD_DIR}/output"
+cp "${KATA_CONTAINER_DIR}/target/x86_64-unknown-linux-musl/release/kata-agent" "${TCVM_AGENT_BUILD_DIR}/output"
+cp "${KATA_CONTAINER_DIR}/src/agent/kata-agent.service" "${TCVM_AGENT_BUILD_DIR}/output"
+cp "${KATA_CONTAINER_DIR}/src/agent/kata-containers.target" "${TCVM_AGENT_BUILD_DIR}/output"
 
 echo "INFO: Completed kata-agent build successfully"

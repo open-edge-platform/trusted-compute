@@ -14,43 +14,43 @@ EDGE_MICROVISOR_BRANCH?=26.06
 EDGE_MICROVISOR_COMMIT?="26.06-20260722"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 EDGE_MICROVISOR_IMAGE_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
-# Must match TVM_EMT_BUILT_CONFIG in os/emt/emt_profile.sh
+# Must match TCVM_EMT_BUILT_CONFIG in os/emt/emt_profile.sh
 EDGE_MICROVISOR_BUILT_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os/trusted-compute-os.json
 
-# Image features: TVM_CONFIG holds the saved selection
-TVM_CONFIG?=$(MAKEFILE_DIR).tvm.config
-TVM_RESOLVED_CONFIG=$(BUILD_DIR)/tvm.config
-TVM_CONFIG_TOOL=bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_CONFIG)
+# Image features: TCVM_CONFIG holds the saved selection
+TCVM_CONFIG?=$(MAKEFILE_DIR).tcvm.config
+TCVM_RESOLVED_CONFIG=$(BUILD_DIR)/tcvm.config
+TCVM_CONFIG_TOOL=bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_CONFIG)
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
 KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../trusted-workload/kata-deploy/version.yaml)
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
+.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tcvm-image build-tcvm-agent clean-all clean clean-microvisor clean-kata help lint test \
 	menuconfig defconfig resolve-config check-base-image
  
 all:
 	@# Help: Runs build all
 	sudo true  # Prompt for password once
-	sudo -E $(MAKE) clone build-microvisor-image build-tvm-image
+	sudo -E $(MAKE) clone build-microvisor-image build-tcvm-image
 
 menuconfig:
 	@# Help: Select Trusted-VM image features in an interactive menu
-	$(TVM_CONFIG_TOOL) --gui
+	$(TCVM_CONFIG_TOOL) --gui
 
 defconfig:
-	@# Help: Create/reset .tvm.config with defaults (all features except debug) for manual editing
-	$(TVM_CONFIG_TOOL) --defaults
+	@# Help: Create/reset .tcvm.config with defaults (all features except debug) for manual editing
+	$(TCVM_CONFIG_TOOL) --defaults
 
 resolve-config:
-	mkdir -p $(BUILD_DIR)
-	rm -f $(TVM_RESOLVED_CONFIG)
-	$(TVM_CONFIG_TOOL) --env --output $(TVM_RESOLVED_CONFIG)
+	sudo mkdir -p $(BUILD_DIR)
+	sudo rm -f $(TCVM_RESOLVED_CONFIG)
+	sudo -E $(TCVM_CONFIG_TOOL) --env --output $(TCVM_RESOLVED_CONFIG)
 
-# Fails fast if the EMT tarball was built for a different selection than build/tvm.config
+# Fails fast if the EMT tarball was built for a different selection than build/tcvm.config
 check-base-image: resolve-config
-	bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_RESOLVED_CONFIG) --check-base-image
+	bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -68,28 +68,28 @@ clone-kata:
 	rm -rf "$(KATA_CONTAINERS_SRC_DIR)"
 	git clone -b $(KATA_CONTAINERS_TAG) $(KATA_CONTAINERS_SRC) $(KATA_CONTAINERS_SRC_DIR)
  
-build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
+build: clone build-microvisor-image build-tcvm-image clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs build all
 
 build-microvisor-image: resolve-config
 	@# Help: Runs build image phase only
 	sudo true  # Prompt for password once
 	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
-	bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_RESOLVED_CONFIG) --show \
+	sudo bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --show \
 		--gen-image-config $(EDGE_MICROVISOR_IMAGE_CONFIG)
 	sudo rm -f $(EDGE_MICROVISOR_BUILT_CONFIG)
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 	sudo cp $(EDGE_MICROVISOR_IMAGE_CONFIG) $(EDGE_MICROVISOR_BUILT_CONFIG)
 
-build-tvm-image: resolve-config check-base-image build-tvm-agent
+build-tcvm-image: resolve-config check-base-image build-tcvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
-	sudo TVM_CONFIG_FILE=$(TVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh
+	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tcvm_image_build.sh
 
-build-tvm-agent:
+build-tcvm-agent:
 	@# Help: Runs build trusted VM agent
 	sudo true  # Prompt for password once
-	cd tvm-agent && bash ./tvm_agent_build.sh
+	cd tcvm-agent && bash ./tcvm_agent_build.sh
 
 docker-build:
 	@echo "This is a dummy docker-build target."

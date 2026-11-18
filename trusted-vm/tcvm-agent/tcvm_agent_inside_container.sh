@@ -17,8 +17,8 @@ apt install -o Acquire::Retries=3 -y --no-install-recommends make gcc g++ curl w
 echo "INFO: Updating CA certificates"
 update-ca-certificates
 
-TVM_AGENT_BUILD_DIR=/tvm_agent
-KATA_CONTAINER_DIR="${TVM_AGENT_BUILD_DIR}/kata-containers"
+TCVM_AGENT_BUILD_DIR=/tcvm_agent
+KATA_CONTAINER_DIR="${TCVM_AGENT_BUILD_DIR}/kata-containers"
 
 # Install yq
 echo "INFO: Getting yq version from ci/install_yq.sh"

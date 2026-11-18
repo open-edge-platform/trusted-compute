@@ -7,15 +7,15 @@
 
 set -euo pipefail
 
-source /trusted-vm/scripts/tvm_config_lib.sh
-tvm_config_load "${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}" no
+source /trusted-vm/scripts/tcvm_config_lib.sh
+tcvm_config_load "${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}" no
 
 apt update
 apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
 
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
-TVM_AGENT_DIR="/trusted-vm/tvm-agent"
+TCVM_AGENT_DIR="/trusted-vm/tcvm-agent"
 GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
 NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
 TRUSTED_VM_IMAGE="trusted-vm.img"
@@ -69,12 +69,12 @@ extract_edge_microvisor_image_rootfs() {
 
 }
 
-#install tvm-agent and service files
-install_tvm_agent() {
+#install tcvm-agent and service files
+install_tcvm_agent() {
     echo "INFO: Installing Kata Agent in rootfs"
-    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TVM_AGENT_DIR}/output/kata-agent"
-    install -o root -g root -m 0440 ${TVM_AGENT_DIR}/output/kata-agent.service "${ROOTFS_DIR}/usr/lib/systemd/system/"
-    install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
+    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TCVM_AGENT_DIR}/output/kata-agent"
+    install -o root -g root -m 0440 ${TCVM_AGENT_DIR}/output/kata-agent.service "${ROOTFS_DIR}/usr/lib/systemd/system/"
+    install -o root -g root -m 0440 "${TCVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
 }
 
 #install guest OCI hooks
@@ -86,7 +86,7 @@ install_guest_hooks() {
 
     # The host kata config always sets guest_hook_path, so keep the directory even without hooks
     mkdir -p "${hooks_dest}/prestart"
-    if tvm_enabled gpu; then
+    if tcvm_enabled gpu; then
         [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
         install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
     fi
@@ -173,8 +173,8 @@ install_npu_telemetry() {
 
 # Record enabled features and non-base packages so the guest image can be inspected later
 install_features_conf() {
-    local conf="${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}"
-    grep -q '^TVM_PACKAGES=' "${conf}" || { echo "ERROR: ${conf} has no build information"; exit 1; }
+    local conf="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
+    grep -q '^TCVM_PACKAGES=' "${conf}" || { echo "ERROR: ${conf} has no build information"; exit 1; }
     mkdir -p "${ROOTFS_DIR}/etc/trusted-vm"
     install -o root -g root -m 0444 "${conf}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
     echo "INFO: Installed ${conf} as /etc/trusted-vm/features.conf"
@@ -206,13 +206,13 @@ copy_tc_image(){
 # main function
 ################
 extract_edge_microvisor_image_rootfs
-install_tvm_agent
+install_tcvm_agent
 install_guest_hooks
-if tvm_enabled gpu-telemetry; then
+if tcvm_enabled gpu-telemetry; then
     download_jq
     install_gpu_telemetry
 fi
-if tvm_enabled npu-telemetry; then
+if tcvm_enabled npu-telemetry; then
     install_npu_telemetry
 fi
 install_features_conf

@@ -8,14 +8,14 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/tvm_config_lib.sh"
+source "${SCRIPT_DIR}/scripts/tcvm_config_lib.sh"
 
 usage() {
     cat << EOF
 Usage: $(basename "$0") [options]
 
 Selects the features of the Trusted-VM image. Use --gui, or edit the config file
-(default: ${TVM_USER_CONFIG}) by hand. Without options it prints the current configuration.
+(default: ${TCVM_USER_CONFIG}) by hand. Without options it prints the current configuration.
 
 Options:
   -c, --config FILE          Config file to load and update
@@ -26,14 +26,14 @@ Options:
 
 Build-internal options:
   -o, --output FILE          Write the resolved configuration to FILE
-      --env                  Apply TVM_* environment overrides (same keys as the config file)
+      --env                  Apply TCVM_* environment overrides (same keys as the config file)
       --gen-image-config F   Write the OS image config (e.g. EMT JSON) to F
       --check-base-image     Fail unless the existing base OS image was built for this configuration
 EOF
 }
 
 gui_cancel() {
-    tvm_log "Menu cancelled, ${config_file} not changed"
+    tcvm_log "Menu cancelled, ${config_file} not changed"
     exit 0
 }
 
@@ -44,40 +44,40 @@ run_gui() {
     elif command -v dialog > /dev/null; then
         ui=dialog
     else
-        tvm_die "whiptail or dialog is required for --gui; edit ${TVM_USER_CONFIG} instead"
+        tcvm_die "whiptail or dialog is required for --gui; edit ${TCVM_USER_CONFIG} instead"
     fi
-    [[ -t 0 && -t 1 ]] || tvm_die "--gui needs an interactive terminal"
+    [[ -t 0 && -t 1 ]] || tcvm_die "--gui needs an interactive terminal"
 
-    mapfile -t oses < <(tvm_list_os)
+    mapfile -t oses < <(tcvm_list_os)
     if (( ${#oses[@]} > 1 )); then
         for os in "${oses[@]}"; do
-            os_args+=("${os}" "" "$([[ "${os}" == "${TVM_OS}" ]] && echo ON || echo OFF)")
+            os_args+=("${os}" "" "$([[ "${os}" == "${TCVM_OS}" ]] && echo ON || echo OFF)")
         done
-        TVM_OS="$("${ui}" --title "Trusted-VM image" --radiolist "Guest OS" 15 60 "${#oses[@]}" \
+        TCVM_OS="$("${ui}" --title "Trusted-VM image" --radiolist "Guest OS" 15 60 "${#oses[@]}" \
             "${os_args[@]}" 3>&1 1>&2 2>&3)" || gui_cancel
-        tvm_config_resolve
+        tcvm_config_resolve
     fi
 
-    for id in "${TVM_OS_FEATURES[@]}"; do
-        tvm_feature_info "${id}"
-        feat_args+=("${id}" "${_TVM_DESC}" "$(tvm_enabled "${id}" && echo ON || echo OFF)")
+    for id in "${TCVM_OS_FEATURES[@]}"; do
+        tcvm_feature_info "${id}"
+        feat_args+=("${id}" "${_TCVM_DESC}" "$(tcvm_enabled "${id}" && echo ON || echo OFF)")
     done
-    choice="$("${ui}" --title "Trusted-VM image features (${TVM_OS})" --separate-output \
+    choice="$("${ui}" --title "Trusted-VM image features (${TCVM_OS})" --separate-output \
         --checklist "Space toggles, Enter confirms. Telemetry needs its device support ticked." \
-        18 95 "${#TVM_OS_FEATURES[@]}" "${feat_args[@]}" 3>&1 1>&2 2>&3)" || gui_cancel
-    for id in $(tvm_all_features); do
-        printf -v "$(tvm_feature_key "${id}")" n
+        18 95 "${#TCVM_OS_FEATURES[@]}" "${feat_args[@]}" 3>&1 1>&2 2>&3)" || gui_cancel
+    for id in $(tcvm_all_features); do
+        printf -v "$(tcvm_feature_key "${id}")" n
     done
     for id in ${choice//\"/}; do
-        printf -v "$(tvm_feature_key "${id}")" y
+        printf -v "$(tcvm_feature_key "${id}")" y
     done
 
-    TVM_EXTRA_PACKAGES="$("${ui}" --title "Trusted-VM image" \
-        --inputbox "Extra ${TVM_OS} packages to install (space separated, optional)" 10 70 \
-        "${TVM_EXTRA_PACKAGES}" 3>&1 1>&2 2>&3)" || gui_cancel
+    TCVM_EXTRA_PACKAGES="$("${ui}" --title "Trusted-VM image" \
+        --inputbox "Extra ${TCVM_OS} packages to install (space separated, optional)" 10 70 \
+        "${TCVM_EXTRA_PACKAGES}" 3>&1 1>&2 2>&3)" || gui_cancel
 }
 
-config_file="${TVM_USER_CONFIG}"
+config_file="${TCVM_USER_CONFIG}"
 output_file=""
 use_defaults=no
 use_env=no
@@ -97,32 +97,32 @@ while (( $# )); do
         --check-base-image)   check_base_image=yes ;;
         --show)               show_only=yes ;;
         -h|--help)            usage; exit 0 ;;
-        *)                    usage >&2; tvm_die "unknown option '$1'" ;;
+        *)                    usage >&2; tcvm_die "unknown option '$1'" ;;
     esac
     shift
 done
 
 if [[ "${use_defaults}" == "yes" ]]; then
-    tvm_config_load "" "${use_env}"
+    tcvm_config_load "" "${use_env}"
 else
-    tvm_config_load "${config_file}" "${use_env}"
+    tcvm_config_load "${config_file}" "${use_env}"
 fi
 
 [[ "${gui}" == "no" ]] || run_gui
-tvm_config_resolve
+tcvm_config_resolve
 
 if [[ "${check_base_image}" == "yes" ]]; then
     os_check_base_image
-    tvm_log "Base ${TVM_OS} image matches the configuration"
+    tcvm_log "Base ${TCVM_OS} image matches the configuration"
     exit 0
 fi
 
 if [[ -n "${gen_image_config}" ]]; then
     os_generate_image_config "${gen_image_config}"
-    tvm_log "Generated ${TVM_OS} image config: ${gen_image_config}"
+    tcvm_log "Generated ${TCVM_OS} image config: ${gen_image_config}"
 fi
 
-tvm_config_print
+tcvm_config_print
 
 modified=no
 if [[ "${use_defaults}" == "yes" || "${gui}" == "yes" || -n "${output_file}" ]]; then
@@ -130,9 +130,9 @@ if [[ "${use_defaults}" == "yes" || "${gui}" == "yes" || -n "${output_file}" ]];
 fi
 if [[ "${show_only}" == "no" && "${modified}" == "yes" ]]; then
     if [[ -n "${output_file}" ]]; then
-        tvm_config_write "${output_file}" yes
+        tcvm_config_write "${output_file}" yes
     else
-        tvm_config_write "${config_file}"
+        tcvm_config_write "${config_file}"
     fi
-    tvm_log "Configuration written to ${output_file:-${config_file}}"
+    tcvm_log "Configuration written to ${output_file:-${config_file}}"
 fi

@@ -8,19 +8,19 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/tvm_config_lib.sh"
+source "${SCRIPT_DIR}/scripts/tcvm_config_lib.sh"
 
-TVM_CONFIG_FILE="${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}"
-tvm_config_load "${TVM_CONFIG_FILE}"
-tvm_config_print
+TCVM_CONFIG_FILE="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
+tcvm_config_load "${TCVM_CONFIG_FILE}"
+tcvm_config_print
 # The rootfs is extracted from the existing base image, so it must match this selection
 os_check_base_image
 # Resolved copy with build info: read by the build container and installed in the guest
-tvm_config_write "${SCRIPT_DIR}/build/tvm.config" yes
+tcvm_config_write "${SCRIPT_DIR}/build/tcvm.config" yes
 
 echo "INFO: Building Trusted-VM image"
 
-if tvm_enabled gpu-telemetry; then
+if tcvm_enabled gpu-telemetry; then
     echo "INFO: Building GPU telemetry tools (qmassa, qmmd) in rust:1.88 container"
     docker run --rm \
         -e DEBIAN_FRONTEND=noninteractive \
@@ -33,7 +33,7 @@ fi
 # Downloads npu_reader.py and npu_monitor_tool.py from edge-ai-libraries at a
 # pinned commit, applies TC-specific patches to npu_reader.py, then bundles
 # them into a standalone binary.
-if tvm_enabled npu-telemetry; then
+if tcvm_enabled npu-telemetry; then
     echo "INFO: Building npu-reader in python:3.11-slim container (PyInstaller)"
     docker run --rm \
         -v "${SCRIPT_DIR}:/trusted-vm" \
@@ -47,8 +47,8 @@ docker run --rm \
     --privileged \
     -v /dev:/dev \
     -v "${SCRIPT_DIR}":/trusted-vm \
-    -e TVM_CONFIG_FILE=/trusted-vm/build/tvm.config \
+    -e TCVM_CONFIG_FILE=/trusted-vm/build/tcvm.config \
     ubuntu:24.04 \
-    /bin/bash /trusted-vm/tvm_image_inside_container.sh
+    /bin/bash /trusted-vm/tcvm_image_inside_container.sh
 
 echo "INFO: Trusted-VM image built successfully"
