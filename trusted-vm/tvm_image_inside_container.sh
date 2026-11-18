@@ -172,12 +172,12 @@ install_npu_telemetry() {
 }
 
 # Record enabled features and non-base packages so the guest image can be inspected later
-install_features_manifest() {
-    local manifest="${BUILD_DIR}/trusted-vm-features.conf"
-    [[ -f "${manifest}" ]] || { echo "ERROR: ${manifest} not found"; exit 1; }
+install_features_conf() {
+    local conf="${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}"
+    grep -q '^TVM_PACKAGES=' "${conf}" || { echo "ERROR: ${conf} has no build information"; exit 1; }
     mkdir -p "${ROOTFS_DIR}/etc/trusted-vm"
-    install -o root -g root -m 0444 "${manifest}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
-    echo "INFO: Installed feature manifest at /etc/trusted-vm/features.conf"
+    install -o root -g root -m 0444 "${conf}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
+    echo "INFO: Installed ${conf} as /etc/trusted-vm/features.conf"
 }
 
 #build Trusted vm image from rootfs
@@ -215,6 +215,6 @@ fi
 if tvm_enabled npu-telemetry; then
     install_npu_telemetry
 fi
-install_features_manifest
+install_features_conf
 build_trusted_vm_image
 copy_tc_image

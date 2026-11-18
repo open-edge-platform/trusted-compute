@@ -13,6 +13,9 @@ EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolki
 EDGE_MICROVISOR_BRANCH?=26.06
 EDGE_MICROVISOR_COMMIT?="26.06-20260722"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
+EDGE_MICROVISOR_IMAGE_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
+# Must match TVM_EMT_BUILT_CONFIG in os/emt/emt_profile.sh
+EDGE_MICROVISOR_BUILT_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os/trusted-compute-os.json
 
 # Image features: TVM_CONFIG holds the saved selection
 TVM_CONFIG?=$(MAKEFILE_DIR).tvm.config
@@ -25,7 +28,7 @@ KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
 .PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
-	menuconfig defconfig resolve-config
+	menuconfig defconfig resolve-config check-base-image
  
 all:
 	@# Help: Runs build all
@@ -44,6 +47,10 @@ resolve-config:
 	mkdir -p $(BUILD_DIR)
 	rm -f $(TVM_RESOLVED_CONFIG)
 	$(TVM_CONFIG_TOOL) --env --output $(TVM_RESOLVED_CONFIG)
+
+# Fails fast if the EMT tarball was built for a different selection than build/tvm.config
+check-base-image: resolve-config
+	bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_RESOLVED_CONFIG) --check-base-image
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -69,10 +76,12 @@ build-microvisor-image: resolve-config
 	sudo true  # Prompt for password once
 	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
 	bash $(MAKEFILE_DIR)tvm_config.sh --config $(TVM_RESOLVED_CONFIG) --show \
-		--gen-image-config $(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
+		--gen-image-config $(EDGE_MICROVISOR_IMAGE_CONFIG)
+	sudo rm -f $(EDGE_MICROVISOR_BUILT_CONFIG)
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
+	sudo cp $(EDGE_MICROVISOR_IMAGE_CONFIG) $(EDGE_MICROVISOR_BUILT_CONFIG)
 
-build-tvm-image: resolve-config build-tvm-agent
+build-tvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
 	sudo TVM_CONFIG_FILE=$(TVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh

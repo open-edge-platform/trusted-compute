@@ -13,10 +13,10 @@ source "${SCRIPT_DIR}/scripts/tvm_config_lib.sh"
 TVM_CONFIG_FILE="${TVM_CONFIG_FILE:-${TVM_USER_CONFIG}}"
 tvm_config_load "${TVM_CONFIG_FILE}"
 tvm_config_print
-# The Ubuntu build container reads this resolved copy
-tvm_config_write "${SCRIPT_DIR}/build/tvm.config"
-# Generated on the host (needs yq), installed into the guest by tvm_image_inside_container.sh
-tvm_manifest_write "${SCRIPT_DIR}/build/trusted-vm-features.conf"
+# The rootfs is extracted from the existing base image, so it must match this selection
+os_check_base_image
+# Resolved copy with build info: read by the build container and installed in the guest
+tvm_config_write "${SCRIPT_DIR}/build/tvm.config" yes
 
 echo "INFO: Building Trusted-VM image"
 

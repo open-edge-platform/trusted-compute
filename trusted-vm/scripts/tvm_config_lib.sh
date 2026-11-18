@@ -9,6 +9,7 @@
 TVM_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TVM_DEFCONFIG="${TVM_ROOT_DIR}/configs/defconfig"
 TVM_USER_CONFIG="${TVM_ROOT_DIR}/.tvm.config"
+TVM_BUILD_INFO_KEYS="TVM_VERSION TVM_BUILD_DATE TVM_PACKAGES"
 
 # id|config key|required feature|description  (required features must be listed first)
 TVM_FEATURE_TABLE=(
@@ -85,6 +86,8 @@ _tvm_config_read() {
         [[ "${line}" =~ ${re_kv} ]] || tvm_die "${file}:${n}: invalid line: ${line}"
         key="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
+        # Build info keys are regenerated on every write
+        [[ " ${TVM_BUILD_INFO_KEYS} " == *" ${key} "* ]] && continue
         tvm_is_config_key "${key}" || tvm_die "${file}:${n}: unknown option ${key}"
         value="${value%\"}"
         value="${value#\"}"
@@ -96,7 +99,7 @@ _tvm_os_load() {
     local profile="${TVM_ROOT_DIR}/os/${TVM_OS}/${TVM_OS}_profile.sh"
     [[ "${TVM_OS}" =~ ^[a-z0-9-]+$ && -f "${profile}" ]] \
         || tvm_die "unsupported TVM_OS '${TVM_OS}' (available: $(tvm_list_os | xargs))"
-    unset -f os_feature_packages os_image_packages os_generate_image_config
+    unset -f os_feature_packages os_image_packages os_generate_image_config os_check_base_image
     source "${profile}"
 }
 
@@ -151,7 +154,8 @@ tvm_config_load() {
 }
 
 tvm_config_write() {
-    local file="$1" id
+    local file="$1" build_info="${2:-no}" id packages=""
+    [[ "${build_info}" == "no" ]] || packages="$(os_image_packages)"
     mkdir -p "$(dirname "${file}")"
     {
         echo "# Trusted-VM image configuration. Edit y/n values, or run 'make menuconfig'."
@@ -168,32 +172,15 @@ tvm_config_write() {
         echo ""
         echo "# Extra ${TVM_OS} packages to install, space separated"
         echo "TVM_EXTRA_PACKAGES=\"${TVM_EXTRA_PACKAGES}\""
-    } > "${file}"
-}
-
-# Writes the feature/package record that is installed in the guest rootfs.
-tvm_manifest_write() {
-    local file="$1" packages
-    packages="$(os_image_packages)"
-    mkdir -p "$(dirname "${file}")"
-    {
-        echo "# Trusted-VM image features and packages added on top of the ${TVM_OS} base package list"
-        echo "TVM_VERSION=$(tr -d '[:space:]' < "${TVM_ROOT_DIR}/../trusted-workload/VERSION")"
-        echo "TVM_BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        _tvm_config_lines
-        echo "TVM_PACKAGES=\"${packages}\""
-    } > "${file}"
-}
-
-_tvm_config_lines() {
-    local key
-    for key in $(tvm_config_keys); do
-        if [[ "${key}" == "TVM_EXTRA_PACKAGES" ]]; then
-            echo "${key}=\"${!key}\""
-        else
-            echo "${key}=${!key}"
+        if [[ "${build_info}" == "yes" ]]; then
+            echo ""
+            echo "# Build information, generated at build time (read-only)"
+            echo "TVM_VERSION=$(tr -d '[:space:]' < "${TVM_ROOT_DIR}/../trusted-workload/VERSION")"
+            echo "TVM_BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "# Packages installed on top of the ${TVM_OS} base package list"
+            echo "TVM_PACKAGES=\"${packages}\""
         fi
-    done
+    } > "${file}"
 }
 
 # Prints the OS package list for the enabled features plus TVM_EXTRA_PACKAGES.

@@ -28,6 +28,7 @@ Build-internal options:
   -o, --output FILE          Write the resolved configuration to FILE
       --env                  Apply TVM_* environment overrides (same keys as the config file)
       --gen-image-config F   Write the OS image config (e.g. EMT JSON) to F
+      --check-base-image     Fail unless the existing base OS image was built for this configuration
 EOF
 }
 
@@ -83,6 +84,7 @@ use_env=no
 gui=no
 show_only=no
 gen_image_config=""
+check_base_image=no
 
 while (( $# )); do
     case "$1" in
@@ -92,6 +94,7 @@ while (( $# )); do
         --env)                use_env=yes ;;
         --gui)                gui=yes ;;
         --gen-image-config)   gen_image_config="$2"; shift ;;
+        --check-base-image)   check_base_image=yes ;;
         --show)               show_only=yes ;;
         -h|--help)            usage; exit 0 ;;
         *)                    usage >&2; tvm_die "unknown option '$1'" ;;
@@ -108,6 +111,12 @@ fi
 [[ "${gui}" == "no" ]] || run_gui
 tvm_config_resolve
 
+if [[ "${check_base_image}" == "yes" ]]; then
+    os_check_base_image
+    tvm_log "Base ${TVM_OS} image matches the configuration"
+    exit 0
+fi
+
 if [[ -n "${gen_image_config}" ]]; then
     os_generate_image_config "${gen_image_config}"
     tvm_log "Generated ${TVM_OS} image config: ${gen_image_config}"
@@ -120,6 +129,10 @@ if [[ "${use_defaults}" == "yes" || "${gui}" == "yes" || -n "${output_file}" ]];
     modified=yes
 fi
 if [[ "${show_only}" == "no" && "${modified}" == "yes" ]]; then
-    tvm_config_write "${output_file:-${config_file}}"
+    if [[ -n "${output_file}" ]]; then
+        tvm_config_write "${output_file}" yes
+    else
+        tvm_config_write "${config_file}"
+    fi
     tvm_log "Configuration written to ${output_file:-${config_file}}"
 fi
