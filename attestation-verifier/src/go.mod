@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/antchfx/jsonquery v1.3.8
+	github.com/antchfx/xpath v1.3.9
 	github.com/beevik/etree v1.8.1
 	github.com/cloudflare/cfssl v1.7.1
 	github.com/davecgh/go-spew v1.1.1
@@ -40,7 +41,6 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/antchfx/xpath v1.3.9 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
