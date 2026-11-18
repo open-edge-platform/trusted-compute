@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
 # Default Trusted-VM image configuration: all features enabled except debug tools.
 # Copy to trusted-vm/.tvm.config (or run 'make defconfig') and edit y/n values, or run 'make menuconfig'.
 # A telemetry feature needs its device support (gpu / npu) enabled.
