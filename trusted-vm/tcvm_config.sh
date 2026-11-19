@@ -20,7 +20,7 @@ Selects the features of the Trusted-VM image. Use --gui, or edit the config file
 Options:
   -c, --config FILE          Config file to load and update
       --gui                  Interactive menu (whiptail or dialog)
-      --defaults             Reset the config file to configs/defconfig (all features except debug)
+      --defaults             Reset the config file to configs/defconfig (all features except custom)
       --show                 Print the configuration without writing it
   -h, --help                 Show this help
 
@@ -72,9 +72,11 @@ run_gui() {
         printf -v "$(tcvm_feature_key "${id}")" y
     done
 
-    TCVM_EXTRA_PACKAGES="$("${ui}" --title "Trusted-VM image" \
-        --inputbox "Extra ${TCVM_OS} packages to install (space separated, optional)" 10 70 \
-        "${TCVM_EXTRA_PACKAGES}" 3>&1 1>&2 2>&3)" || gui_cancel
+    if tcvm_enabled custom; then
+        TCVM_CUSTOM_PACKAGES="$("${ui}" --title "Trusted-VM image" \
+            --inputbox "Custom ${TCVM_OS} packages to install (space separated)" 10 70 \
+            "${TCVM_CUSTOM_PACKAGES}" 3>&1 1>&2 2>&3)" || gui_cancel
+    fi
 }
 
 config_file="${TCVM_USER_CONFIG}"

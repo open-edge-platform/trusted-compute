@@ -14,7 +14,7 @@ TCVM_CONFIG_FILE="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
 tcvm_config_load "${TCVM_CONFIG_FILE}"
 tcvm_config_print
 # The rootfs is extracted from the existing base image, so it must match this selection
-os_check_base_image
+os_check_base_image || tcvm_die "the ${TCVM_OS} base image must be rebuilt; run 'make build-tcvm-image'"
 # Resolved copy with build info: read by the build container and installed in the guest
 tcvm_config_write "${SCRIPT_DIR}/build/tcvm.config" yes
 
@@ -49,6 +49,6 @@ docker run --rm \
     -v "${SCRIPT_DIR}":/trusted-vm \
     -e TCVM_CONFIG_FILE=/trusted-vm/build/tcvm.config \
     ubuntu:24.04 \
-    /bin/bash /trusted-vm/tcvm_image_inside_container.sh
+    /bin/bash /trusted-vm/tvm_image_inside_container.sh
 
 echo "INFO: Trusted-VM image built successfully"

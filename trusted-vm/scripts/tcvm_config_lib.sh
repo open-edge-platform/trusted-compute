@@ -17,7 +17,7 @@ TCVM_FEATURE_TABLE=(
     "gpu-telemetry|TCVM_GPU_TELEMETRY|gpu|GPU telemetry agent: qmassa, qmmd, jq"
     "npu|TCVM_NPU||NPU support: intel-npu driver and firmware"
     "npu-telemetry|TCVM_NPU_TELEMETRY|npu|NPU telemetry agent: npu-reader"
-    "debug|TCVM_DEBUG||Debug tools: bc, gawk, igt-gpu-tools, pciutils"
+    "custom|TCVM_CUSTOM||Custom packages: listed in TCVM_CUSTOM_PACKAGES"
 )
 
 tcvm_log()  { echo "INFO: $*" >&2; }
@@ -48,7 +48,7 @@ tcvm_config_keys() {
     local id
     echo TCVM_OS
     for id in $(tcvm_all_features); do tcvm_feature_key "${id}"; done
-    echo TCVM_EXTRA_PACKAGES
+    echo TCVM_CUSTOM_PACKAGES
 }
 
 tcvm_is_config_key() {
@@ -88,7 +88,11 @@ _tcvm_config_read() {
         value="${BASH_REMATCH[2]}"
         # Build info keys are regenerated on every write
         [[ " ${TCVM_BUILD_INFO_KEYS} " == *" ${key} "* ]] && continue
-        tcvm_is_config_key "${key}" || tcvm_die "${file}:${n}: unknown option ${key}"
+        if ! tcvm_is_config_key "${key}"; then
+            [[ -z "$(_tcvm_new_key "${key}")" ]] \
+                || tcvm_die "${file}:${n}: ${key} was renamed to $(_tcvm_new_key "${key}")"
+            tcvm_die "${file}:${n}: unknown option ${key}"
+        fi
         value="${value%\"}"
         value="${value#\"}"
         printf -v "${key}" '%s' "${value}"
@@ -130,17 +134,36 @@ tcvm_config_resolve() {
         fi
     done
 
-    for pkg in ${TCVM_EXTRA_PACKAGES//,/ }; do
+    for pkg in ${TCVM_CUSTOM_PACKAGES//,/ }; do
         [[ "${pkg}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]] || tcvm_die "invalid package name '${pkg}'"
         pkgs+=("${pkg}")
     done
-    TCVM_EXTRA_PACKAGES="${pkgs[*]}"
+    TCVM_CUSTOM_PACKAGES="${pkgs[*]}"
+}
+
+# Prints the current name of a renamed config key, or nothing.
+_tcvm_new_key() {
+    case "$1" in
+        TVM_DEBUG|TCVM_DEBUG)                   echo TCVM_CUSTOM ;;
+        TVM_EXTRA_PACKAGES|TCVM_EXTRA_PACKAGES) echo TCVM_CUSTOM_PACKAGES ;;
+        TVM_*)                                  echo "TC${1#T}" ;;
+    esac
 }
 
 # tcvm_config_load [config file] [use env: yes|no]
 tcvm_config_load() {
-    local file="${1:-}" use_env="${2:-yes}" key
+    local file="${1:-}" use_env="${2:-yes}" key old new
     local -A env_vals=()
+    # Old names would otherwise be ignored and the defaults built
+    [[ ! -f "${TCVM_ROOT_DIR}/.tvm.config" ]] \
+        || tcvm_die "${TCVM_ROOT_DIR}/.tvm.config is no longer read; rename it to .tcvm.config and its TVM_ keys to TCVM_"
+    if [[ "${use_env}" == "yes" ]]; then
+        for old in $(compgen -v); do
+            case "${old}" in TVM_*|TCVM_DEBUG|TCVM_EXTRA_PACKAGES) ;; *) continue ;; esac
+            new="$(_tcvm_new_key "${old}")"
+            ! tcvm_is_config_key "${new}" || tcvm_die "${old} is no longer supported; use ${new}"
+        done
+    fi
     for key in $(tcvm_config_keys); do
         [[ "${use_env}" == "yes" && -n "${!key+x}" ]] && env_vals["${key}"]="${!key}"
         unset "${key}"
@@ -170,8 +193,8 @@ tcvm_config_write() {
             echo "${_TCVM_KEY}=${!_TCVM_KEY}"
         done
         echo ""
-        echo "# Extra ${TCVM_OS} packages to install, space separated"
-        echo "TCVM_EXTRA_PACKAGES=\"${TCVM_EXTRA_PACKAGES}\""
+        echo "# Packages installed when TCVM_CUSTOM=y, space separated"
+        echo "TCVM_CUSTOM_PACKAGES=\"${TCVM_CUSTOM_PACKAGES}\""
         if [[ "${build_info}" == "yes" ]]; then
             echo ""
             echo "# Build information, generated at build time (read-only)"
@@ -183,17 +206,18 @@ tcvm_config_write() {
     } > "${file}"
 }
 
-# Prints the OS package list for the enabled features plus TCVM_EXTRA_PACKAGES.
+# Prints the OS package list for the enabled features (custom: TCVM_CUSTOM_PACKAGES).
 tcvm_packages() {
     local id pkgs=() more=()
     for id in "${TCVM_OS_FEATURES[@]}"; do
-        if tcvm_enabled "${id}"; then
+        tcvm_enabled "${id}" || continue
+        if [[ "${id}" == "custom" ]]; then
+            read -ra more <<< "${TCVM_CUSTOM_PACKAGES}"
+        else
             read -ra more <<< "$(os_feature_packages "${id}")"
-            pkgs+=("${more[@]}")
         fi
+        pkgs+=("${more[@]}")
     done
-    read -ra more <<< "${TCVM_EXTRA_PACKAGES}"
-    pkgs+=("${more[@]}")
     echo "${pkgs[*]}"
 }
 
@@ -207,6 +231,6 @@ tcvm_config_print() {
         tcvm_os_supports "${id}" || state="unsupported"
         printf "  %-17s: %-11s %s\n" "${id}" "${state}" "${_TCVM_DESC}"
     done
-    echo "  extra packages   : ${TCVM_EXTRA_PACKAGES:-<none>}"
+    echo "  custom packages  : ${TCVM_CUSTOM_PACKAGES:-<none>}"
     echo "  OS packages      : $(tcvm_packages)"
 }

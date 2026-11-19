@@ -40,17 +40,19 @@ menuconfig:
 	$(TCVM_CONFIG_TOOL) --gui
 
 defconfig:
-	@# Help: Create/reset .tcvm.config with defaults (all features except debug) for manual editing
+	@# Help: Create/reset .tcvm.config with defaults (all features except custom) for manual editing
 	$(TCVM_CONFIG_TOOL) --defaults
 
 resolve-config:
-	sudo mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 	sudo rm -f $(TCVM_RESOLVED_CONFIG)
 	sudo -E $(TCVM_CONFIG_TOOL) --env --output $(TCVM_RESOLVED_CONFIG)
 
-# Fails fast if the EMT tarball was built for a different selection than build/tcvm.config
 check-base-image: resolve-config
-	bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image
+	@bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image || { rc=$$?; \
+		[ $$rc -eq 2 ] || exit $$rc; \
+		echo "WARNING: cleaning and rebuilding the EMT image for the current selection"; \
+		sudo -E make -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clean-microvisor clone-microvisor build-microvisor-image; }
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -84,7 +86,7 @@ build-microvisor-image: resolve-config
 build-tcvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
-	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tcvm_image_build.sh
+	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh
 
 build-tvm-agent:
 	@# Help: Runs build trusted VM agent

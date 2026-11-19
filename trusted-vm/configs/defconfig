@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Default Trusted-VM image configuration: all features enabled except debug tools.
+# Default Trusted-VM image configuration: all features enabled except custom packages.
 # To customise, run 'make menuconfig', or 'make defconfig' and edit trusted-vm/.tcvm.config.
 # A telemetry feature needs its device support (gpu / npu) enabled.
 
@@ -21,8 +21,8 @@ TCVM_NPU=y
 # NPU telemetry agent: npu-reader
 TCVM_NPU_TELEMETRY=y
 
-# Debug tools: bc, gawk, igt-gpu-tools, pciutils
-TCVM_DEBUG=n
+# Custom packages: listed in TCVM_CUSTOM_PACKAGES
+TCVM_CUSTOM=n
 
-# Extra emt packages to install, space separated
-TCVM_EXTRA_PACKAGES=""
+# Packages installed when TCVM_CUSTOM=y, space separated
+TCVM_CUSTOM_PACKAGES="bc gawk igt-gpu-tools pciutils"
