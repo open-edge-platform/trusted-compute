@@ -10,6 +10,9 @@ CVE-2026-78661
 # TODO: Remove once kubectl ships with golang.org/x/text v0.41.0 or newer.
 CVE-2026-56851
 
+# TODO: Remove once kubectl ships built with Go 1.26.11 / 1.27.4 or newer.
+CVE-2026-97054
+
 # TODO: Remove once all scanned Debian base images include patched APT packages.
 CVE-2026-109518
 
