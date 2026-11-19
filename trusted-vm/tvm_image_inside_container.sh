@@ -8,7 +8,7 @@
 set -euo pipefail
 
 source /trusted-vm/scripts/tcvm_config_lib.sh
-tcvm_config_load "${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}" no
+tcvm_config_load "${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
 
 apt update
 apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl

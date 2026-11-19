@@ -26,7 +26,6 @@ Options:
 
 Build-internal options:
   -o, --output FILE          Write the resolved configuration to FILE
-      --env                  Apply TCVM_* environment overrides (same keys as the config file)
       --gen-image-config F   Write the OS image config (e.g. EMT JSON) to F
       --check-base-image     Fail unless the existing base OS image was built for this configuration
 EOF
@@ -82,7 +81,6 @@ run_gui() {
 config_file="${TCVM_USER_CONFIG}"
 output_file=""
 use_defaults=no
-use_env=no
 gui=no
 show_only=no
 gen_image_config=""
@@ -93,7 +91,6 @@ while (( $# )); do
         -c|--config)          config_file="$2"; shift ;;
         -o|--output)          output_file="$2"; shift ;;
         --defaults)           use_defaults=yes ;;
-        --env)                use_env=yes ;;
         --gui)                gui=yes ;;
         --gen-image-config)   gen_image_config="$2"; shift ;;
         --check-base-image)   check_base_image=yes ;;
@@ -105,9 +102,9 @@ while (( $# )); do
 done
 
 if [[ "${use_defaults}" == "yes" ]]; then
-    tcvm_config_load "" "${use_env}"
+    tcvm_config_load ""
 else
-    tcvm_config_load "${config_file}" "${use_env}"
+    tcvm_config_load "${config_file}"
 fi
 
 [[ "${gui}" == "no" ]] || run_gui

@@ -46,7 +46,7 @@ defconfig:
 resolve-config:
 	mkdir -p $(BUILD_DIR)
 	sudo rm -f $(TCVM_RESOLVED_CONFIG)
-	sudo -E $(TCVM_CONFIG_TOOL) --env --output $(TCVM_RESOLVED_CONFIG)
+	sudo $(TCVM_CONFIG_TOOL) --output $(TCVM_RESOLVED_CONFIG)
 
 check-base-image: resolve-config
 	@bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image || { rc=$$?; \

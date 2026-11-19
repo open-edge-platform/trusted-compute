@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Trusted-VM build configuration library; source it, do not execute it.
-# Config files contain KEY=value lines. Precedence: TCVM_* env > config file > configs/defconfig.
+# Config files contain KEY=value lines; values in the config file override configs/defconfig.
 
 TCVM_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TCVM_DEFCONFIG="${TCVM_ROOT_DIR}/configs/defconfig"
@@ -137,19 +137,14 @@ tcvm_config_resolve() {
     TCVM_CUSTOM_PACKAGES="${pkgs[*]}"
 }
 
-# tcvm_config_load [config file] [use env: yes|no]
+# tcvm_config_load [config file]
 tcvm_config_load() {
-    local file="${1:-}" use_env="${2:-yes}" key
-    local -A env_vals=()
-    for key in $(tcvm_config_keys); do
-        [[ "${use_env}" == "yes" && -n "${!key+x}" ]] && env_vals["${key}"]="${!key}"
-        unset "${key}"
-    done
+    local file="${1:-}" key
+    for key in $(tcvm_config_keys); do unset "${key}"; done
     _tcvm_config_read "${TCVM_DEFCONFIG}"
     if [[ -n "${file}" && -f "${file}" ]]; then
         _tcvm_config_read "${file}"
     fi
-    for key in "${!env_vals[@]}"; do printf -v "${key}" '%s' "${env_vals[${key}]}"; done
     tcvm_config_resolve
 }
 
