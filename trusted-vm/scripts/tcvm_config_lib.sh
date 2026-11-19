@@ -88,11 +88,7 @@ _tcvm_config_read() {
         value="${BASH_REMATCH[2]}"
         # Build info keys are regenerated on every write
         [[ " ${TCVM_BUILD_INFO_KEYS} " == *" ${key} "* ]] && continue
-        if ! tcvm_is_config_key "${key}"; then
-            [[ -z "$(_tcvm_new_key "${key}")" ]] \
-                || tcvm_die "${file}:${n}: ${key} was renamed to $(_tcvm_new_key "${key}")"
-            tcvm_die "${file}:${n}: unknown option ${key}"
-        fi
+        tcvm_is_config_key "${key}" || tcvm_die "${file}:${n}: unknown option ${key}"
         value="${value%\"}"
         value="${value#\"}"
         printf -v "${key}" '%s' "${value}"
@@ -141,29 +137,10 @@ tcvm_config_resolve() {
     TCVM_CUSTOM_PACKAGES="${pkgs[*]}"
 }
 
-# Prints the current name of a renamed config key, or nothing.
-_tcvm_new_key() {
-    case "$1" in
-        TVM_DEBUG|TCVM_DEBUG)                   echo TCVM_CUSTOM ;;
-        TVM_EXTRA_PACKAGES|TCVM_EXTRA_PACKAGES) echo TCVM_CUSTOM_PACKAGES ;;
-        TVM_*)                                  echo "TC${1#T}" ;;
-    esac
-}
-
 # tcvm_config_load [config file] [use env: yes|no]
 tcvm_config_load() {
-    local file="${1:-}" use_env="${2:-yes}" key old new
+    local file="${1:-}" use_env="${2:-yes}" key
     local -A env_vals=()
-    # Old names would otherwise be ignored and the defaults built
-    [[ ! -f "${TCVM_ROOT_DIR}/.tvm.config" ]] \
-        || tcvm_die "${TCVM_ROOT_DIR}/.tvm.config is no longer read; rename it to .tcvm.config and its TVM_ keys to TCVM_"
-    if [[ "${use_env}" == "yes" ]]; then
-        for old in $(compgen -v); do
-            case "${old}" in TVM_*|TCVM_DEBUG|TCVM_EXTRA_PACKAGES) ;; *) continue ;; esac
-            new="$(_tcvm_new_key "${old}")"
-            ! tcvm_is_config_key "${new}" || tcvm_die "${old} is no longer supported; use ${new}"
-        done
-    fi
     for key in $(tcvm_config_keys); do
         [[ "${use_env}" == "yes" && -n "${!key+x}" ]] && env_vals["${key}"]="${!key}"
         unset "${key}"
