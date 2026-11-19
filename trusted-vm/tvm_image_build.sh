@@ -20,6 +20,7 @@ tcvm_config_write "${SCRIPT_DIR}/build/tcvm.config" yes
 
 echo "INFO: Building Trusted-VM image"
 
+# Build GPU telemetry tools (qmassa, qmmd) in a Rust container
 if tcvm_enabled gpu-telemetry; then
     echo "INFO: Building GPU telemetry tools (qmassa, qmmd) in rust:1.88 container"
     docker run --rm \

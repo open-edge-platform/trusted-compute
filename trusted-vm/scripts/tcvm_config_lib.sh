@@ -105,7 +105,7 @@ _tcvm_os_load() {
 
 # Normalises values, loads the OS definition and applies feature dependencies.
 tcvm_config_resolve() {
-    local id key pkg pkgs=()
+    local id key pkg pkgs=() raw_pkgs=()
     for id in $(tcvm_all_features); do
         key="$(tcvm_feature_key "${id}")"
         case "${!key:-}" in
@@ -130,7 +130,8 @@ tcvm_config_resolve() {
         fi
     done
 
-    for pkg in ${TCVM_CUSTOM_PACKAGES//,/ }; do
+    read -r -a raw_pkgs <<< "${TCVM_CUSTOM_PACKAGES//,/ }"
+    for pkg in "${raw_pkgs[@]}"; do
         [[ "${pkg}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]] || tcvm_die "invalid package name '${pkg}'"
         pkgs+=("${pkg}")
     done
