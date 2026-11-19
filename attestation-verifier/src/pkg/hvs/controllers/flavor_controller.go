@@ -10,6 +10,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
+	"math"
 	"net/http"
 	"reflect"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/lib/common/crypt"
 
 	"github.com/antchfx/jsonquery"
+	"github.com/antchfx/xpath"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	consts "github.com/open-edge-platform/trusted-compute/attestation-verifier/src/pkg/hvs/constants"
@@ -416,8 +418,11 @@ func (fcon *FlavorController) findTemplatesToApply(flavorgroups []hvs.FlavorGrou
 	for _, flavorTemplate := range flavorTemplates {
 		conditionEval := true
 		for _, condition := range flavorTemplate.Condition {
-			expectedData := jsonquery.FindOne(hostManifestJSON, condition)
-			if expectedData == nil {
+			matched, err := evaluateTemplateCondition(hostManifestJSON, condition)
+			if err != nil {
+				defaultLog.WithError(err).Warnf("controllers/flavor_controller:findTemplatesToApply() Failed to evaluate condition %q of template %q", condition, flavorTemplate.Label)
+			}
+			if !matched {
 				conditionEval = false
 				break
 			}
@@ -432,6 +437,29 @@ func (fcon *FlavorController) findTemplatesToApply(flavorgroups []hvs.FlavorGrou
 	}
 
 	return filteredTemplates, nil
+}
+
+// evaluateTemplateCondition evaluates an XPath condition against the host manifest.
+// Conditions may be node-set expressions or boolean expressions (e.g. "a or b");
+// newer antchfx/xpath versions return a bool for the latter instead of a node-set.
+func evaluateTemplateCondition(doc *jsonquery.Node, condition string) (bool, error) {
+	expr, err := xpath.Compile(condition)
+	if err != nil {
+		return false, errors.Wrapf(err, "invalid xpath condition %q", condition)
+	}
+	switch v := expr.Evaluate(jsonquery.CreateXPathNavigator(doc)).(type) {
+	case bool:
+		return v, nil
+	case *xpath.NodeIterator:
+		return v.MoveNext(), nil
+	case float64:
+		// XPath boolean(number) is false for both zero and NaN
+		return v != 0 && !math.IsNaN(v), nil
+	case string:
+		return v != "", nil
+	default:
+		return false, nil
+	}
 }
 
 func (fcon *FlavorController) addFlavorToFlavorgroup(flavorFlavorPartMap map[hvs.FlavorPartName][]hvs.SignedFlavor, fgs []hvs.FlavorGroup) ([]hvs.SignedFlavor, error) {
