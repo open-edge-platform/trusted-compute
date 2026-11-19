@@ -27,7 +27,7 @@ KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../tru
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tcvm-image build-tcvm-agent clean-all clean clean-microvisor clean-kata help lint test \
+.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tcvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
 	menuconfig defconfig resolve-config check-base-image
  
 all:
@@ -81,15 +81,15 @@ build-microvisor-image: resolve-config
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 	sudo cp $(EDGE_MICROVISOR_IMAGE_CONFIG) $(EDGE_MICROVISOR_BUILT_CONFIG)
 
-build-tcvm-image: resolve-config check-base-image build-tcvm-agent
+build-tcvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
 	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tcvm_image_build.sh
 
-build-tcvm-agent:
+build-tvm-agent:
 	@# Help: Runs build trusted VM agent
 	sudo true  # Prompt for password once
-	cd tcvm-agent && bash ./tcvm_agent_build.sh
+	cd tvm-agent && bash ./tvm_agent_build.sh
 
 docker-build:
 	@echo "This is a dummy docker-build target."

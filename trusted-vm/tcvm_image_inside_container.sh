@@ -15,7 +15,7 @@ apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils par
 
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
-TCVM_AGENT_DIR="/trusted-vm/tcvm-agent"
+TVM_AGENT_DIR="/trusted-vm/tvm-agent"
 GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
 NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
 TRUSTED_VM_IMAGE="trusted-vm.img"
@@ -69,12 +69,12 @@ extract_edge_microvisor_image_rootfs() {
 
 }
 
-#install tcvm-agent and service files
-install_tcvm_agent() {
+#install tvm-agent and service files
+install_tvm_agent() {
     echo "INFO: Installing Kata Agent in rootfs"
-    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TCVM_AGENT_DIR}/output/kata-agent"
-    install -o root -g root -m 0440 ${TCVM_AGENT_DIR}/output/kata-agent.service "${ROOTFS_DIR}/usr/lib/systemd/system/"
-    install -o root -g root -m 0440 "${TCVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
+    install -o root -g root -m 0550 -t "${ROOTFS_DIR}/usr/bin" "${TVM_AGENT_DIR}/output/kata-agent"
+    install -o root -g root -m 0440 ${TVM_AGENT_DIR}/output/kata-agent.service "${ROOTFS_DIR}/usr/lib/systemd/system/"
+    install -o root -g root -m 0440 "${TVM_AGENT_DIR}/output/kata-containers.target" "${ROOTFS_DIR}/usr/lib/systemd/system/"
 }
 
 #install guest OCI hooks
@@ -206,7 +206,7 @@ copy_tc_image(){
 # main function
 ################
 extract_edge_microvisor_image_rootfs
-install_tcvm_agent
+install_tvm_agent
 install_guest_hooks
 if tcvm_enabled gpu-telemetry; then
     download_jq
