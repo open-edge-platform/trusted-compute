@@ -14,7 +14,6 @@ EDGE_MICROVISOR_BRANCH?=26.06
 EDGE_MICROVISOR_COMMIT?="26.06-20260722"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
 EDGE_MICROVISOR_IMAGE_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
-# Must match TCVM_EMT_BUILT_CONFIG in os/emt/emt_profile.sh
 EDGE_MICROVISOR_BUILT_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os/trusted-compute-os.json
 
 # Image features: TCVM_CONFIG holds the saved selection
@@ -27,13 +26,13 @@ KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../tru
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tcvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
+.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
 	menuconfig defconfig resolve-config check-base-image
  
 all:
 	@# Help: Runs build all
 	sudo true  # Prompt for password once
-	sudo -E $(MAKE) clone build-microvisor-image build-tcvm-image
+	sudo -E $(MAKE) clone build-microvisor-image build-tvm-image
 
 menuconfig:
 	@# Help: Select Trusted-VM image features in an interactive menu
@@ -70,7 +69,7 @@ clone-kata:
 	rm -rf "$(KATA_CONTAINERS_SRC_DIR)"
 	git clone -b $(KATA_CONTAINERS_TAG) $(KATA_CONTAINERS_SRC) $(KATA_CONTAINERS_SRC_DIR)
  
-build: clone build-microvisor-image build-tcvm-image clean-microvisor clean-kata clean-rootfs
+build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs build all
 
 build-microvisor-image: resolve-config
@@ -83,7 +82,7 @@ build-microvisor-image: resolve-config
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 	sudo cp $(EDGE_MICROVISOR_IMAGE_CONFIG) $(EDGE_MICROVISOR_BUILT_CONFIG)
 
-build-tcvm-image: resolve-config check-base-image build-tvm-agent
+build-tvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
 	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh

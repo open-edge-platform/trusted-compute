@@ -14,7 +14,7 @@ TCVM_CONFIG_FILE="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
 tcvm_config_load "${TCVM_CONFIG_FILE}"
 tcvm_config_print
 # The rootfs is extracted from the existing base image, so it must match this selection
-os_check_base_image || tcvm_die "the ${TCVM_OS} base image must be rebuilt; run 'make build-tcvm-image'"
+os_check_base_image || tcvm_die "the ${TCVM_OS} base image must be rebuilt; run 'make build-tvm-image'"
 # Resolved copy with build info: read by the build container and installed in the guest
 tcvm_config_write "${SCRIPT_DIR}/build/tcvm.config" yes
 
