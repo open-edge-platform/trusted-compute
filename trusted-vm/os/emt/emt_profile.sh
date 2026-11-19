@@ -40,8 +40,12 @@ os_check_base_image() {
     local current rc=0
     current="$(mktemp)"
     os_generate_image_config "${current}"
-    if ! cmp -s "${current}" "${TCVM_EMT_BUILT_CONFIG}"; then
-        tcvm_warn "the EMT image is missing or was built for a different selection"
+    if [[ ! -f "${TCVM_EMT_BUILT_CONFIG}" ]]; then
+        tcvm_warn "the EMT image is missing: ${TCVM_EMT_BUILT_CONFIG} not found"
+        rc=2
+    elif ! cmp -s "${current}" "${TCVM_EMT_BUILT_CONFIG}"; then
+        tcvm_warn "the EMT image was built for a different selection:"
+        diff -u "${TCVM_EMT_BUILT_CONFIG}" "${current}" >&2 || true
         rc=2
     fi
     rm -f "${current}"

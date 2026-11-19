@@ -77,10 +77,12 @@ build-microvisor-image: resolve-config
 	sudo true  # Prompt for password once
 	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
 	sudo bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --show \
-		--gen-image-config $(EDGE_MICROVISOR_IMAGE_CONFIG)
+		--gen-image-config $(BUILD_DIR)/trusted-compute-os.json
+	sudo cp $(BUILD_DIR)/trusted-compute-os.json $(EDGE_MICROVISOR_IMAGE_CONFIG)
 	sudo rm -f $(EDGE_MICROVISOR_BUILT_CONFIG)
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
-	sudo cp $(EDGE_MICROVISOR_IMAGE_CONFIG) $(EDGE_MICROVISOR_BUILT_CONFIG)
+	@# Copy the saved selection, not the EMT tree file, which the EMT build may modify
+	sudo cp $(BUILD_DIR)/trusted-compute-os.json $(EDGE_MICROVISOR_BUILT_CONFIG)
 
 build-tvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
