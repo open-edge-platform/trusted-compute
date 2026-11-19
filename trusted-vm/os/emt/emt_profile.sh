@@ -40,8 +40,12 @@ os_check_base_image() {
     local current rc=0
     current="$(mktemp)"
     os_generate_image_config "${current}"
-    if [[ ! -f "${TCVM_EMT_BUILT_CONFIG}" ]]; then
-        tcvm_warn "the EMT image is missing: ${TCVM_EMT_BUILT_CONFIG} not found"
+    local -a images=()
+    if [[ -d "${TCVM_EMT_BUILT_CONFIG%/*}" ]]; then
+        mapfile -d '' -t images < <(find "${TCVM_EMT_BUILT_CONFIG%/*}" -type f -name 'Trusted-Compute*.tar.gz' -print0)
+    fi
+    if [[ ! -f "${TCVM_EMT_BUILT_CONFIG}" || "${#images[@]}" -ne 1 ]]; then
+        tcvm_warn "the EMT rootfs archive or saved configuration is missing, or multiple archives exist"
         rc=2
     elif ! cmp -s "${current}" "${TCVM_EMT_BUILT_CONFIG}"; then
         tcvm_warn "the EMT image was built for a different selection:"

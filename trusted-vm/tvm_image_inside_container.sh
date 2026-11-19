@@ -34,7 +34,18 @@ case "$(realpath -m "${ROOTFS_DIR}")" in
     "$(realpath -m "${BUILD_DIR}")"/?*) ;;
     *) echo "ERROR: refusing to delete ROOTFS_DIR '${ROOTFS_DIR}' outside ${BUILD_DIR}" >&2; exit 1 ;;
 esac
-# --one-file-system: never descend into host mounts left under the rootfs
+# Refuse mounted rootfs trees, including bind mounts on the same filesystem.
+rootfs_path="$(realpath -m "${ROOTFS_DIR}")"
+while IFS=' ' read -r _ _ _ _ mount_path _; do
+    # mountinfo escapes spaces, tabs, newlines and backslashes in paths as octal.
+    printf -v mount_path '%b' "${mount_path}"
+    case "${mount_path}" in
+        "${rootfs_path}"|"${rootfs_path}"/*)
+            echo "ERROR: refusing to delete ROOTFS_DIR with mountpoint '${mount_path}'" >&2
+            exit 1
+            ;;
+    esac
+done < /proc/self/mountinfo
 rm -rf --one-file-system "${ROOTFS_DIR}"
 mkdir -p "${ROOTFS_DIR}"
 

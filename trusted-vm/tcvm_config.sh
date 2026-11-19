@@ -107,6 +107,12 @@ while (( $# )); do
     shift
 done
 
+# Only the default config and config-creating commands may start from a missing file
+if [[ "${use_defaults}" == "no" && "${gui}" == "no" && ! -f "${config_file}" \
+      && "$(realpath -m "${config_file}")" != "$(realpath -m "${TCVM_USER_CONFIG}")" ]]; then
+    tcvm_die "config file '${config_file}' not found"
+fi
+
 if [[ "${use_defaults}" == "yes" ]]; then
     tcvm_config_load ""
 else

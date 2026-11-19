@@ -10,6 +10,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/scripts/tcvm_config_lib.sh"
 
+if [[ -n "${TCVM_CONFIG_FILE:-}" && ! -f "${TCVM_CONFIG_FILE}" ]]; then
+    tcvm_die "config file '${TCVM_CONFIG_FILE}' not found"
+fi
 TCVM_CONFIG_FILE="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
 tcvm_config_load "${TCVM_CONFIG_FILE}"
 tcvm_config_print
