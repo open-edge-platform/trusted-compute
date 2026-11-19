@@ -88,6 +88,12 @@ check_base_image=no
 
 while (( $# )); do
     case "$1" in
+        -c|--config|-o|--output|--gen-image-config)
+            if (( $# < 2 )) || [[ -z "$2" ]]; then
+                usage >&2; tcvm_die "option '$1' requires a file argument"
+            fi ;;
+    esac
+    case "$1" in
         -c|--config)          config_file="$2"; shift ;;
         -o|--output)          output_file="$2"; shift ;;
         --defaults)           use_defaults=yes ;;
@@ -119,6 +125,7 @@ fi
 if [[ -n "${gen_image_config}" ]]; then
     os_generate_image_config "${gen_image_config}"
     tcvm_log "Generated ${TCVM_OS} image config: ${gen_image_config}"
+    exit 0
 fi
 
 tcvm_config_print

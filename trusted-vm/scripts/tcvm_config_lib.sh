@@ -154,8 +154,7 @@ tcvm_config_write() {
     [[ "${build_info}" == "no" ]] || packages="$(os_image_packages)"
     mkdir -p "$(dirname "${file}")"
     {
-        echo "# Trusted-VM image configuration. Edit y/n values, or run 'make menuconfig'."
-        echo "# A telemetry feature needs its device support (gpu / npu) enabled."
+        sed '/^[^#]/,$d; /^$/,$d' "${TCVM_DEFCONFIG}"
         echo ""
         echo "# Guest OS: $(tcvm_list_os | xargs)"
         echo "TCVM_OS=${TCVM_OS}"

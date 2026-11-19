@@ -30,7 +30,12 @@ KATA_CONTAINERS_SRC_DIR=${BUILD_DIR}/kata_src
 IMAGE_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/image-builder"
 
 # Start from a clean rootfs so components of a previous build with other features do not leak in
-rm -rf "${ROOTFS_DIR}"
+case "$(realpath -m "${ROOTFS_DIR}")" in
+    "$(realpath -m "${BUILD_DIR}")"/?*) ;;
+    *) echo "ERROR: refusing to delete ROOTFS_DIR '${ROOTFS_DIR}' outside ${BUILD_DIR}" >&2; exit 1 ;;
+esac
+# --one-file-system: never descend into host mounts left under the rootfs
+rm -rf --one-file-system "${ROOTFS_DIR}"
 mkdir -p "${ROOTFS_DIR}"
 
 # Function to extract edge_microvisor image rootfs
@@ -174,7 +179,14 @@ install_npu_telemetry() {
 # Record enabled features and non-base packages so the guest image can be inspected later
 install_features_conf() {
     local conf="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
-    grep -q '^TCVM_PACKAGES=' "${conf}" || { echo "ERROR: ${conf} has no build information"; exit 1; }
+    if [ ! -f "${conf}" ] || [ ! -r "${conf}" ]; then
+        echo "ERROR: config file ${conf} is missing or not readable" >&2
+        exit 1
+    fi
+    if ! grep -q '^TCVM_PACKAGES=' "${conf}"; then
+        echo "ERROR: ${conf} has no build information (TCVM_PACKAGES= not found); run 'make build-tvm-image'" >&2
+        exit 1
+    fi
     mkdir -p "${ROOTFS_DIR}/etc/trusted-vm"
     install -o root -g root -m 0444 "${conf}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
     echo "INFO: Installed ${conf} as /etc/trusted-vm/features.conf"

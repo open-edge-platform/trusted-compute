@@ -51,7 +51,9 @@ check-base-image: resolve-config
 	@bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image || { rc=$$?; \
 		[ $$rc -eq 2 ] || exit $$rc; \
 		echo "WARNING: cleaning and rebuilding the EMT image for the current selection"; \
-		sudo -E make -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clean-microvisor clone-microvisor build-microvisor-image; }
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clean-microvisor && \
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clone-microvisor && \
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile build-microvisor-image; }
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -76,7 +78,7 @@ build-microvisor-image: resolve-config
 	@# Help: Runs build image phase only
 	sudo true  # Prompt for password once
 	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
-	sudo bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --show \
+	sudo bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) \
 		--gen-image-config $(BUILD_DIR)/trusted-compute-os.json
 	sudo cp $(BUILD_DIR)/trusted-compute-os.json $(EDGE_MICROVISOR_IMAGE_CONFIG)
 	sudo rm -f $(EDGE_MICROVISOR_BUILT_CONFIG)
