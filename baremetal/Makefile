@@ -19,6 +19,8 @@ KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deplo
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
 KATA_DEPLOY_VALUES_FILE          ?= $(CURDIR)/values-kata-deploy-default.yaml
+LOCAL_IMAGES                     ?= n
+IMAGE_REGISTRY                   := registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -116,9 +118,23 @@ build:
 	set -x
 	for image in $$IMAGES; do \
 		printf "Processing: %s\n" "$$image"; \
+		safe_name=$$(echo "$$image" | sed 's#[/:]#-#g'); \
+		tar_file="$$STAGEDIR/images/$${safe_name}.tar"; \
+		if [ "$(LOCAL_IMAGES)" = "y" ]; then \
+			local_image="$${image#$(IMAGE_REGISTRY)/}"; \
+			if sudo docker image inspect "$$local_image" > /dev/null 2>&1; then \
+				sudo docker tag "$$local_image" "$$image"; \
+			fi; \
+			if sudo docker image inspect "$$image" > /dev/null 2>&1; then \
+				sudo docker save -o "$$tar_file" "$$image"; \
+				printf "✓ Exported local image: %s\n" "$$tar_file"; \
+				continue; \
+			fi; \
+			printf "✗ Local image not found: %s or %s\n" "$$local_image" "$$image" >&2; \
+			rm -rf "$$STAGEDIR"; \
+			exit 1; \
+		fi; \
 		if sudo ctr image pull "$$image"; then \
-			safe_name=$$(echo "$$image" | sed 's#[/:]#-#g'); \
-			tar_file="$$STAGEDIR/images/$${safe_name}.tar"; \
 			if sudo ctr image export "$$tar_file" "$$image"; then \
 				printf "✓ Exported: %s\n" "$$tar_file"; \
 			else \
