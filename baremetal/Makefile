@@ -25,6 +25,14 @@ IMAGE_REGISTRY                   := registry-rs.edgeorchestration.intel.com/edge
 all: 
 	@# Help: Runs build, lint, test stages
 	build lint test 	
+
+build-local:
+	@# Help: Builds kata-deploy and attestation images locally, then the package from them
+	set -e
+	$(MAKE) -C "$(CURDIR)/../trusted-workload/kata-deploy" build VERSION_SUFFIX="$(VERSION_SUFFIX)"
+	$(MAKE) -C "$(CURDIR)/../attestation-verifier" docker-build VERSION_SUFFIX="$(VERSION_SUFFIX)"
+	$(MAKE) -C "$(CURDIR)/../attestation-manager" build docker-build VERSION_SUFFIX="$(VERSION_SUFFIX)"
+	$(MAKE) -C "$(CURDIR)" build LOCAL_IMAGES=y
 	
 build:
 	@# Help: Runs build stage

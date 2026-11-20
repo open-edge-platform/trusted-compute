@@ -2,24 +2,14 @@
 
 [Documentation home](README.md) | [Installation package](trusted_compute_baremetal.md)
 
-This guide explains how to build the Trusted VM, customise its features, build
-the kata-deploy image and assemble the installation package. To deploy a
-released package instead, follow the [Kubernetes](kubernetes.md) or
-[Docker](docker.md) guide.
+This guide explains how to build a custom Trusted VM and a custom installation
+package from it, in two steps:
 
-## Build Overview
+1. [Build Custom Trusted VM](#1-build-custom-trusted-vm)
+2. [Build Custom Installation Package](#2-build-custom-installation-package)
 
-| Step | Directory | Build command | Output |
-| --- | --- | --- | --- |
-| 1. Trusted VM | `trusted-vm/` | `make build` | Guest kernel, kernel config and `trusted-vm.img` in `trusted-vm/build/` |
-| 2. kata-deploy image | `trusted-workload/` | `make build` | Docker image `kata-deploy:<version>` |
-| 3. Installation package | `baremetal/` | `make build` | `baremetal/out/trusted-compute-installation-package.tgz` |
-
-```mermaid
-flowchart LR
-    TVM[Trusted VM<br/>kernel + trusted-vm.img] --> KD[kata-deploy image]
-    KD --> PKG[installation package]
-```
+To deploy a released package instead, follow the [Kubernetes](kubernetes.md)
+or [Docker](docker.md) guide.
 
 ## Build Host Prerequisites
 
@@ -57,14 +47,36 @@ git clone https://github.com/open-edge-platform/trusted-compute.git
 cd trusted-compute
 ```
 
-## Build the Trusted VM
+## 1. Build Custom Trusted VM
 
 The Trusted VM is the guest OS that runs every Kata workload. It is built from
 the Edge Microvisor Toolkit with the Trusted Compute guest components added.
+By default it includes every optional feature except custom packages:
+
+| Option | Default | Adds |
+| --- | --- | --- |
+| `TCVM_GPU` | `y` | GPU drivers, i915 firmware and the GPU discovery OCI hook |
+| `TCVM_GPU_TELEMETRY` | `y` | GPU telemetry tools; needs `TCVM_GPU=y` |
+| `TCVM_NPU` | `y` | Intel NPU driver and firmware |
+| `TCVM_NPU_TELEMETRY` | `y` | NPU telemetry tool; needs `TCVM_NPU=y` |
+| `TCVM_CUSTOM` | `n` | The packages listed in `TCVM_CUSTOM_PACKAGES` |
+| `TCVM_CUSTOM_PACKAGES` | `bc gawk igt-gpu-tools pciutils` | Space-separated package names, used when `TCVM_CUSTOM=y` |
+
+Select the features in an interactive menu and build:
 
 ```bash
-cd trusted-vm
-make build
+make -C trusted-vm menuconfig
+make -C trusted-vm build
+```
+
+<img src="images/tcvm-menuconfig.png" alt="Trusted VM feature selection menu" width="800">
+
+Or start from the defaults and edit the file by hand:
+
+```bash
+make -C trusted-vm defconfig
+# edit trusted-vm/.tcvm.config, for example set TCVM_NPU=n and TCVM_NPU_TELEMETRY=n
+make -C trusted-vm build
 ```
 
 After a successful build, `trusted-vm/build/` contains:
@@ -79,92 +91,18 @@ The kernel file names must match `kernel.name` and `kernel.config` in
 [`trusted-workload/kata-deploy/version.yaml`](../trusted-workload/kata-deploy/version.yaml).
 Update `version.yaml` when you move to an EMT release with a different kernel.
 
-## Custom Trusted VM Build
-
-By default the Trusted VM includes every optional feature except custom
-packages. To change the selection, create `trusted-vm/.tcvm.config` before
-running `make build`.
-
-| Option | Default | Adds |
-| --- | --- | --- |
-| `TCVM_GPU` | `y` | GPU drivers, i915 firmware and the GPU discovery OCI hook |
-| `TCVM_GPU_TELEMETRY` | `y` | GPU telemetry tools; needs `TCVM_GPU=y` |
-| `TCVM_NPU` | `y` | Intel NPU driver and firmware |
-| `TCVM_NPU_TELEMETRY` | `y` | NPU telemetry tool; needs `TCVM_NPU=y` |
-| `TCVM_CUSTOM` | `n` | The packages listed in `TCVM_CUSTOM_PACKAGES` |
-| `TCVM_CUSTOM_PACKAGES` | `bc gawk igt-gpu-tools pciutils` | Space-separated package names, used when `TCVM_CUSTOM=y` |
-
-Select the features in an interactive menu:
+## 2. Build Custom Installation Package
 
 ```bash
-cd trusted-vm
-make menuconfig
-make build
+make -C baremetal build-local
 ```
 
-<img src="images/tcvm-menuconfig.png" alt="Trusted VM feature selection menu" width="800">
-
-Or start from the defaults and edit the file by hand:
-
-```bash
-cd trusted-vm
-make defconfig
-# edit .tcvm.config, for example set TCVM_NPU=n and TCVM_NPU_TELEMETRY=n
-make build
-```
-
-## Build the kata-deploy Image
-
-The kata-deploy image installs Kata Containers, configured for Trusted Compute,
-on the deployment host.
-
-```bash
-cd trusted-workload
-make build
-```
-
-The build packs the Trusted VM kernel and image from `trusted-vm/build/` into
-the Kata Containers release and tags the image `kata-deploy:<version>`. If
-`trusted-vm/build/` does not exist, it builds the Trusted VM first with the
-default features.
-
-## Build the Installation Package
-
-```bash
-cd baremetal
-make build
-```
+This builds the kata-deploy image from the Trusted VM in `trusted-vm/build/`,
+the Attestation Verifier and Attestation Manager images, and then the package
+from those local images. The build stops with `Local image not found` if any
+image is missing.
 
 The package is written to `baremetal/out/trusted-compute-installation-package.tgz`.
-
-> **Note:** The package build pulls **published** images; it does not use images
-> built on the local machine. If an image cannot be pulled, the build prints
-> `Failed to pull` and continues **without** that image, so check the output
-> before using the package.
-
-### Add Locally Built Images to the Package
-
-To package images built on your machine instead of the published ones, build
-them and then build the package with `LOCAL_IMAGES=y`. Run these steps from
-the repository root.
-
-1. Build the container images:
-
-   ```bash
-   make -C trusted-workload build                        # kata-deploy
-   make -C attestation-verifier docker-build             # Attestation Verifier images
-   make -C attestation-manager build docker-build        # Attestation Manager image
-   ```
-
-2. Build the installation package from the local images:
-
-   ```bash
-   make -C baremetal build LOCAL_IMAGES=y
-   ```
-
-With `LOCAL_IMAGES=y`, every image must exist in the local Docker image store
-with the same version as the package; nothing is pulled from the registry. The
-build stops with `Local image not found` if any image is missing.
 
 ## Clean Up
 
