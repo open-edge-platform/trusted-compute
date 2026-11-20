@@ -139,9 +139,9 @@ Verify Kata Deploy Container Is Running
     Should Contain    ${ps_out}    kata-deploy    msg=kata-deploy container not found in running containers
 
 Verify Sample Workload Deployment
-    [Documentation]    Run nginx with Kata runtime, verify it is running and runtime is io.containerd.kata.v2.
+    [Documentation]    Run nginx with the registered Kata runtime and verify it is running.
     ${run_out}    ${run_rc}=    Execute Command
-    ...    sudo docker run -d --name nginx-test --runtime io.containerd.kata.v2 nginx:1.27.0
+    ...    sudo docker run -d --name nginx-test --runtime kata nginx:1.27.0
     ...    return_stdout=True    return_rc=True
     Log    docker run nginx-test (rc=${run_rc}):\n${run_out}
     Should Be Equal As Integers    ${run_rc}    0    msg=Failed to run sample nginx workload with Kata runtime
@@ -158,7 +158,7 @@ Verify Sample Workload Deployment
     Log    nginx-test runtime (rc=${rt_rc}):\n${rt_out}
     Should Be Equal As Integers    ${rt_rc}    0    msg=Failed to inspect nginx-test runtime
     ${rt}=    Strip String    ${rt_out}
-    Should Be Equal    ${rt}    io.containerd.kata.v2    msg=nginx-test is not using expected Kata runtime
+    Should Be Equal    ${rt}    kata    msg=nginx-test is not using expected Kata runtime
 
 Verify QEMU Process Is Running On DUT
     [Documentation]    Verify at least one QEMU process is present on the DUT after trusted workload deployment.

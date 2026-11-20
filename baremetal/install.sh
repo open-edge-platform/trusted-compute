@@ -280,6 +280,10 @@ check_tc_requirements_docker() {
         print_error "docker is not installed or not in PATH"
         exit 1
     fi
+    if ! command -v python3 &>/dev/null; then
+        print_error "python3 is not installed or not in PATH"
+        exit 1
+    fi
     if ! docker compose version &>/dev/null; then
         print_error "docker compose plugin is not installed or not available"
         exit 1
@@ -318,6 +322,45 @@ start_docker_deploy() {
         fi
         sleep 5
     done
+}
+
+configure_docker_kata_runtime() {
+    local daemon_config="/etc/docker/daemon.json"
+    print_status "Registering Kata runtime-rs with Docker..."
+    mkdir -p "$(dirname "$daemon_config")"
+
+    python3 - "$daemon_config" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+config = {}
+if os.path.exists(path) and os.path.getsize(path) > 0:
+    with open(path, encoding="utf-8") as daemon_file:
+        config = json.load(daemon_file)
+
+runtimes = config.setdefault("runtimes", {})
+runtimes["kata"] = {
+    "runtimeType": "/opt/kata/runtime-rs/bin/containerd-shim-kata-v2",
+    "options": {
+        "ConfigPath": "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
+    }
+}
+
+temporary_path = f"{path}.tmp"
+with open(temporary_path, "w", encoding="utf-8") as daemon_file:
+    json.dump(config, daemon_file, indent=2)
+    daemon_file.write("\n")
+os.replace(temporary_path, path)
+PY
+
+    # 'runtimes' is reloadable; a restart would SIGTERM kata-deploy, which removes /opt/kata on exit
+    systemctl reload docker \
+        && print_status "Docker reloaded with Kata runtime-rs configured" \
+        || { print_error "Failed to reload Docker with Kata runtime-rs configured"; exit 1; }
+    docker info --format '{{json .Runtimes}}' | grep -q '"kata"' \
+        || { print_error "Docker did not register the Kata runtime"; exit 1; }
 }
 
 # Function to print summary (TC installation for Docker)
@@ -470,9 +513,9 @@ update_containerd_config_k8s() {
     mkdir -p "$K8S_CONTAINERD_DIR/conf.d"
     grep -v '{{ template' "$CONTAINERD_CONFIG_SRC" \
         | grep -v '/var/lib/rancher/k3s' \
-        > "$K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
-        && print_status "Installed kata-qemu drop-in to $K8S_CONTAINERD_DIR/conf.d/kata-qemu.toml" \
-        || { print_error "Failed to install kata-qemu drop-in"; exit 1; }
+        > "$K8S_CONTAINERD_DIR/conf.d/kata-qemu-runtime-rs.toml" \
+        && print_status "Installed kata-qemu-runtime-rs drop-in to $K8S_CONTAINERD_DIR/conf.d/kata-qemu-runtime-rs.toml" \
+        || { print_error "Failed to install kata-qemu-runtime-rs drop-in"; exit 1; }
 
     # Restart containerd to apply changes
     restart_containerd
@@ -540,6 +583,7 @@ install_tc_docker() {
     print_status "Starting TC installation for Docker..."
     import_kata_deploy_image
     start_docker_deploy
+    configure_docker_kata_runtime
     print_tc_docker_summary
 }
 
