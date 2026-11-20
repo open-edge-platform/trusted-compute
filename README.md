@@ -47,3 +47,5 @@ requirements. For deployment, use the prerequisites in the
 - At least 256 GB NVMe or SATA storage
 - 4–8 GB RAM
 - 8-core or better CPU
+
+See [Build Trusted Compute from Source](docs/build.md) for the build steps.
