@@ -79,10 +79,6 @@ The kernel file names must match `kernel.name` and `kernel.config` in
 [`trusted-workload/kata-deploy/version.yaml`](../trusted-workload/kata-deploy/version.yaml).
 Update `version.yaml` when you move to an EMT release with a different kernel.
 
-Override `EDGE_MICROVISOR_BRANCH` and `EDGE_MICROVISOR_COMMIT` on the command
-line to build another EMT release, for example
-`make build EDGE_MICROVISOR_COMMIT=<tag>`.
-
 ## Custom Trusted VM Build
 
 By default the Trusted VM includes every optional feature except custom
