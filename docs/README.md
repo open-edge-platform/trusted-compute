@@ -31,6 +31,7 @@ model, not separate security architectures.
 | Architecture | [Components, host/VM boundary, security properties](overview.md) |
 | Deployment | [Deployment options](deployment-options.md) |
 | Installation package | [Package layout and compatibility](trusted_compute_baremetal.md) |
+| Build from source | [Build the Trusted VM, kata-deploy and the installation package](build.md) |
 | Kubernetes | [Prerequisites, installation, configuration, launch and removal](kubernetes.md) |
 | Docker | [Prerequisites, installation, configuration, launch and removal](docker.md) |
 | Common capabilities | [VM lifecycle, integrity, attestation and PCIe passthrough](capabilities.md) |
