@@ -1,0 +1,28 @@
+#
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# Default Trusted-VM image configuration: all features enabled except custom packages.
+# To customise, run 'make menuconfig', or 'make defconfig' and edit trusted-vm/.tcvm.config.
+# A telemetry feature needs its device support (gpu / npu) enabled.
+
+# Guest OS: emt
+TCVM_OS=emt
+
+# GPU support: GPU drivers, i915 firmware, scan-for-gpu OCI hook
+TCVM_GPU=y
+
+# GPU telemetry agent: qmassa, qmmd, jq
+TCVM_GPU_TELEMETRY=y
+
+# NPU support: intel-npu driver and firmware
+TCVM_NPU=y
+
+# NPU telemetry agent: npu-reader
+TCVM_NPU_TELEMETRY=y
+
+# Custom packages: listed in TCVM_CUSTOM_PACKAGES
+TCVM_CUSTOM=n
+
+# Packages installed when TCVM_CUSTOM=y, space separated
+TCVM_CUSTOM_PACKAGES="bc gawk igt-gpu-tools pciutils"

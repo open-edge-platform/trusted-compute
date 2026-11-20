@@ -7,6 +7,9 @@
 
 set -euo pipefail
 
+source /trusted-vm/scripts/tcvm_config_lib.sh
+tcvm_config_load "${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
+
 apt update
 apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
 
@@ -26,6 +29,24 @@ EDGE_MICROVISOR_IMAGE_DIR=${EDGE_MICROVISOR_DIR}/out/images/trusted-compute-os
 KATA_CONTAINERS_SRC_DIR=${BUILD_DIR}/kata_src
 IMAGE_BUILD_SCRIPT_DIR="${KATA_CONTAINERS_SRC_DIR}/tools/osbuilder/image-builder"
 
+# Start from a clean rootfs so components of a previous build with other features do not leak in
+case "$(realpath -m "${ROOTFS_DIR}")" in
+    "$(realpath -m "${BUILD_DIR}")"/?*) ;;
+    *) echo "ERROR: refusing to delete ROOTFS_DIR '${ROOTFS_DIR}' outside ${BUILD_DIR}" >&2; exit 1 ;;
+esac
+# Refuse mounted rootfs trees, including bind mounts on the same filesystem.
+rootfs_path="$(realpath -m "${ROOTFS_DIR}")"
+while IFS=' ' read -r _ _ _ _ mount_path _; do
+    # mountinfo escapes spaces, tabs, newlines and backslashes in paths as octal.
+    printf -v mount_path '%b' "${mount_path}"
+    case "${mount_path}" in
+        "${rootfs_path}"|"${rootfs_path}"/*)
+            echo "ERROR: refusing to delete ROOTFS_DIR with mountpoint '${mount_path}'" >&2
+            exit 1
+            ;;
+    esac
+done < /proc/self/mountinfo
+rm -rf --one-file-system "${ROOTFS_DIR}"
 mkdir -p "${ROOTFS_DIR}"
 
 # Function to extract edge_microvisor image rootfs
@@ -79,10 +100,12 @@ install_guest_hooks() {
     local hooks_dest="${ROOTFS_DIR}/usr/share/oci/hooks"
     local gpu_hook="${hooks_src}/prestart/scan-for-gpu.sh"
 
-    [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
-
+    # The host kata config always sets guest_hook_path, so keep the directory even without hooks
     mkdir -p "${hooks_dest}/prestart"
-    install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
+    if tcvm_enabled gpu; then
+        [[ -f "${gpu_hook}" ]] || { echo "ERROR: Guest hook not found: ${gpu_hook}"; exit 1; }
+        install -o root -g root -m 0550 "${gpu_hook}" "${hooks_dest}/prestart/"
+    fi
     echo "INFO: Guest hooks installed successfully"
 }
 
@@ -164,6 +187,22 @@ install_npu_telemetry() {
     rm -rf "${bin_src}"
 }
 
+# Record enabled features and non-base packages so the guest image can be inspected later
+install_features_conf() {
+    local conf="${TCVM_CONFIG_FILE:-${TCVM_USER_CONFIG}}"
+    if [ ! -f "${conf}" ] || [ ! -r "${conf}" ]; then
+        echo "ERROR: config file ${conf} is missing or not readable" >&2
+        exit 1
+    fi
+    if ! grep -q '^TCVM_PACKAGES=' "${conf}"; then
+        echo "ERROR: ${conf} has no build information (TCVM_PACKAGES= not found); run 'make build-tvm-image'" >&2
+        exit 1
+    fi
+    mkdir -p "${ROOTFS_DIR}/etc/trusted-vm"
+    install -o root -g root -m 0444 "${conf}" "${ROOTFS_DIR}/etc/trusted-vm/features.conf"
+    echo "INFO: Installed ${conf} as /etc/trusted-vm/features.conf"
+}
+
 #build Trusted vm image from rootfs
 build_trusted_vm_image() {
     echo "INFO: Starting Trusted VM image build"
@@ -192,8 +231,13 @@ copy_tc_image(){
 extract_edge_microvisor_image_rootfs
 install_tvm_agent
 install_guest_hooks
-download_jq
-install_gpu_telemetry
-install_npu_telemetry
+if tcvm_enabled gpu-telemetry; then
+    download_jq
+    install_gpu_telemetry
+fi
+if tcvm_enabled npu-telemetry; then
+    install_npu_telemetry
+fi
+install_features_conf
 build_trusted_vm_image
 copy_tc_image

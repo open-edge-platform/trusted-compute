@@ -52,12 +52,15 @@ check_dir_exists() {
     [ -d "$dir" ] || { echo "ERROR: Directory $dir not found"; exit 1; }
 }
 
-#check if edge microvisor source directory exists
-if [ ! -d "${EDGE_MICROVISOR_SRC}" ]; then
-	echo "WARR: Edge microvisor source directory not found"
-	echo "INFO: Starting edge microvisor kernel and rootfs build"
-	pushd $(realpath "${BUILD_DIR}/../../trusted-vm")
-	make build
+#reuse an existing edge microvisor build, otherwise build one with the default feature selection
+if [ ! -f "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL}" ] || \
+	[ ! -f "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_KERNEL_CONFIG}" ] || \
+	[ ! -f "${EDGE_MICROVISOR_SRC}/${EDGE_MICROVISOR_ROOTFS}" ]; then
+	echo "WARN: Edge microvisor build not found in ${EDGE_MICROVISOR_SRC}"
+	echo "INFO: Starting edge microvisor kernel and rootfs build with default configuration"
+	TRUSTED_VM_DIR="$(realpath "${BUILD_DIR}/../../trusted-vm")"
+	pushd "${TRUSTED_VM_DIR}"
+	make build TCVM_CONFIG="${TRUSTED_VM_DIR}/configs/defconfig"
 	# List files in current directory after build for debug
 	echo "INFO: Listing files in build folder after edge microvisor build:"
 	ls -alh build

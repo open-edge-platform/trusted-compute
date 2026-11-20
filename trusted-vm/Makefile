@@ -13,18 +13,47 @@ EDGE_MICROVISOR_SRC=https://github.com/open-edge-platform/edge-microvisor-toolki
 EDGE_MICROVISOR_BRANCH?=26.06
 EDGE_MICROVISOR_COMMIT?="26.06-20260722"
 EDGE_MICROVISOR_SRC_DIR=$(BUILD_DIR)/microvisor_src
+EDGE_MICROVISOR_IMAGE_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/toolkit/imageconfigs/trusted-compute-os.json
+EDGE_MICROVISOR_BUILT_CONFIG=$(EDGE_MICROVISOR_SRC_DIR)/out/images/trusted-compute-os/trusted-compute-os.json
+
+# Image features: TCVM_CONFIG holds the saved selection
+TCVM_CONFIG?=$(MAKEFILE_DIR).tcvm.config
+TCVM_RESOLVED_CONFIG=$(BUILD_DIR)/tcvm.config
+TCVM_CONFIG_TOOL=bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_CONFIG)
 
 KATA_CONTAINERS_SRC=https://github.com/kata-containers/kata-containers.git
 KATA_CONTAINERS_TAG?=$(shell yq '.kata-containers.version' $(MAKEFILE_DIR)../trusted-workload/kata-deploy/version.yaml)
 KATA_CONTAINERS_SRC_DIR=$(BUILD_DIR)/kata_src
  
 # Targets
-.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test
+.PHONY: all clone clone-microvisor clone-kata build build-microvisor-image build-tvm-image build-tvm-agent clean-all clean clean-microvisor clean-kata help lint test \
+	menuconfig defconfig resolve-config check-base-image
  
 all:
 	@# Help: Runs build all
 	sudo true  # Prompt for password once
 	sudo -E $(MAKE) clone build-microvisor-image build-tvm-image
+
+menuconfig:
+	@# Help: Select Trusted-VM image features in an interactive menu
+	$(TCVM_CONFIG_TOOL) --gui
+
+defconfig:
+	@# Help: Create/reset .tcvm.config with defaults (all features except custom) for manual editing
+	$(TCVM_CONFIG_TOOL) --defaults
+
+resolve-config:
+	mkdir -p $(BUILD_DIR)
+	sudo rm -f $(TCVM_RESOLVED_CONFIG)
+	sudo $(TCVM_CONFIG_TOOL) --output $(TCVM_RESOLVED_CONFIG)
+
+check-base-image: resolve-config
+	@bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) --check-base-image || { rc=$$?; \
+		[ $$rc -eq 2 ] || exit $$rc; \
+		echo "WARNING: cleaning and rebuilding the EMT image for the current selection"; \
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clean-microvisor && \
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile clone-microvisor && \
+		sudo -E $(MAKE) -C $(CURDIR) -f $(MAKEFILE_DIR)Makefile build-microvisor-image; }
 
 clone: clone-microvisor clone-kata
 	@# Help: Runs clone all
@@ -45,15 +74,22 @@ clone-kata:
 build: clone build-microvisor-image build-tvm-image clean-microvisor clean-kata clean-rootfs
 	@# Help: Runs build all
 
-build-microvisor-image:
+build-microvisor-image: resolve-config
 	@# Help: Runs build image phase only
 	sudo true  # Prompt for password once
+	@# Generated inside EMT imageconfigs so its relative packagelists/additionalconfigs/scripts paths resolve
+	sudo bash $(MAKEFILE_DIR)tcvm_config.sh --config $(TCVM_RESOLVED_CONFIG) \
+		--gen-image-config $(BUILD_DIR)/trusted-compute-os.json
+	sudo cp $(BUILD_DIR)/trusted-compute-os.json $(EDGE_MICROVISOR_IMAGE_CONFIG)
+	sudo rm -f $(EDGE_MICROVISOR_BUILT_CONFIG)
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
+	@# Copy the saved selection, not the EMT tree file, which the EMT build may modify
+	sudo cp $(BUILD_DIR)/trusted-compute-os.json $(EDGE_MICROVISOR_BUILT_CONFIG)
 
-build-tvm-image: build-tvm-agent
+build-tvm-image: resolve-config check-base-image build-tvm-agent
 	@# Help: Runs build Trusted VM image
 	sudo true  # Prompt for password once
-	sudo bash $(MAKEFILE_DIR)/tvm_image_build.sh
+	sudo TCVM_CONFIG_FILE=$(TCVM_RESOLVED_CONFIG) bash $(MAKEFILE_DIR)/tvm_image_build.sh
 
 build-tvm-agent:
 	@# Help: Runs build trusted VM agent
