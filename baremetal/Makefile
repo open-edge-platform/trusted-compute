@@ -29,9 +29,9 @@ all:
 build-local:
 	@# Help: Builds kata-deploy and attestation images locally, then the package from them
 	set -e
-	$(MAKE) -C "$(CURDIR)/../trusted-workload/kata-deploy" build VERSION_SUFFIX="$(VERSION_SUFFIX)"
-	$(MAKE) -C "$(CURDIR)/../attestation-verifier" docker-build VERSION_SUFFIX="$(VERSION_SUFFIX)"
-	$(MAKE) -C "$(CURDIR)/../attestation-manager" build docker-build VERSION_SUFFIX="$(VERSION_SUFFIX)"
+	$(MAKE) -C "$(CURDIR)/../trusted-workload/kata-deploy" build VERSION="$(KATA_DEPLOY_VERSION)"
+	$(MAKE) -C "$(CURDIR)/../attestation-verifier" docker-build VERSION="$(ATTESTATION_VERIFIER_VERSION)"
+	$(MAKE) -C "$(CURDIR)/../attestation-manager" build docker-build VERSION="$(ATTESTATION_MANAGER_VERSION)"
 	$(MAKE) -C "$(CURDIR)" build LOCAL_IMAGES=y
 	
 build:
