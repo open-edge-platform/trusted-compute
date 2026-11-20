@@ -79,6 +79,22 @@ make -C trusted-vm defconfig
 make -C trusted-vm build
 ```
 
+### Add Custom Packages
+
+To install extra packages in the Trusted VM, enable `TCVM_CUSTOM` and list the
+packages in `TCVM_CUSTOM_PACKAGES`. In `menuconfig`, select **Custom packages**
+and enter the package names when prompted. Or set them in
+`trusted-vm/.tcvm.config`:
+
+```bash
+TCVM_CUSTOM=y
+TCVM_CUSTOM_PACKAGES="pciutils strace tcpdump"
+```
+
+Then run `make -C trusted-vm build`. You can add any package that has a spec in the
+[Edge Microvisor Toolkit 26.06 SPECS](https://github.com/open-edge-platform/edge-microvisor-toolkit/tree/26.06/SPECS)
+directory.
+
 After a successful build, `trusted-vm/build/` contains:
 
 | File | Purpose |
