@@ -8,7 +8,7 @@
 set -euo pipefail
 
 apt update
-apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl
+apt install  -o Acquire::Retries=3 -y --no-install-recommends git qemu-utils parted udev gcc ca-certificates build-essential curl rpm
 
 BUILD_DIR="/trusted-vm/build"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
@@ -16,6 +16,12 @@ TVM_AGENT_DIR="/trusted-vm/tvm-agent"
 GPU_TELEMETRY_DIR="/trusted-vm/gpu-telemetry"
 NPU_TELEMETRY_DIR="/trusted-vm/npu-telemetry"
 TRUSTED_VM_IMAGE="trusted-vm.img"
+
+# Third-party source collection for copyleft-licensed EMT packages
+EDGE_MICROVISOR_BRANCH="${EDGE_MICROVISOR_BRANCH:-26.06}"
+EMT_SRPM_URL="${EMT_SRPM_URL:-https://files-rs.edgeorchestration.intel.com/files-edge-orch/microvisor/rpms/${EDGE_MICROVISOR_BRANCH}/srpm}"
+COPYLEFT_LICENSE_REGEX="${COPYLEFT_LICENSE_REGEX:-GPL|MPL|CDDL|EPL|EUPL|CeCILL|OSL}"
+THIRD_PARTY_SRC_TAR="trusted-vm-third-party-src.tar.gz"
 
 # edge_microvisor image
 EDGE_MICROVISOR_IMAGE_NAME=""
@@ -62,6 +68,42 @@ extract_edge_microvisor_image_rootfs() {
     #remove boot directory from rootfs
     rm -rf "${ROOTFS_DIR}/boot"
 
+}
+
+# Download the SRPM of every copyleft-licensed package in the EMT rootfs and tar them.
+# The image config sets RemoveRpmDb, so the installed package list comes from the
+# manifest the EMT image builder writes instead (column 10 is the source RPM name).
+collect_third_party_sources() {
+    echo "INFO: Collecting third-party source RPMs from ${EMT_SRPM_URL}"
+    local manifest="${ROOTFS_DIR}/var/lib/rpmmanifest/container-manifest-2"
+    local work_dir="${BUILD_DIR}/third_party_src"
+    local srpm_dir="${work_dir}/SRPMS"
+    local srpm letter license
+
+    [[ -f "${manifest}" ]] || { echo "ERROR: RPM manifest not found: ${manifest}"; exit 1; }
+
+    rm -rf "${work_dir}"
+    mkdir -p "${srpm_dir}"
+
+    while read -r srpm; do
+        [[ -n "${srpm}" && "${srpm}" != "(none)" ]] || continue
+        letter="${srpm:0:1}"
+        if ! curl -fsSL --retry 3 "${EMT_SRPM_URL}/Packages/${letter,,}/${srpm}" -o "${srpm_dir}/${srpm}"; then
+            echo "ERROR: Failed to download ${srpm}"
+            exit 1
+        fi
+        license=$(rpm -qp --nodigest --nosignature --qf '%{LICENSE}' "${srpm_dir}/${srpm}")
+        if grep -qiE "${COPYLEFT_LICENSE_REGEX}" <<< "${license}"; then
+            echo "INFO: Keeping ${srpm} (${license})"
+            printf '%s\t%s\n' "${srpm}" "${license}" >> "${work_dir}/MANIFEST.txt"
+        else
+            rm -f "${srpm_dir}/${srpm}"
+        fi
+    done < <(awk -F'\t' '{print $10}' "${manifest}" | sort -u)
+
+    tar -czf "${BUILD_DIR}/${THIRD_PARTY_SRC_TAR}" -C "${work_dir}" .
+    rm -rf "${work_dir}"
+    echo "INFO: Third-party sources written to ${BUILD_DIR}/${THIRD_PARTY_SRC_TAR}"
 }
 
 #install tvm-agent and service files
@@ -190,6 +232,7 @@ copy_tc_image(){
 # main function
 ################
 extract_edge_microvisor_image_rootfs
+collect_third_party_sources
 install_tvm_agent
 install_guest_hooks
 download_jq

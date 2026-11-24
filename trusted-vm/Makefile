@@ -51,9 +51,9 @@ build-microvisor-image:
 	cd $(EDGE_MICROVISOR_SRC_DIR)/toolkit && sudo -E make image CONFIG_FILE=./imageconfigs/trusted-compute-os.json -j$$(nproc) REBUILD_TOOLS=y REBUILD_PACKAGES=n
 
 build-tvm-image: build-tvm-agent
-	@# Help: Runs build Trusted VM image
+	@# Help: Runs build Trusted VM image (also emits build/trusted-vm-third-party-src.tar.gz)
 	sudo true  # Prompt for password once
-	sudo bash $(MAKEFILE_DIR)/tvm_image_build.sh
+	sudo EDGE_MICROVISOR_BRANCH=$(EDGE_MICROVISOR_BRANCH) bash $(MAKEFILE_DIR)/tvm_image_build.sh
 
 build-tvm-agent:
 	@# Help: Runs build trusted VM agent

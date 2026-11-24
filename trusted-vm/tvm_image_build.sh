@@ -37,6 +37,9 @@ docker run --rm \
     --privileged \
     -v /dev:/dev \
     -v "${SCRIPT_DIR}":/trusted-vm \
+    -e EDGE_MICROVISOR_BRANCH \
+    -e EMT_SRPM_URL \
+    -e COPYLEFT_LICENSE_REGEX \
     ubuntu:24.04 \
     /bin/bash /trusted-vm/tvm_image_inside_container.sh
 
