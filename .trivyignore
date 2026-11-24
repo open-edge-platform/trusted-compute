@@ -4,6 +4,9 @@
 # TODO: Remove once kubectl ships with patched golang.org/x/net.
 CVE-2026-78669
 
+# Kata deploy requires root to install runtime artifacts into host-mounted paths.
+AVD-DS-0002
+
 # TODO: Remove once kubectl ships with golang.org/x/net v0.62.0 or newer (fixed only on k8s master as of v1.37.2).
 CVE-2026-78661
 

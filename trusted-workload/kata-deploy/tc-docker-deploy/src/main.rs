@@ -16,11 +16,12 @@ const TARBALLS_DIR: &str = "/opt/kata-artifacts/tarballs";
 const TAR_PREFIX: &str = "opt/kata";
 const TARBALL_ABS_PREFIX: &str = "/opt/kata";
 const KATA_DEST: &str = "/host/opt/kata";
-const SHIM_SOURCE: &str = "/host/opt/kata/bin/containerd-shim-kata-v2";
+const SHIM_SOURCE: &str = "/host/opt/kata/runtime-rs/bin/containerd-shim-kata-v2";
 const SHIM_DEST: &str = "/host/usr/bin/containerd-shim-kata-v2";
-const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/configuration.toml";
-const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers";
-const CONFIG_DEST: &str = "/host/etc/kata-containers/configuration.toml";
+const CONFIG_SOURCE: &str = "/host/opt/kata/share/defaults/kata-containers/runtime-rs/configuration.toml";
+// runtime-rs only searches /etc/kata-containers/runtime-rs/, not /etc/kata-containers/
+const CONFIG_DEST_DIR: &str = "/host/etc/kata-containers/runtime-rs";
+const CONFIG_DEST: &str = "/host/etc/kata-containers/runtime-rs/configuration.toml";
 
 fn extract_tarball(tarball_path: &Path, dest_dir: &str) -> Result<()> {
     let file_meta = fs::metadata(tarball_path)
@@ -257,11 +258,13 @@ fn cleanup_artifacts() -> Result<()> {
         fs::remove_file(CONFIG_DEST)
             .with_context(|| format!("Failed to remove {}", CONFIG_DEST))?;
     }
-    // Remove config directory if empty
-    if Path::new(CONFIG_DEST_DIR).exists() {
-        if let Ok(mut entries) = fs::read_dir(CONFIG_DEST_DIR) {
-            if entries.next().is_none() {
-                let _ = fs::remove_dir(CONFIG_DEST_DIR);
+    // Remove config directories if empty (runtime-rs/ then its parent)
+    for dir in [CONFIG_DEST_DIR, "/host/etc/kata-containers"] {
+        if Path::new(dir).exists() {
+            if let Ok(mut entries) = fs::read_dir(dir) {
+                if entries.next().is_none() {
+                    let _ = fs::remove_dir(dir);
+                }
             }
         }
     }
