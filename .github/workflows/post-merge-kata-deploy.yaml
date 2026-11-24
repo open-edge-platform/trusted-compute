@@ -32,6 +32,8 @@ jobs:
       run_docker_build: true
       run_docker_push: true
       run_version_tag: true
+      # publishes trusted-vm-third-party-src.tar.gz via make artifact-publish
+      run_artifact_push: true
       prefix_tag_separator: "/"
       project_folder: "trusted-workload/kata-deploy"
       trivy_image_skip: |
