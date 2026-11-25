@@ -7,7 +7,7 @@ require (
 	github.com/antchfx/jsonquery v1.3.8
 	github.com/antchfx/xpath v1.3.9
 	github.com/beevik/etree v1.8.1
-	github.com/cloudflare/cfssl v1.7.1
+	github.com/cloudflare/cfssl v1.7.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
@@ -19,7 +19,7 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/mattermost/xml-roundtrip-validator v0.1.0
 	github.com/nats-io/jwt/v2 v2.8.3
-	github.com/nats-io/nats.go v1.55.0
+	github.com/nats-io/nats.go v1.56.0
 	github.com/nats-io/nkeys v0.4.17
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.34.0
@@ -32,7 +32,7 @@ require (
 	github.com/vmware/govmomi v0.56.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.59.0
-	golang.org/x/net v0.62.0
+	golang.org/x/net v0.63.0
 	golang.org/x/sync v0.25.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.6.3
