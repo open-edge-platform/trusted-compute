@@ -1,7 +1,9 @@
 ---
 name: crypto-capabilities
 description: Report hardware crypto acceleration available on the CPU - AES-NI, SHA-NI, RDRAND, RDSEED. Use when asked which crypto instructions the platform supports.
-metadata: { "openclaw": { "emoji": "🔑", "os": ["linux"] } }
+compatibility: Requires Linux and access to /proc/cpuinfo.
+metadata:
+  emoji: "🔑"
 ---
 
 # Hardware Crypto Capabilities Skill
