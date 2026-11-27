@@ -1,0 +1,143 @@
+name: Skill Scanner
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "release-*"]
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_call:
+    inputs:
+      severity:
+        description: "SkillSpector severity level (CRITICAL, HIGH, MEDIUM, LOW)"
+        required: false
+        default: "LOW"
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      severity:
+        description: "SkillSpector severity level (CRITICAL, HIGH, MEDIUM, LOW)"
+        required: false
+        default: "LOW"
+        type: choice
+        options:
+          - CRITICAL
+          - HIGH
+          - MEDIUM
+          - LOW
+
+permissions: {}
+
+jobs:
+  check-paths:
+    name: Check if workflow should run
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check_paths.outputs.run }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check paths
+        id: check_paths
+        uses: open-edge-platform/geti-ci/actions/check-paths@2ed3ce382d1dbd6db52c7c6b93ffdae280a1c06f # check-paths/v0.1.0
+        with:
+          files_yaml: |
+            test:
+              - "security-config-agent/skills/**"
+              - ".github/workflows/skill-scan.yml"
+
+  skillspector-scan:
+    name: SkillSpector security scan
+    needs: check-paths
+    if: needs.check-paths.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      report_path: ${{ steps.skill-scan.outputs.report_path }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run SkillSpector scan
+        id: skill-scan
+        uses: open-edge-platform/geti-ci/actions/skill-scan@d4d1e54759aac44307b38001996e486a6b7c0569 # skill-scan/v0.2.0
+        with:
+          skills-path: security-config-agent/skills/
+          severity-level: ${{ github.event_name == 'pull_request' && 'HIGH' || github.event.inputs.severity || 'LOW' }}
+          fail-on-findings: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+
+      - name: Upload spector report
+        if: always() && steps.skill-scan.outputs.report_path != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: skill-spector-report
+          path: ${{ steps.skill-scan.outputs.report_path }}
+          retention-days: 30
+          overwrite: true
+
+  skill-validator-scan:
+    name: skill-validator scan
+    needs: check-paths
+    if: needs.check-paths.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      report_path: ${{ steps.skill-validator.outputs.report_path }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run skill-validator
+        id: skill-validator
+        uses: open-edge-platform/geti-ci/actions/skill-validator@15b643856434077bc0a052613aa0e90dcf42bacb # skill-validator/v0.2.3
+        with:
+          skills-path: security-config-agent/skills/
+          strict: 'false'
+          fail-on-findings: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+          allow-dirs: "evals,example-prompts,benchmark"
+
+      - name: Upload validator report
+        if: always() && steps.skill-validator.outputs.report_path != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: skill-validator-report
+          path: ${{ steps.skill-validator.outputs.report_path }}
+          retention-days: 30
+          overwrite: true
+
+  required-check:
+    name: Required Check Skill Scanner
+    needs:
+      - check-paths
+      - skillspector-scan
+      - skill-validator-scan
+    runs-on: ubuntu-latest
+    env:
+      CHECKS: ${{ join(needs.*.result, ' ') }}
+    if: always() && !cancelled()
+    steps:
+      - name: Check jobs results
+        run: |
+          for check in ${CHECKS}; do
+            echo "::notice::check=${check}"
+            if [[ "$check" != "success" && "$check" != "skipped" ]]; then
+              echo "::error ::Required status checks failed. They must succeed before this pull request can be merged."
+              exit 1
+            fi
+          done
