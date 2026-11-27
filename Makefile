@@ -45,6 +45,11 @@ build-trusted-workload:
 	@# Help: Runs build stage in trusted-workload subprojects
 	make -C ${PWD}/trusted-workload build
 
+.PHONY: third-party-src
+third-party-src:
+	@# Help: Generates tarball of copyleft third-party sources for the Debian-based images (EMT sources come from build-trusted-vm)
+	make -C ${PWD}/third-party-src
+
 license: requirements.txt
 	@# Help: Check licensing with the reuse tool
 	set -u ;\

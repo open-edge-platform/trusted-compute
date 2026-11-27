@@ -44,7 +44,7 @@ jobs:
         env:
           changed_projects: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
-          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs", "security-config-agent"]'
+          folders_to_remove='[".github",".reuse","LICENSES",".git", "tests", "samples", "docs", "security-config-agent", "third-party-src"]'
           no_docker_candidates='["baremetal", "helm"]'
           filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           other_changed_projects=$(echo "$changed_projects" | jq -cr --argjson filtered_projects "$filtered_projects" 'map(select(. as $item | $filtered_projects | index($item) | not))')
@@ -108,7 +108,9 @@ jobs:
       run_docker_push: true
       run_helm_build: true
       run_helm_push: true
-      run_artifact: false
+      # trusted-vm's make build emits the EMT copyleft SRPM tarball; publish it as a GitHub artifact
+      run_artifact: ${{ matrix.project_folder == 'trusted-vm' }}
+      artifacts_path: trusted-vm/build/trusted-vm-third-party-src.tar.gz
       project_folder: ${{ matrix.project_folder }}
       version_suffix: "-pr-${{ github.event.number }}"
     secrets:  # zizmor: ignore[secrets-inherit]
@@ -139,6 +141,24 @@ jobs:
       version_suffix: "-pr-${{ github.event.number }}"
     secrets:  # zizmor: ignore[secrets-inherit]
       inherit
+  third-party-src-debian:
+    permissions:
+      contents: read
+    needs: pre-checks
+    if: ${{ contains(needs.pre-checks.outputs.filtered_projects, 'attestation-manager') || contains(needs.pre-checks.outputs.filtered_projects, 'attestation-verifier') || contains(needs.pre-checks.outputs.other_changed_projects, 'third-party-src') || contains(needs.pre-checks.outputs.other_changed_projects, '.github') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Collect copyleft Debian source packages
+        run: make third-party-src
+      - name: Upload Debian third-party sources
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: third-party-src-debian
+          path: third-party-src/out/*.tar.gz
+          if-no-files-found: error
   wait-for-virtual-integration:
     permissions:
       actions: read
@@ -199,17 +219,18 @@ jobs:
   final-check:
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [pre-merge-root, pre-merge-pipeline, pre-merge-pipeline-no-docker, wait-for-virtual-integration]
+    needs: [pre-merge-root, pre-merge-pipeline, pre-merge-pipeline-no-docker, third-party-src-debian, wait-for-virtual-integration]
     steps:
       - name: Final Status Check
         env:
           pre_merge_pipeline: ${{ needs.pre-merge-pipeline.result }}
           pre_merge_pipeline_no_docker: ${{ needs.pre-merge-pipeline-no-docker.result }}
           pre_merge_root_pipeline: ${{ needs.pre-merge-root.result }}
+          third_party_src_debian: ${{ needs.third-party-src-debian.result }}
           virtual_integration: ${{ needs.wait-for-virtual-integration.result }}
         run: |
 
-          results=("pre_merge_root_pipeline" "pre_merge_pipeline" "pre_merge_pipeline_no_docker" "virtual_integration")
+          results=("pre_merge_root_pipeline" "pre_merge_pipeline" "pre_merge_pipeline_no_docker" "third_party_src_debian" "virtual_integration")
           status="OK"
 
           for result in "${results[@]}"; do

@@ -19,6 +19,8 @@ KATA_DEPLOY_VERSION              ?= $(shell cat ./../trusted-workload/kata-deplo
 KATA_DEPLOY_CHART_VERSION        ?= $(shell yq -r '."kata-containers".version' ./../trusted-workload/kata-deploy/version.yaml)
 KATA_DEPLOY_CHART_OCI            ?= oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy
 KATA_DEPLOY_VALUES_FILE          ?= $(CURDIR)/values-kata-deploy-default.yaml
+THIRD_PARTY_SRC_DIR              ?= $(CURDIR)/../third-party-src
+THIRD_PARTY_SRC_EMT_OCI          ?= registry-rs.edgeorchestration.intel.com/edge-orch/trusted-compute/kata-deploy/third-party-src:$(KATA_DEPLOY_VERSION)
 
 all: 
 	@# Help: Runs build, lint, test stages
@@ -135,6 +137,19 @@ build:
 			printf "✗ Failed to pull: %s\n" "$$image" >&2 || true; \
 		fi; \
 	done
+	set +x
+
+	# Third-party copyleft sources: Debian tarball is collected locally; the EMT
+	# SRPM tarball is published by the kata-deploy post-merge build (artifact-publish)
+	mkdir -p "$$STAGEDIR/third-party-src"
+	$(MAKE) -C "$(THIRD_PARTY_SRC_DIR)" debian
+	cp -a "$(THIRD_PARTY_SRC_DIR)"/out/*.tar.gz "$$STAGEDIR/third-party-src/"
+	if oras pull "$(THIRD_PARTY_SRC_EMT_OCI)" -o "$$STAGEDIR/third-party-src"; then \
+		printf "✓ Pulled: %s\n" "$(THIRD_PARTY_SRC_EMT_OCI)"; \
+	else \
+		printf "✗ Failed to pull EMT third-party sources: %s\n" "$(THIRD_PARTY_SRC_EMT_OCI)" >&2; \
+	fi
+	ls -lh "$$STAGEDIR/third-party-src"
 
 	# create final gzipped tarball in the output directory
 	tar -C "$$STAGEDIR" --transform "s,^,$${PKG_NAME}/," -czf "$(OUT_DIR)/$${PKG_TAR}" .
