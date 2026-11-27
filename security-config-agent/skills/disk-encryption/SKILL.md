@@ -1,15 +1,9 @@
 ---
 name: disk-encryption
 description: Report disk encryption configuration - LUKS/dm-crypt volumes, cipher and key size, swap encryption, and unencrypted volumes. Use when asked whether disks or swap are encrypted.
+compatibility: Requires Linux, lsblk, dmsetup, cryptsetup, and root/sudo access.
 metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "💽",
-        "os": ["linux"],
-        "requires": { "bins": ["lsblk", "dmsetup", "cryptsetup"] }
-      }
-  }
+  emoji: "💽"
 ---
 
 # Disk Encryption Configuration Skill
