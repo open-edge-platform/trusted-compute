@@ -71,7 +71,7 @@ jobs:
       - run: |
           npm install -g \
           "markdownlint-cli@${{ env.MARKDOWNLINT_CLI_VER }}"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97   # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0   # v7.1.0
         id: setup_python
         with:
           python-version: '3.13'
@@ -96,6 +96,9 @@ jobs:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.docker_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@ccda485c43504937be8c1680c643c0ee2858c568  # 2026.1.4
     with:
+      # orch-ci bootstrap apt list is not installable on ubuntu-latest (26.04)
+      runs_on: ubuntu-24.04
+      security_scans_advisory: ${{ matrix.project_folder == 'trusted-workload' }}
       run_security_scans: true
       run_version_check: false
       run_build: true
@@ -121,6 +124,7 @@ jobs:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.no_docker_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@ccda485c43504937be8c1680c643c0ee2858c568  # 2026.1.4
     with:
+      runs_on: ubuntu-24.04
       run_security_scans: true
       run_version_check: false
       run_build: true
